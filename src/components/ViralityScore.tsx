@@ -20,7 +20,7 @@ export const ViralityScore = ({ score, avgScore }: ViralityScoreProps) => {
       : 'Performing at average';
 
   return (
-    <div className="mt-2 p-3 bg-gray-50 rounded-lg">
+    <div className="mt-2 p-3 bg-gray-50 rounded-lg animate-fade-in">
       <div className="flex items-center justify-between mb-2">
         <div className="flex items-center gap-2">
           <span className="font-semibold text-lg">Virality Score</span>
