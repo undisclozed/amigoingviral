@@ -68,7 +68,7 @@ export const BarChart = () => {
   };
 
   return (
-    <Card className="p-4 h-[500px] animate-fade-in">
+    <Card className="w-full p-6">
       <div className="flex justify-between items-center mb-6 flex-wrap gap-2">
         <h3 className="text-lg font-semibold">Daily Engagement Rate (%)</h3>
         <div className="flex gap-2 flex-wrap">
@@ -113,7 +113,7 @@ export const BarChart = () => {
             />
             <YAxis />
             <Tooltip />
-            <Bar dataKey="engagement" fill="#E5DEFF" />
+            <Bar dataKey="engagement" fill="#00F37F" />
           </RechartsBarChart>
         </ResponsiveContainer>
       </div>
