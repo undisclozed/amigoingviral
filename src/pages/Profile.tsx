@@ -2,6 +2,8 @@ import { AccountOverview } from "@/components/AccountOverview";
 import { ViralityScore } from "@/components/ViralityScore";
 import { GrowthAnalytics } from "@/components/GrowthAnalytics";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Badge } from "@/components/ui/badge";
+import { CalendarDays } from "lucide-react";
 import { useState, useEffect } from "react";
 
 const Profile = () => {
@@ -42,18 +44,42 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-background p-6">
       <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex items-center gap-4 mb-8 animate-fade-in">
-          <div className="h-24 w-24 rounded-full bg-gray-200 overflow-hidden">
+        <div className="flex flex-col md:flex-row md:items-start gap-6 mb-8 animate-fade-in">
+          <div className="h-24 w-24 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
             <img
               src="https://images.unsplash.com/photo-1649972904349-6e44c42644a7"
               alt="Profile"
               className="h-full w-full object-cover"
             />
           </div>
-          <div>
-            <h1 className="text-2xl font-bold">Sarah Johnson</h1>
-            <p className="text-gray-600">@sarahjcreates</p>
-            <p className="text-sm text-gray-500 mt-1">Content Creator & Digital Artist</p>
+          <div className="space-y-4 flex-grow">
+            <div>
+              <div className="flex items-center gap-3">
+                <h1 className="text-2xl font-bold">Sarah Johnson</h1>
+                <Badge variant="secondary">Creator</Badge>
+              </div>
+              <p className="text-gray-600">@sarahjcreates</p>
+            </div>
+            
+            <div className="space-y-2">
+              <p className="text-sm text-gray-700">Content Creator & Digital Artist specializing in lifestyle content and creative tutorials. Based in San Francisco, CA.</p>
+              <div className="flex items-center gap-2 text-sm text-gray-500">
+                <CalendarDays className="h-4 w-4" />
+                <span>Profile last updated: 2 hours ago</span>
+              </div>
+            </div>
+            
+            <div className="flex flex-wrap gap-4 text-sm">
+              <div className="bg-primary-light rounded-full px-4 py-1">
+                <span className="font-medium">342</span> Total Posts
+              </div>
+              <div className="bg-primary-light rounded-full px-4 py-1">
+                <span className="font-medium">156</span> Posts this month
+              </div>
+              <div className="bg-primary-light rounded-full px-4 py-1">
+                <span className="font-medium">4.8%</span> Avg. Engagement
+              </div>
+            </div>
           </div>
         </div>
 
