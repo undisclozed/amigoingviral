@@ -29,8 +29,8 @@ const words = [
 
 const options = {
   rotations: 2,
-  rotationAngles: [0, 90],
-  fontSizes: [12, 40],
+  rotationAngles: [0, 90] as [number, number],
+  fontSizes: [12, 40] as [number, number],
   padding: 5,
   fontFamily: "Inter",
   colors: ["#00F37F", "#1a1a1a", "#333333", "#666666"],
