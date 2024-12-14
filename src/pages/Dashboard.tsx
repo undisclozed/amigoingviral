@@ -6,9 +6,9 @@ import { PostComparison } from "@/components/PostComparison";
 import Sidebar from "@/components/ui/sidebar";
 import {
   Tooltip,
-  TooltipContent,
   TooltipProvider,
   TooltipTrigger,
+  TooltipContent,
 } from "@/components/ui/tooltip";
 
 const Dashboard = () => {
@@ -87,6 +87,30 @@ const Dashboard = () => {
           <div className="space-y-8">
             <h2 className="text-xl sm:text-2xl font-semibold">Post Analytics</h2>
             
+            {/* Current Post & Post Selection */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="p-4 border rounded-lg">
+                <h4 className="font-medium mb-2">Current Post</h4>
+                <div className="flex items-center space-x-4">
+                  <img src="/placeholder.svg" alt="Current post" className="h-20 w-20 object-cover rounded" />
+                  <div>
+                    <p className="font-medium">@janedoe</p>
+                    <p className="text-sm text-muted-foreground">Sep 24, 11:11 AM</p>
+                  </div>
+                </div>
+              </div>
+              <div className="p-4 border rounded-lg">
+                <h4 className="font-medium mb-2">Select Post to Compare</h4>
+                <div className="flex items-center space-x-4">
+                  <img src="/placeholder.svg" alt="Select post" className="h-20 w-20 object-cover rounded" />
+                  <div>
+                    <p className="font-medium">Click to select a post</p>
+                    <p className="text-sm text-muted-foreground">Compare metrics with current post</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
             {/* Engagement Metrics */}
             <div>
               <h3 className="text-lg font-semibold mb-4">Engagement Metrics</h3>
@@ -126,7 +150,7 @@ const Dashboard = () => {
               </div>
             </div>
 
-            {/* Post Comparison */}
+            {/* Post Performance Comparison */}
             <div>
               <PostComparison />
             </div>
