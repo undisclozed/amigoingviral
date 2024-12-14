@@ -1,4 +1,4 @@
-import { Users, Heart, Image as ImageIcon, TrendingUp } from "lucide-react";
+import { Users, Heart, Image as ImageIcon, TrendingUp, MessageSquare, Eye, Target, Zap } from "lucide-react";
 import { MetricCard } from "@/components/MetricCard";
 import { LineChart } from "@/components/LineChart";
 import { BarChart } from "@/components/BarChart";
@@ -27,28 +27,75 @@ const Dashboard = () => {
             <h2 className="text-2xl font-semibold mb-4">Overview</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
               <MetricCard
-                title="Followers"
+                title="Total Followers"
                 value="10,234"
                 change={2.5}
+                subValue="Growth: +156 this week"
+                period="Last 7 days"
                 icon={<Users size={24} />}
-              />
-              <MetricCard
-                title="Engagement Rate"
-                value="4.6%"
-                change={-1.2}
-                icon={<Heart size={24} />}
               />
               <MetricCard
                 title="Total Posts"
                 value="486"
                 change={12}
+                subValue="New: 8 this week"
+                period="Last 7 days"
                 icon={<ImageIcon size={24} />}
               />
               <MetricCard
-                title="Profile Views"
-                value="2,892"
+                title="Accounts Reached"
+                value="45.2K"
                 change={5.8}
-                icon={<TrendingUp size={24} />}
+                subValue="+12.3K from last period"
+                period="Last 30 days"
+                icon={<Target size={24} />}
+              />
+              <MetricCard
+                title="Accounts Engaged"
+                value="12.4K"
+                change={3.2}
+                subValue="+2.1K from last period"
+                period="Last 30 days"
+                icon={<Zap size={24} />}
+              />
+            </div>
+          </div>
+
+          {/* Engagement Metrics */}
+          <div className="mb-8">
+            <h2 className="text-2xl font-semibold mb-4">Engagement Metrics</h2>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              <MetricCard
+                title="Engagement Rate"
+                value="4.6%"
+                change={-1.2}
+                subValue="Avg. per post"
+                period="Last 30 days"
+                icon={<Heart size={24} />}
+              />
+              <MetricCard
+                title="Average Likes"
+                value="892"
+                change={5.8}
+                subValue="Per post"
+                period="Last 30 days"
+                icon={<Heart size={24} />}
+              />
+              <MetricCard
+                title="Average Comments"
+                value="45"
+                change={2.1}
+                subValue="Per post"
+                period="Last 30 days"
+                icon={<MessageSquare size={24} />}
+              />
+              <MetricCard
+                title="Average Views"
+                value="2.8K"
+                change={7.5}
+                subValue="Per post"
+                period="Last 30 days"
+                icon={<Eye size={24} />}
               />
             </div>
           </div>
