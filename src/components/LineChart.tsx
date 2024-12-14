@@ -147,10 +147,10 @@ export const LineChart = ({
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold">Performance Metrics</h3>
             <Select defaultValue={currentInterval} onValueChange={handleTimeframeChange}>
-              <SelectTrigger className="w-[120px]">
+              <SelectTrigger className="w-[120px] bg-white border-2">
                 <SelectValue />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-white border-2 shadow-lg">
                 <SelectItem value="5min">5 Minutes</SelectItem>
                 <SelectItem value="hourly">Hourly</SelectItem>
                 <SelectItem value="daily">Daily</SelectItem>
