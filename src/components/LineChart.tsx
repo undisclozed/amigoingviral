@@ -5,21 +5,27 @@ import { Button } from "./ui/button";
 
 type Interval = 'daily' | 'weekly' | 'monthly';
 type PostMetric = 'views' | 'likes' | 'comments' | 'shares' | 'engagement';
+type AccountMetric = 'followers' | 'growth' | 'reached' | 'engaged';
+type MetricType = PostMetric | AccountMetric;
 
-const generateTimeData = (interval: Interval, metric: PostMetric, isComparison: boolean = false) => {
+const generateTimeData = (interval: Interval, metric: MetricType, isComparison: boolean = false) => {
   const now = new Date();
   const data = [];
   
   const getMetricValue = (base: number) => {
-    const multiplier = isComparison ? 0.8 : 1; // Comparison data slightly lower for demo
+    const multiplier = isComparison ? 0.8 : 1;
     switch(metric) {
       case 'views':
+      case 'reached':
         return Math.floor((base + Math.random() * 1000) * multiplier);
       case 'likes':
+      case 'growth':
         return Math.floor((base * 0.1 + Math.random() * 100) * multiplier);
       case 'comments':
+      case 'followers':
         return Math.floor((base * 0.01 + Math.random() * 50) * multiplier);
       case 'shares':
+      case 'engaged':
         return Math.floor((base * 0.05 + Math.random() * 20) * multiplier);
       case 'engagement':
         return Math.floor((base * 0.15 + Math.random() * 5) * multiplier);
@@ -63,16 +69,20 @@ const generateTimeData = (interval: Interval, metric: PostMetric, isComparison: 
   return data;
 };
 
-const metricLabels: Record<PostMetric, string> = {
+const metricLabels: Record<MetricType, string> = {
   views: 'Views',
   likes: 'Likes',
   comments: 'Comments',
   shares: 'Shares',
-  engagement: 'Engagement Rate'
+  engagement: 'Engagement Rate',
+  followers: 'Followers',
+  growth: 'Growth',
+  reached: 'Reached',
+  engaged: 'Engaged'
 };
 
 interface LineChartProps {
-  metric?: PostMetric;
+  metric?: MetricType;
   interval?: Interval;
   showComparison?: boolean;
   currentCreator?: string;
@@ -87,7 +97,7 @@ export const LineChart = ({
   comparisonCreator
 }: LineChartProps) => {
   const [currentInterval, setCurrentInterval] = useState<Interval>(interval);
-  const [currentMetric, setCurrentMetric] = useState<PostMetric>(metric);
+  const [currentMetric, setCurrentMetric] = useState<MetricType>(metric);
   const [data, setData] = useState(() => generateTimeData(interval, metric));
   const [comparisonData, setComparisonData] = useState(() => 
     showComparison ? generateTimeData(interval, metric, true) : []
@@ -105,9 +115,9 @@ export const LineChart = ({
     setCurrentInterval(newInterval);
   };
 
-  const handleMetricChange = (newMetric: PostMetric) => (e: React.MouseEvent) => {
+  const handleMetricChange = (newMetric: MetricType) => (e: React.MouseEvent) => {
     e.stopPropagation();
-    setCurrentMetric(newMetric);
+    setCurrentMetric(newMetric as any);
   };
 
   return (
@@ -142,7 +152,7 @@ export const LineChart = ({
               <Button
                 key={key}
                 variant={currentMetric === key ? "default" : "outline"}
-                onClick={handleMetricChange(key as PostMetric)}
+                onClick={handleMetricChange(key as MetricType)}
                 size="sm"
               >
                 {label}
