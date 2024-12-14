@@ -48,7 +48,7 @@ export const GrowthAnalytics = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="md:col-span-2">
-            <div className="h-[600px]">
+            <div className="h-[550px]">
               <LineChart 
                 metric="growth"
                 interval="weekly"
