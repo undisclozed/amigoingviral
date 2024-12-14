@@ -2,6 +2,7 @@ import { Users, Heart, Image as ImageIcon, TrendingUp, MessageSquare, Eye, Targe
 import { MetricCard } from "@/components/MetricCard";
 import { LineChart } from "@/components/LineChart";
 import { BarChart } from "@/components/BarChart";
+import { PostComparison } from "@/components/PostComparison";
 import Sidebar from "@/components/ui/sidebar";
 
 const Dashboard = () => {
@@ -59,6 +60,12 @@ const Dashboard = () => {
                 icon={<Zap size={24} />}
               />
             </div>
+          </div>
+
+          {/* Post Comparison Section */}
+          <div className="mb-8">
+            <h2 className="text-2xl font-semibold mb-4">Post Analytics</h2>
+            <PostComparison />
           </div>
 
           {/* Engagement Metrics */}
