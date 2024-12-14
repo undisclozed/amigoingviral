@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { Button } from "./ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-type Interval = 'daily' | 'weekly' | 'monthly';
+type Interval = '5min' | 'hourly' | 'daily' | 'weekly' | 'monthly';
 type PostMetric = 'views' | 'likes' | 'comments' | 'shares' | 'engagement';
 type AccountMetric = 'followers' | 'growth' | 'reached' | 'engaged';
 type MetricType = PostMetric | AccountMetric;
@@ -36,6 +36,26 @@ const generateTimeData = (interval: Interval, metric: MetricType, isComparison: 
   };
 
   switch (interval) {
+    case '5min':
+      for (let i = 11; i >= 0; i--) {
+        const time = new Date(now.getTime() - i * 5 * 60000);
+        data.push({
+          date: time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          value: getMetricValue(4000)
+        });
+      }
+      break;
+
+    case 'hourly':
+      for (let i = 23; i >= 0; i--) {
+        const time = new Date(now.getTime() - i * 60 * 60000);
+        data.push({
+          date: time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          value: getMetricValue(4000)
+        });
+      }
+      break;
+
     case 'daily':
       for (let i = 6; i >= 0; i--) {
         const time = new Date(now.getTime() - i * 24 * 60 * 60000);
@@ -131,6 +151,8 @@ export const LineChart = ({
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
+                <SelectItem value="5min">5 Minutes</SelectItem>
+                <SelectItem value="hourly">Hourly</SelectItem>
                 <SelectItem value="daily">Daily</SelectItem>
                 <SelectItem value="weekly">Weekly</SelectItem>
                 <SelectItem value="monthly">Monthly</SelectItem>
