@@ -29,7 +29,7 @@ const Dashboard = () => {
 
         {/* Main Content */}
         <main className="px-4 pb-32">
-          {/* Overview Section */}
+          {/* Account Overview Section */}
           <div className="mb-8">
             <div className="flex items-center gap-2 mb-4">
               <h2 className="text-xl sm:text-2xl font-semibold">Account Overview</h2>
@@ -87,6 +87,11 @@ const Dashboard = () => {
           <div className="space-y-8">
             <h2 className="text-xl sm:text-2xl font-semibold">Post Analytics</h2>
             
+            {/* Post Comparison */}
+            <div>
+              <PostComparison />
+            </div>
+
             {/* Engagement Metrics */}
             <div>
               <h3 className="text-lg font-semibold mb-4">Engagement Metrics</h3>
@@ -124,11 +129,6 @@ const Dashboard = () => {
                   icon={<Eye className="h-4 w-4" />}
                 />
               </div>
-            </div>
-
-            {/* Post Comparison */}
-            <div>
-              <PostComparison />
             </div>
 
             {/* Charts Section */}
