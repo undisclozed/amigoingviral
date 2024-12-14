@@ -87,11 +87,6 @@ const Dashboard = () => {
           <div className="space-y-8">
             <h2 className="text-xl sm:text-2xl font-semibold">Post Analytics</h2>
             
-            {/* Post Comparison */}
-            <div>
-              <PostComparison />
-            </div>
-
             {/* Engagement Metrics */}
             <div>
               <h3 className="text-lg font-semibold mb-4">Engagement Metrics</h3>
@@ -129,6 +124,11 @@ const Dashboard = () => {
                   icon={<Eye className="h-4 w-4" />}
                 />
               </div>
+            </div>
+
+            {/* Post Comparison */}
+            <div>
+              <PostComparison />
             </div>
 
             {/* Charts Section */}
