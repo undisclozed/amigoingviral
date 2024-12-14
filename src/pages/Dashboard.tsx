@@ -9,7 +9,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-[#FAFAFA] flex">
       <Sidebar />
-      <div className="flex-1 ml-0 sm:ml-16 pb-8 w-full overflow-x-hidden">
+      <div className="flex-1 ml-0 sm:ml-16 pb-16 w-full overflow-x-hidden">
         {/* Header */}
         <header className="border-b bg-white mb-8">
           <div className="mx-auto px-4 py-4">

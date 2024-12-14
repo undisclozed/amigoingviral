@@ -28,7 +28,6 @@ const generateTimeData = (interval: Interval, metric: Metric) => {
 
   switch (interval) {
     case '5min':
-      // Generate data for last 30 minutes in 5-minute intervals
       for (let i = 6; i >= 0; i--) {
         const time = new Date(now.getTime() - i * 5 * 60000);
         data.push({
@@ -42,7 +41,6 @@ const generateTimeData = (interval: Interval, metric: Metric) => {
       break;
       
     case 'hourly':
-      // Generate hourly data for last 6 hours
       for (let i = 6; i >= 0; i--) {
         const time = new Date(now.getTime() - i * 60 * 60000);
         data.push({
@@ -56,7 +54,6 @@ const generateTimeData = (interval: Interval, metric: Metric) => {
       break;
       
     case 'daily':
-      // Generate daily data for last 7 days
       for (let i = 6; i >= 0; i--) {
         const time = new Date(now.getTime() - i * 24 * 60 * 60000);
         data.push({
@@ -70,7 +67,6 @@ const generateTimeData = (interval: Interval, metric: Metric) => {
       break;
       
     case 'weekly':
-      // Generate weekly data for last 8 weeks
       for (let i = 7; i >= 0; i--) {
         const time = new Date(now.getTime() - i * 7 * 24 * 60 * 60000);
         data.push({
@@ -115,7 +111,7 @@ export const LineChart = ({ currentCreator = "@janedoe", comparisonCreator = "@c
   };
 
   return (
-    <Card className="p-4 h-[500px] w-full overflow-hidden">
+    <Card className="p-4 h-[500px] w-full overflow-hidden mb-8">
       <div className="flex flex-col gap-4 mb-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <h3 className="text-lg font-semibold">Post Performance Comparison</h3>
