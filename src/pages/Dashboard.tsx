@@ -9,7 +9,7 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-[#FAFAFA] flex">
       <Sidebar />
-      <div className="flex-1 ml-0 sm:ml-16 pb-16 w-full overflow-x-hidden">
+      <div className="flex-1 ml-0 sm:ml-16 w-full overflow-x-hidden">
         {/* Header */}
         <header className="border-b bg-white mb-8">
           <div className="mx-auto px-4 py-4">
@@ -22,7 +22,7 @@ const Dashboard = () => {
         </header>
 
         {/* Main Content */}
-        <main className="px-4">
+        <main className="px-4 pb-32">
           {/* Overview Section */}
           <div className="mb-8">
             <h2 className="text-xl sm:text-2xl font-semibold mb-4">Overview</h2>
