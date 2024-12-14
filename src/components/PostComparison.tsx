@@ -64,7 +64,7 @@ export const PostComparison = () => {
   };
 
   return (
-    <Card className="p-6 animate-fade-in">
+    <Card className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h3 className="text-lg font-semibold">Post Comparison</h3>
         <Dialog>
@@ -125,7 +125,7 @@ export const PostComparison = () => {
         </Dialog>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
         <div className="space-y-4">
           <div className="p-4 border rounded-lg">
             <h4 className="font-medium mb-2">Current Post</h4>
@@ -159,7 +159,7 @@ export const PostComparison = () => {
         )}
       </div>
 
-      <div className="mt-6">
+      <div className="h-[500px]">
         <LineChart />
       </div>
     </Card>
