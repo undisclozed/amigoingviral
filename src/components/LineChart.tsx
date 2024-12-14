@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { LineChart as RechartsLineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { LineChart as RechartsLineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 
@@ -16,8 +16,10 @@ const generateTimeData = (interval: Interval) => {
         const time = new Date(now.getTime() - i * 5 * 60000);
         data.push({
           date: time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          followers: Math.floor(4000 + Math.random() * 3000),
-          engagement: (3 + Math.random() * 2).toFixed(1)
+          currentPost: Math.floor(4000 + Math.random() * 3000),
+          comparisonPost: Math.floor(3000 + Math.random() * 4000),
+          currentEngagement: (3 + Math.random() * 2).toFixed(1),
+          comparisonEngagement: (2 + Math.random() * 3).toFixed(1)
         });
       }
       break;
@@ -28,8 +30,10 @@ const generateTimeData = (interval: Interval) => {
         const time = new Date(now.getTime() - i * 60 * 60000);
         data.push({
           date: time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          followers: Math.floor(4000 + Math.random() * 3000),
-          engagement: (3 + Math.random() * 2).toFixed(1)
+          currentPost: Math.floor(4000 + Math.random() * 3000),
+          comparisonPost: Math.floor(3000 + Math.random() * 4000),
+          currentEngagement: (3 + Math.random() * 2).toFixed(1),
+          comparisonEngagement: (2 + Math.random() * 3).toFixed(1)
         });
       }
       break;
@@ -40,8 +44,10 @@ const generateTimeData = (interval: Interval) => {
         const time = new Date(now.getTime() - i * 24 * 60 * 60000);
         data.push({
           date: time.toLocaleDateString([], { weekday: 'short' }),
-          followers: Math.floor(4000 + Math.random() * 3000),
-          engagement: (3 + Math.random() * 2).toFixed(1)
+          currentPost: Math.floor(4000 + Math.random() * 3000),
+          comparisonPost: Math.floor(3000 + Math.random() * 4000),
+          currentEngagement: (3 + Math.random() * 2).toFixed(1),
+          comparisonEngagement: (2 + Math.random() * 3).toFixed(1)
         });
       }
       break;
@@ -52,8 +58,10 @@ const generateTimeData = (interval: Interval) => {
         const time = new Date(now.getTime() - i * 7 * 24 * 60 * 60000);
         data.push({
           date: `Week ${i + 1}`,
-          followers: Math.floor(4000 + Math.random() * 3000),
-          engagement: (3 + Math.random() * 2).toFixed(1)
+          currentPost: Math.floor(4000 + Math.random() * 3000),
+          comparisonPost: Math.floor(3000 + Math.random() * 4000),
+          currentEngagement: (3 + Math.random() * 2).toFixed(1),
+          comparisonEngagement: (2 + Math.random() * 3).toFixed(1)
         });
       }
       break;
@@ -62,7 +70,7 @@ const generateTimeData = (interval: Interval) => {
   return data;
 };
 
-export const LineChart = () => {
+export const LineChart = ({ currentCreator = "@janedoe", comparisonCreator = "@cristiano" }) => {
   const [interval, setInterval] = useState<Interval>('5min');
   const [data, setData] = useState(() => generateTimeData('5min'));
 
@@ -74,7 +82,7 @@ export const LineChart = () => {
   return (
     <Card className="p-6 h-[400px] animate-fade-in">
       <div className="flex justify-between items-center mb-4">
-        <h3 className="text-lg font-semibold">Growth Trends</h3>
+        <h3 className="text-lg font-semibold">Post Performance Comparison</h3>
         <div className="flex gap-2">
           <Button 
             variant={interval === '5min' ? "default" : "outline"}
@@ -117,23 +125,42 @@ export const LineChart = () => {
           <YAxis yAxisId="left" />
           <YAxis yAxisId="right" orientation="right" />
           <Tooltip />
+          <Legend />
           <Line 
             yAxisId="left"
             type="monotone" 
-            dataKey="followers" 
+            dataKey="currentPost" 
             stroke="#6E59A5" 
             strokeWidth={2}
             dot={{ fill: "#6E59A5" }}
-            name="Followers"
+            name={`Views (${currentCreator})`}
+          />
+          <Line 
+            yAxisId="left"
+            type="monotone" 
+            dataKey="comparisonPost" 
+            stroke="#FF6B6B" 
+            strokeWidth={2}
+            dot={{ fill: "#FF6B6B" }}
+            name={`Views (${comparisonCreator})`}
           />
           <Line 
             yAxisId="right"
             type="monotone" 
-            dataKey="engagement" 
+            dataKey="currentEngagement" 
             stroke="#00F37F" 
             strokeWidth={2}
             dot={{ fill: "#00F37F" }}
-            name="Engagement Rate (%)"
+            name={`Engagement Rate % (${currentCreator})`}
+          />
+          <Line 
+            yAxisId="right"
+            type="monotone" 
+            dataKey="comparisonEngagement" 
+            stroke="#FFB946" 
+            strokeWidth={2}
+            dot={{ fill: "#FFB946" }}
+            name={`Engagement Rate % (${comparisonCreator})`}
           />
         </RechartsLineChart>
       </ResponsiveContainer>
