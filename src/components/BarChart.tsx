@@ -68,7 +68,7 @@ export const BarChart = () => {
   };
 
   return (
-    <Card className="w-full p-6">
+    <Card className="p-6 h-[500px]">
       <div className="flex justify-between items-center mb-6 flex-wrap gap-2">
         <h3 className="text-lg font-semibold">Daily Engagement Rate (%)</h3>
         <div className="flex gap-2 flex-wrap">

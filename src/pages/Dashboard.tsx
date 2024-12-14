@@ -108,11 +108,11 @@ const Dashboard = () => {
           </div>
 
           {/* Charts Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+            <div className="w-full h-[500px]">
               <LineChart />
             </div>
-            <div className="w-full">
+            <div className="w-full h-[500px]">
               <BarChart />
             </div>
           </div>
