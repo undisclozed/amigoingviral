@@ -3,6 +3,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { LineChart } from "@/components/LineChart";
@@ -21,6 +22,7 @@ export const MetricChartDialog = ({ title, metric, currentValue, change }: Metri
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
+      <DialogTrigger className="hidden" id={`${metric}-dialog`} />
       <DialogContent className="max-w-3xl">
         <DialogHeader>
           <DialogTitle>{title} Over Time</DialogTitle>
@@ -42,9 +44,9 @@ export const MetricChartDialog = ({ title, metric, currentValue, change }: Metri
           </div>
           <div className="h-[400px]">
             <LineChart 
-              interval={timeframe}
-              metric={metric === 'growth' ? 'engagement' : 'views'}
               currentCreator="@janedoe"
+              metric={metric}
+              interval={timeframe}
             />
           </div>
         </div>

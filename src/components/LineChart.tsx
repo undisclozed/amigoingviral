@@ -95,19 +95,25 @@ const metricLabels: Record<Metric, string> = {
   engagement: 'Engagement Rate %'
 };
 
-export const LineChart = ({ currentCreator = "@janedoe", comparisonCreator = "@cristiano" }) => {
-  const [interval, setInterval] = useState<Interval>('5min');
-  const [metric, setMetric] = useState<Metric>('views');
-  const [data, setData] = useState(() => generateTimeData('5min', 'views'));
+interface LineChartProps {
+  currentCreator?: string;
+  comparisonCreator?: string;
+  metric?: 'views' | 'likes' | 'comments' | 'shares' | 'engagement' | 'followers' | 'growth' | 'reached' | 'engaged';
+  interval?: '5min' | 'hourly' | 'daily' | 'weekly';
+}
+
+export const LineChart = ({ 
+  currentCreator = "@janedoe", 
+  comparisonCreator = "@cristiano",
+  metric = 'views',
+  interval: initialInterval = '5min'
+}: LineChartProps) => {
+  const [interval, setInterval] = useState<Interval>(initialInterval);
+  const [data, setData] = useState(() => generateTimeData(initialInterval, metric));
 
   const handleIntervalChange = (newInterval: Interval) => {
     setInterval(newInterval);
     setData(generateTimeData(newInterval, metric));
-  };
-
-  const handleMetricChange = (newMetric: Metric) => {
-    setMetric(newMetric);
-    setData(generateTimeData(interval, newMetric));
   };
 
   return (
