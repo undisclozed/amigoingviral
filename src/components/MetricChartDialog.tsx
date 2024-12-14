@@ -18,16 +18,16 @@ interface MetricChartDialogProps {
 
 export const MetricChartDialog = ({ title, metric, currentValue, change }: MetricChartDialogProps) => {
   const [isOpen, setIsOpen] = useState(false);
-  const [timeframe, setTimeframe] = useState<'daily' | 'weekly'>('daily');
+  const [timeframe, setTimeframe] = useState<'daily' | 'weekly' | 'monthly'>('daily');
 
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger className="hidden" id={`${metric}-dialog`} />
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-2xl h-[90vh] overflow-hidden" onPointerDownOutside={() => setIsOpen(false)}>
         <DialogHeader>
           <DialogTitle>{title} Over Time</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
+        <div className="space-y-4 h-full">
           <div className="flex gap-2">
             <Button 
               variant={timeframe === 'daily' ? "default" : "outline"}
@@ -41,8 +41,14 @@ export const MetricChartDialog = ({ title, metric, currentValue, change }: Metri
             >
               Weekly
             </Button>
+            <Button 
+              variant={timeframe === 'monthly' ? "default" : "outline"}
+              onClick={() => setTimeframe('monthly')}
+            >
+              Monthly
+            </Button>
           </div>
-          <div className="h-[400px]">
+          <div className="h-[calc(100%-80px)]">
             <LineChart 
               metric={metric}
               interval={timeframe}

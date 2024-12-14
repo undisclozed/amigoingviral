@@ -1,8 +1,8 @@
 import { Card } from "@/components/ui/card";
 import { LineChart as RechartsLineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-type Interval = 'daily' | 'weekly';
+type Interval = 'daily' | 'weekly' | 'monthly';
 type Metric = 'followers' | 'growth' | 'reached' | 'engaged';
 
 const generateTimeData = (interval: Interval, metric: Metric) => {
@@ -39,7 +39,17 @@ const generateTimeData = (interval: Interval, metric: Metric) => {
       for (let i = 7; i >= 0; i--) {
         const time = new Date(now.getTime() - i * 7 * 24 * 60 * 60000);
         data.push({
-          date: `Week ${i + 1}`,
+          date: `Week ${8-i}`,
+          value: getMetricValue(4000)
+        });
+      }
+      break;
+
+    case 'monthly':
+      for (let i = 11; i >= 0; i--) {
+        const time = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        data.push({
+          date: time.toLocaleDateString([], { month: 'short' }),
           value: getMetricValue(4000)
         });
       }
@@ -63,9 +73,13 @@ interface LineChartProps {
 
 export const LineChart = ({ 
   metric = 'followers',
-  interval: initialInterval = 'daily'
+  interval = 'daily'
 }: LineChartProps) => {
-  const [data] = useState(() => generateTimeData(initialInterval, metric));
+  const [data, setData] = useState(() => generateTimeData(interval, metric));
+
+  useEffect(() => {
+    setData(generateTimeData(interval, metric));
+  }, [interval, metric]);
 
   return (
     <Card className="p-4 h-full w-full">
