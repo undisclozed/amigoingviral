@@ -1,23 +1,75 @@
 import { Card } from "@/components/ui/card";
 import { LineChart as RechartsLineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
+import { useState } from 'react';
+import { Button } from "@/components/ui/button";
 
-const data = [
-  { date: 'Jan', followers: 4000, engagement: 3.2 },
-  { date: 'Feb', followers: 4500, engagement: 3.8 },
-  { date: 'Mar', followers: 5100, engagement: 4.1 },
-  { date: 'Apr', followers: 5400, engagement: 3.9 },
-  { date: 'May', followers: 6200, engagement: 4.5 },
-  { date: 'Jun', followers: 6800, engagement: 4.2 },
-];
+const generateTimeData = (interval: '5min' | 'hourly') => {
+  const now = new Date();
+  const data = [];
+  
+  if (interval === '5min') {
+    // Generate data for last 30 minutes in 5-minute intervals
+    for (let i = 6; i >= 0; i--) {
+      const time = new Date(now.getTime() - i * 5 * 60000);
+      data.push({
+        date: time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        followers: Math.floor(4000 + Math.random() * 3000),
+        engagement: (3 + Math.random() * 2).toFixed(1)
+      });
+    }
+  } else {
+    // Generate hourly data for last 6 hours
+    for (let i = 6; i >= 0; i--) {
+      const time = new Date(now.getTime() - i * 60 * 60000);
+      data.push({
+        date: time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+        followers: Math.floor(4000 + Math.random() * 3000),
+        engagement: (3 + Math.random() * 2).toFixed(1)
+      });
+    }
+  }
+  
+  return data;
+};
 
 export const LineChart = () => {
+  const [interval, setInterval] = useState<'5min' | 'hourly'>('5min');
+  const [data, setData] = useState(() => generateTimeData('5min'));
+
+  const handleIntervalChange = (newInterval: '5min' | 'hourly') => {
+    setInterval(newInterval);
+    setData(generateTimeData(newInterval));
+  };
+
   return (
     <Card className="p-6 h-[400px] animate-fade-in">
-      <h3 className="text-lg font-semibold mb-4">Growth Trends</h3>
+      <div className="flex justify-between items-center mb-4">
+        <h3 className="text-lg font-semibold">Growth Trends</h3>
+        <div className="flex gap-2">
+          <Button 
+            variant={interval === '5min' ? "default" : "outline"}
+            size="sm"
+            onClick={() => handleIntervalChange('5min')}
+          >
+            5 Min
+          </Button>
+          <Button 
+            variant={interval === 'hourly' ? "default" : "outline"}
+            size="sm"
+            onClick={() => handleIntervalChange('hourly')}
+          >
+            Hourly
+          </Button>
+        </div>
+      </div>
       <ResponsiveContainer width="100%" height="100%">
         <RechartsLineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" />
-          <XAxis dataKey="date" />
+          <XAxis 
+            dataKey="date"
+            interval="preserveStartEnd"
+            minTickGap={30}
+          />
           <YAxis yAxisId="left" />
           <YAxis yAxisId="right" orientation="right" />
           <Tooltip />
