@@ -34,10 +34,10 @@ export const metricTooltips: Record<MetricType, string> = {
   growth: 'Overall account growth score based on followers, engagement, and reach',
   reached: 'Number of unique accounts that have seen your content',
   engaged: 'Number of unique accounts that interacted with your content',
-  engagement: 'Average percentage of viewers who engage with your content',
-  likes: 'Average number of likes received per post',
-  comments: 'Average number of comments received per post',
-  views: 'Average number of views per post',
-  posts: 'Total number of posts published',
-  shares: 'Number of times your content has been shared'
+  engagement: 'Percentage of viewers who engage with your content through likes, comments, or shares',
+  likes: 'Average number of likes received per post in the selected time period',
+  comments: 'Average number of comments received per post in the selected time period',
+  views: 'Average number of views per post in the selected time period',
+  posts: 'Total number of posts published to your account',
+  shares: 'Number of times your content has been shared by other accounts'
 };
