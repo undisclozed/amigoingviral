@@ -1,6 +1,6 @@
 export type Interval = '5min' | 'hourly' | 'daily' | 'weekly' | 'monthly';
 export type PostMetric = 'views' | 'likes' | 'comments' | 'shares' | 'engagement' | 'posts';
-export type AccountMetric = 'followers' | 'growth' | 'reached' | 'engaged';
+export type AccountMetric = 'followers' | 'growth' | 'reached' | 'engaged' | 'engagement' | 'likes' | 'comments' | 'views' | 'posts';
 export type MetricType = PostMetric | AccountMetric;
 
 export interface ChartData {
@@ -27,4 +27,17 @@ export const metricLabels: Record<MetricType, string> = {
   reached: 'Reached',
   engaged: 'Engaged',
   posts: 'Posts'
+};
+
+export const metricTooltips: Record<MetricType, string> = {
+  followers: 'Total number of accounts following your profile',
+  growth: 'Overall account growth score based on followers, engagement, and reach',
+  reached: 'Number of unique accounts that have seen your content',
+  engaged: 'Number of unique accounts that interacted with your content',
+  engagement: 'Average percentage of viewers who engage with your content',
+  likes: 'Average number of likes received per post',
+  comments: 'Average number of comments received per post',
+  views: 'Average number of views per post',
+  posts: 'Total number of posts published',
+  shares: 'Number of times your content has been shared'
 };
