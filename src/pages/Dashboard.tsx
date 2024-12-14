@@ -83,58 +83,62 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {/* Engagement Metrics */}
-          <div className="mb-8">
-            <h2 className="text-xl sm:text-2xl font-semibold mb-4">Engagement Metrics</h2>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <MetricCard
-                title="Engagement Rate"
-                value="4.6%"
-                change={-1.2}
-                subValue="Avg. per post"
-                period="Last 30 days"
-                icon={<Heart className="h-4 w-4" />}
-              />
-              <MetricCard
-                title="Average Likes"
-                value="892"
-                change={5.8}
-                subValue="Per post"
-                period="Last 30 days"
-                icon={<Heart className="h-4 w-4" />}
-              />
-              <MetricCard
-                title="Average Comments"
-                value="45"
-                change={2.1}
-                subValue="Per post"
-                period="Last 30 days"
-                icon={<MessageSquare className="h-4 w-4" />}
-              />
-              <MetricCard
-                title="Average Views"
-                value="2.8K"
-                change={7.5}
-                subValue="Per post"
-                period="Last 30 days"
-                icon={<Eye className="h-4 w-4" />}
-              />
+          {/* Post Analytics Section */}
+          <div className="space-y-8">
+            <h2 className="text-xl sm:text-2xl font-semibold">Post Analytics</h2>
+            
+            {/* Engagement Metrics */}
+            <div>
+              <h3 className="text-lg font-semibold mb-4">Engagement Metrics</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <MetricCard
+                  title="Engagement Rate"
+                  value="4.6%"
+                  change={-1.2}
+                  subValue="Avg. per post"
+                  period="Last 30 days"
+                  icon={<Heart className="h-4 w-4" />}
+                />
+                <MetricCard
+                  title="Average Likes"
+                  value="892"
+                  change={5.8}
+                  subValue="Per post"
+                  period="Last 30 days"
+                  icon={<Heart className="h-4 w-4" />}
+                />
+                <MetricCard
+                  title="Average Comments"
+                  value="45"
+                  change={2.1}
+                  subValue="Per post"
+                  period="Last 30 days"
+                  icon={<MessageSquare className="h-4 w-4" />}
+                />
+                <MetricCard
+                  title="Average Views"
+                  value="2.8K"
+                  change={7.5}
+                  subValue="Per post"
+                  period="Last 30 days"
+                  icon={<Eye className="h-4 w-4" />}
+                />
+              </div>
             </div>
-          </div>
 
-          {/* Post Comparison Section */}
-          <div className="mb-8">
-            <h2 className="text-xl sm:text-2xl font-semibold mb-4">Post Analytics</h2>
-            <PostComparison />
-          </div>
-
-          {/* Charts Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="w-full">
-              <LineChart />
+            {/* Post Comparison */}
+            <div>
+              <PostComparison />
             </div>
-            <div className="w-full">
-              <BarChart />
+
+            {/* Charts Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+              <div className="w-full">
+                <LineChart />
+              </div>
+              <div className="w-full">
+                <BarChart />
+              </div>
             </div>
           </div>
         </main>
