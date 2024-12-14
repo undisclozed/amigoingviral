@@ -151,16 +151,23 @@ export const LineChart = ({
           </div>
         </div>
         
-        <div className="h-[400px]">
+        <div className="h-[400px] w-full">
           <ResponsiveContainer width="100%" height="100%">
-            <RechartsLineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+            <RechartsLineChart 
+              data={data} 
+              margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+            >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
                 dataKey="date"
                 interval="preserveStartEnd"
-                minTickGap={30}
+                tick={{ fontSize: 12 }}
+                padding={{ left: 10, right: 10 }}
               />
-              <YAxis />
+              <YAxis 
+                tick={{ fontSize: 12 }}
+                width={60}
+              />
               <Tooltip />
               <Line 
                 type="monotone" 
@@ -169,6 +176,7 @@ export const LineChart = ({
                 strokeWidth={2}
                 dot={{ fill: "#00F37F" }}
                 name={currentCreator || metricLabels[currentMetric]}
+                isAnimationActive={false}
               />
               {showComparison && comparisonData.length > 0 && (
                 <Line 
@@ -179,6 +187,7 @@ export const LineChart = ({
                   strokeWidth={2}
                   dot={{ fill: "#FF6B6B" }}
                   name={comparisonCreator || "Comparison"}
+                  isAnimationActive={false}
                 />
               )}
             </RechartsLineChart>
