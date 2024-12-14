@@ -115,11 +115,11 @@ export const LineChart = ({ currentCreator = "@janedoe", comparisonCreator = "@c
   };
 
   return (
-    <Card className="p-4 h-[500px] animate-fade-in">
+    <Card className="p-4 h-[500px] w-full overflow-hidden">
       <div className="flex flex-col gap-4 mb-6">
-        <div className="flex justify-between items-center flex-wrap gap-2">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2">
           <h3 className="text-lg font-semibold">Post Performance Comparison</h3>
-          <div className="flex gap-2 flex-wrap">
+          <div className="flex flex-wrap gap-2">
             <Button 
               variant={interval === '5min' ? "default" : "outline"}
               size="sm"
@@ -150,7 +150,7 @@ export const LineChart = ({ currentCreator = "@janedoe", comparisonCreator = "@c
             </Button>
           </div>
         </div>
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex flex-wrap gap-2">
           {(Object.keys(metricLabels) as Metric[]).map((m) => (
             <Toggle
               key={m}

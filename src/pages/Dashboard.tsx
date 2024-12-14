@@ -9,10 +9,10 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-[#FAFAFA] flex">
       <Sidebar />
-      <div className="flex-1 ml-16 pb-8">
+      <div className="flex-1 ml-0 sm:ml-16 pb-8 w-full overflow-x-hidden">
         {/* Header */}
         <header className="border-b bg-white mb-8">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+          <div className="mx-auto px-4 py-4">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-xl">Dashboard</span>
@@ -22,11 +22,11 @@ const Dashboard = () => {
         </header>
 
         {/* Main Content */}
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+        <main className="px-4">
           {/* Overview Section */}
           <div className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">Overview</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <h2 className="text-xl sm:text-2xl font-semibold mb-4">Overview</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <MetricCard
                 title="Total Followers"
                 value="10,234"
@@ -64,14 +64,14 @@ const Dashboard = () => {
 
           {/* Post Comparison Section */}
           <div className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">Post Analytics</h2>
+            <h2 className="text-xl sm:text-2xl font-semibold mb-4">Post Analytics</h2>
             <PostComparison />
           </div>
 
           {/* Engagement Metrics */}
           <div className="mb-8">
-            <h2 className="text-2xl font-semibold mb-4">Engagement Metrics</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <h2 className="text-xl sm:text-2xl font-semibold mb-4">Engagement Metrics</h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <MetricCard
                 title="Engagement Rate"
                 value="4.6%"
@@ -108,11 +108,11 @@ const Dashboard = () => {
           </div>
 
           {/* Charts Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-            <div className="w-full h-[500px]">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <div className="w-full">
               <LineChart />
             </div>
-            <div className="w-full h-[500px]">
+            <div className="w-full">
               <BarChart />
             </div>
           </div>

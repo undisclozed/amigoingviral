@@ -68,10 +68,10 @@ export const BarChart = () => {
   };
 
   return (
-    <Card className="p-6 h-[500px]">
-      <div className="flex justify-between items-center mb-6 flex-wrap gap-2">
+    <Card className="p-6 h-[500px] w-full overflow-hidden">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 mb-6">
         <h3 className="text-lg font-semibold">Daily Engagement Rate (%)</h3>
-        <div className="flex gap-2 flex-wrap">
+        <div className="flex flex-wrap gap-2">
           <Button 
             variant={interval === '5min' ? "default" : "outline"}
             size="sm"
