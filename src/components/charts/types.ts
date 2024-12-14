@@ -1,5 +1,5 @@
 export type Interval = '5min' | 'hourly' | 'daily' | 'weekly' | 'monthly';
-export type PostMetric = 'views' | 'likes' | 'comments' | 'shares' | 'engagement';
+export type PostMetric = 'views' | 'likes' | 'comments' | 'shares' | 'engagement' | 'posts';
 export type AccountMetric = 'followers' | 'growth' | 'reached' | 'engaged';
 export type MetricType = PostMetric | AccountMetric;
 
@@ -25,5 +25,6 @@ export const metricLabels: Record<MetricType, string> = {
   followers: 'Followers',
   growth: 'Growth',
   reached: 'Reached',
-  engaged: 'Engaged'
+  engaged: 'Engaged',
+  posts: 'Posts'
 };

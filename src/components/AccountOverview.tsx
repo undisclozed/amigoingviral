@@ -1,4 +1,4 @@
-import { Users, TrendingUp, Target, Zap } from "lucide-react";
+import { Users, TrendingUp, Target, Zap, MessageCircle, Eye, ThumbsUp, BarChart2 } from "lucide-react";
 import { MetricCard } from "@/components/MetricCard";
 import { MetricChartDialog } from "@/components/MetricChartDialog";
 
@@ -26,20 +26,20 @@ export const AccountOverview = () => {
           />
         </div>
         
-        <div onClick={() => document.getElementById('growth-dialog')?.click()}>
+        <div onClick={() => document.getElementById('posts-dialog')?.click()}>
           <MetricCard
-            title="Account Growth Score"
-            value="78"
-            change={12}
-            subValue="Strong growth trajectory"
+            title="Total Posts"
+            value="342"
+            change={8.3}
+            subValue="+12 posts this month"
             period="Last 30 days"
-            icon={<TrendingUp className="h-4 w-4" />}
+            icon={<BarChart2 className="h-4 w-4" />}
           />
           <MetricChartDialog
-            title="Account Growth Score"
-            metric="growth"
-            currentValue="78"
-            change={12}
+            title="Total Posts"
+            metric="posts"
+            currentValue="342"
+            change={8.3}
           />
         </div>
         
@@ -74,6 +74,74 @@ export const AccountOverview = () => {
             metric="engaged"
             currentValue="12.4K"
             change={3.2}
+          />
+        </div>
+
+        <div onClick={() => document.getElementById('engagement-rate-dialog')?.click()}>
+          <MetricCard
+            title="Avg Engagement Rate"
+            value="4.8%"
+            change={0.5}
+            subValue="Higher than last period"
+            period="Last 30 days"
+            icon={<TrendingUp className="h-4 w-4" />}
+          />
+          <MetricChartDialog
+            title="Average Engagement Rate"
+            metric="engagement"
+            currentValue="4.8%"
+            change={0.5}
+          />
+        </div>
+
+        <div onClick={() => document.getElementById('likes-dialog')?.click()}>
+          <MetricCard
+            title="Avg Likes per Post"
+            value="856"
+            change={-1.2}
+            subValue="-24 from last period"
+            period="Last 30 days"
+            icon={<ThumbsUp className="h-4 w-4" />}
+          />
+          <MetricChartDialog
+            title="Average Likes per Post"
+            metric="likes"
+            currentValue="856"
+            change={-1.2}
+          />
+        </div>
+
+        <div onClick={() => document.getElementById('comments-dialog')?.click()}>
+          <MetricCard
+            title="Avg Comments per Post"
+            value="42"
+            change={2.8}
+            subValue="+5 from last period"
+            period="Last 30 days"
+            icon={<MessageCircle className="h-4 w-4" />}
+          />
+          <MetricChartDialog
+            title="Average Comments per Post"
+            metric="comments"
+            currentValue="42"
+            change={2.8}
+          />
+        </div>
+
+        <div onClick={() => document.getElementById('views-dialog')?.click()}>
+          <MetricCard
+            title="Avg Views per Post"
+            value="2.3K"
+            change={4.5}
+            subValue="+245 from last period"
+            period="Last 30 days"
+            icon={<Eye className="h-4 w-4" />}
+          />
+          <MetricChartDialog
+            title="Average Views per Post"
+            metric="views"
+            currentValue="2.3K"
+            change={4.5}
           />
         </div>
       </div>
