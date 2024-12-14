@@ -8,10 +8,11 @@ import {
 import { Button } from "@/components/ui/button";
 import { LineChart } from "@/components/LineChart";
 import { useState } from "react";
+import type { MetricType } from "./charts/types";
 
 interface MetricChartDialogProps {
   title: string;
-  metric: 'followers' | 'growth' | 'reached' | 'engaged';
+  metric: MetricType;
   currentValue: string | number;
   change?: number;
 }
