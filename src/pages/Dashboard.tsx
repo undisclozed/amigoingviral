@@ -1,4 +1,4 @@
-import { Users, Heart, MessageSquare, Eye, Target, Zap, Info } from "lucide-react";
+import { Users, Heart, MessageSquare, Eye, Target, Zap, Info, TrendingUp } from "lucide-react";
 import { MetricCard } from "@/components/MetricCard";
 import { LineChart } from "@/components/LineChart";
 import { BarChart } from "@/components/BarChart";
