@@ -1,6 +1,7 @@
-import { BarChart, LineChart } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { Users, Heart, Image as ImageIcon, TrendingUp } from "lucide-react";
+import { MetricCard } from "@/components/MetricCard";
+import { LineChart } from "@/components/LineChart";
+import { BarChart } from "@/components/BarChart";
 import Sidebar from "@/components/ui/sidebar";
 
 const Dashboard = () => {
@@ -15,9 +16,6 @@ const Dashboard = () => {
               <div className="flex items-center gap-2">
                 <span className="font-semibold text-xl">Dashboard</span>
               </div>
-              <div className="flex items-center gap-4">
-                <Button variant="outline">@username</Button>
-              </div>
             </div>
           </div>
         </header>
@@ -28,57 +26,37 @@ const Dashboard = () => {
           <div className="mb-8">
             <h2 className="text-2xl font-semibold mb-4">Overview</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card className="p-6 animate-fade-in">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-medium text-gray-500">Followers</h3>
-                  <span className="text-xs text-green-500">+2.5%</span>
-                </div>
-                <p className="text-2xl font-semibold">10,234</p>
-              </Card>
-              <Card className="p-6 animate-fade-in [animation-delay:100ms]">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-medium text-gray-500">Engagement Rate</h3>
-                  <span className="text-xs text-red-500">-1.2%</span>
-                </div>
-                <p className="text-2xl font-semibold">4.6%</p>
-              </Card>
-              <Card className="p-6 animate-fade-in [animation-delay:200ms]">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-medium text-gray-500">Total Posts</h3>
-                  <span className="text-xs text-green-500">+12</span>
-                </div>
-                <p className="text-2xl font-semibold">486</p>
-              </Card>
-              <Card className="p-6 animate-fade-in [animation-delay:300ms]">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-sm font-medium text-gray-500">Avg. Likes</h3>
-                  <span className="text-xs text-green-500">+5.8%</span>
-                </div>
-                <p className="text-2xl font-semibold">892</p>
-              </Card>
+              <MetricCard
+                title="Followers"
+                value="10,234"
+                change={2.5}
+                icon={<Users size={24} />}
+              />
+              <MetricCard
+                title="Engagement Rate"
+                value="4.6%"
+                change={-1.2}
+                icon={<Heart size={24} />}
+              />
+              <MetricCard
+                title="Total Posts"
+                value="486"
+                change={12}
+                icon={<ImageIcon size={24} />}
+              />
+              <MetricCard
+                title="Profile Views"
+                value="2,892"
+                change={5.8}
+                icon={<TrendingUp size={24} />}
+              />
             </div>
           </div>
 
           {/* Charts Section */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <Card className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="font-semibold">Follower Growth</h3>
-                <LineChart className="text-gray-400" size={20} />
-              </div>
-              <div className="h-[300px] flex items-center justify-center text-gray-500">
-                Chart will be implemented here
-              </div>
-            </Card>
-            <Card className="p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h3 className="font-semibold">Engagement Rate</h3>
-                <BarChart className="text-gray-400" size={20} />
-              </div>
-              <div className="h-[300px] flex items-center justify-center text-gray-500">
-                Chart will be implemented here
-              </div>
-            </Card>
+            <LineChart />
+            <BarChart />
           </div>
         </main>
       </div>
