@@ -46,23 +46,27 @@ export const GrowthAnalytics = () => {
           </span>
         </div>
 
-        <div className="h-[300px] mb-6">
-          <LineChart 
-            metric="growth"
-            interval="weekly"
-          />
-        </div>
-
-        <div className="space-y-4">
-          <h4 className="font-semibold">Tips to Improve Your Score</h4>
-          <ul className="space-y-2">
-            {growthTips.map((tip, index) => (
-              <li key={index} className="flex items-center gap-2 text-sm text-gray-600">
-                <div className="h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0" />
-                {tip}
-              </li>
-            ))}
-          </ul>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <div className="md:col-span-2">
+            <div className="h-[300px]">
+              <LineChart 
+                metric="growth"
+                interval="weekly"
+              />
+            </div>
+          </div>
+          
+          <div className="space-y-4 bg-gray-50 p-4 rounded-lg">
+            <h4 className="font-semibold">Tips to Improve Your Score</h4>
+            <ul className="space-y-3">
+              {growthTips.map((tip, index) => (
+                <li key={index} className="flex items-start gap-2 text-sm text-gray-600">
+                  <div className="h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0 mt-1.5" />
+                  {tip}
+                </li>
+              ))}
+            </ul>
+          </div>
         </div>
       </Card>
     </div>
