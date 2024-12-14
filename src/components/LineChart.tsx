@@ -2,6 +2,7 @@ import { Card } from "@/components/ui/card";
 import { LineChart as RechartsLineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useState, useEffect } from 'react';
 import { Button } from "./ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 type Interval = 'daily' | 'weekly' | 'monthly';
 type PostMetric = 'views' | 'likes' | 'comments' | 'shares' | 'engagement';
@@ -110,9 +111,8 @@ export const LineChart = ({
     }
   }, [currentInterval, currentMetric, showComparison]);
 
-  const handleTimeframeChange = (newInterval: Interval) => (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setCurrentInterval(newInterval);
+  const handleTimeframeChange = (value: string) => {
+    setCurrentInterval(value as Interval);
   };
 
   const handleMetricChange = (newMetric: MetricType) => (e: React.MouseEvent) => {
@@ -123,29 +123,19 @@ export const LineChart = ({
   return (
     <Card className="p-4 h-full w-full">
       <div className="space-y-4">
-        <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
-          <div className="flex gap-2">
-            <Button 
-              variant={currentInterval === 'daily' ? "default" : "outline"}
-              onClick={handleTimeframeChange('daily')}
-              size="sm"
-            >
-              Daily
-            </Button>
-            <Button 
-              variant={currentInterval === 'weekly' ? "default" : "outline"}
-              onClick={handleTimeframeChange('weekly')}
-              size="sm"
-            >
-              Weekly
-            </Button>
-            <Button 
-              variant={currentInterval === 'monthly' ? "default" : "outline"}
-              onClick={handleTimeframeChange('monthly')}
-              size="sm"
-            >
-              Monthly
-            </Button>
+        <div className="flex flex-col gap-4">
+          <div className="flex justify-between items-center">
+            <h3 className="text-lg font-semibold">Performance Metrics</h3>
+            <Select defaultValue={currentInterval} onValueChange={handleTimeframeChange}>
+              <SelectTrigger className="w-[120px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="daily">Daily</SelectItem>
+                <SelectItem value="weekly">Weekly</SelectItem>
+                <SelectItem value="monthly">Monthly</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex gap-2 overflow-x-auto">
             {Object.entries(metricLabels).map(([key, label]) => (
