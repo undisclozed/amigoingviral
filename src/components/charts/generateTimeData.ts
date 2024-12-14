@@ -61,7 +61,7 @@ export const generateTimeData = (interval: Interval, metric: MetricType, isCompa
       for (let i = 7; i >= 0; i--) {
         const time = new Date(now.getTime() - i * 7 * 24 * 60 * 60000);
         data.push({
-          date: `Week ${8-i}`,
+          date: `Week ${7-i}`,
           value: getMetricValue(4000)
         });
       }
