@@ -12,7 +12,7 @@ interface MetricCardProps {
 
 export const MetricCard = ({ title, value, change, period, subValue, icon }: MetricCardProps) => {
   return (
-    <Card className="p-6 hover:shadow-lg transition-shadow animate-fade-in">
+    <Card className="p-6 hover:shadow-lg transition-shadow animate-fade-in cursor-pointer">
       <div className="flex items-center justify-between">
         <div className="text-gray-600">{icon}</div>
         {change !== undefined && (

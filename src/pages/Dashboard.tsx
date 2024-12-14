@@ -1,10 +1,11 @@
-import { Users, Heart, MessageSquare, Eye, Target, Zap, Info, TrendingUp } from "lucide-react";
+import { Users, Heart, MessageSquare, Eye } from "lucide-react";
 import { MetricCard } from "@/components/MetricCard";
 import { LineChart } from "@/components/LineChart";
 import { BarChart } from "@/components/BarChart";
 import { PostComparison } from "@/components/PostComparison";
 import { ViralityScore } from "@/components/ViralityScore";
 import Sidebar from "@/components/ui/sidebar";
+import { AccountOverview } from "@/components/AccountOverview";
 import {
   Dialog,
   DialogContent,
@@ -112,58 +113,7 @@ const Dashboard = () => {
         {/* Main Content */}
         <main className="px-4 pb-32">
           {/* Account Overview Section */}
-          <div className="mb-8">
-            <div className="flex items-center gap-2 mb-4">
-              <h2 className="text-xl sm:text-2xl font-semibold">Account Overview</h2>
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger>
-                    <Info className="h-4 w-4 text-gray-400" />
-                  </TooltipTrigger>
-                  <TooltipContent>
-                    <p className="max-w-xs">
-                      Account Growth Score is calculated based on follower growth, engagement rate,
-                      and content consistency over the last 30 days.
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <MetricCard
-                title="Total Followers"
-                value="10,234"
-                change={2.5}
-                subValue="Growth: +156 this week"
-                period="Last 7 days"
-                icon={<Users className="h-4 w-4" />}
-              />
-              <MetricCard
-                title="Account Growth Score"
-                value="78"
-                change={12}
-                subValue="Strong growth trajectory"
-                period="Last 30 days"
-                icon={<TrendingUp className="h-4 w-4" />}
-              />
-              <MetricCard
-                title="Accounts Reached"
-                value="45.2K"
-                change={5.8}
-                subValue="+12.3K from last period"
-                period="Last 30 days"
-                icon={<Target className="h-4 w-4" />}
-              />
-              <MetricCard
-                title="Accounts Engaged"
-                value="12.4K"
-                change={3.2}
-                subValue="+2.1K from last period"
-                period="Last 30 days"
-                icon={<Zap className="h-4 w-4" />}
-              />
-            </div>
-          </div>
+          <AccountOverview />
 
           {/* Post Analytics Section */}
           <div className="space-y-8">
