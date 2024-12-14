@@ -1,6 +1,7 @@
 import { AccountOverview } from "@/components/AccountOverview";
 import { ViralityScore } from "@/components/ViralityScore";
 import { GrowthAnalytics } from "@/components/GrowthAnalytics";
+import { WordCloudAnalysis } from "@/components/WordCloudAnalysis";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { CalendarDays } from "lucide-react";
@@ -85,6 +86,7 @@ const Profile = () => {
 
         <AccountOverview />
         <GrowthAnalytics />
+        <WordCloudAnalysis />
         <ViralityScore score={85} avgScore={75} />
       </div>
     </div>
