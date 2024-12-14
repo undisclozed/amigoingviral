@@ -115,11 +115,11 @@ export const LineChart = ({ currentCreator = "@janedoe", comparisonCreator = "@c
   };
 
   return (
-    <Card className="p-6 h-[400px] animate-fade-in">
-      <div className="flex flex-col gap-4 mb-4">
-        <div className="flex justify-between items-center">
+    <Card className="p-4 h-[500px] animate-fade-in">
+      <div className="flex flex-col gap-4 mb-6">
+        <div className="flex justify-between items-center flex-wrap gap-2">
           <h3 className="text-lg font-semibold">Post Performance Comparison</h3>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
             <Button 
               variant={interval === '5min' ? "default" : "outline"}
               size="sm"
@@ -150,7 +150,7 @@ export const LineChart = ({ currentCreator = "@janedoe", comparisonCreator = "@c
             </Button>
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           {(Object.keys(metricLabels) as Metric[]).map((m) => (
             <Toggle
               key={m}
@@ -163,35 +163,37 @@ export const LineChart = ({ currentCreator = "@janedoe", comparisonCreator = "@c
           ))}
         </div>
       </div>
-      <ResponsiveContainer width="100%" height="100%">
-        <RechartsLineChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis 
-            dataKey="date"
-            interval="preserveStartEnd"
-            minTickGap={30}
-          />
-          <YAxis />
-          <Tooltip />
-          <Legend />
-          <Line 
-            type="monotone" 
-            dataKey="currentPost" 
-            stroke="#6E59A5" 
-            strokeWidth={2}
-            dot={{ fill: "#6E59A5" }}
-            name={`${metricLabels[metric]} (${currentCreator})`}
-          />
-          <Line 
-            type="monotone" 
-            dataKey="comparisonPost" 
-            stroke="#FF6B6B" 
-            strokeWidth={2}
-            dot={{ fill: "#FF6B6B" }}
-            name={`${metricLabels[metric]} (${comparisonCreator})`}
-          />
-        </RechartsLineChart>
-      </ResponsiveContainer>
+      <div className="h-[350px] w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <RechartsLineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis 
+              dataKey="date"
+              interval="preserveStartEnd"
+              minTickGap={30}
+            />
+            <YAxis />
+            <Tooltip />
+            <Legend />
+            <Line 
+              type="monotone" 
+              dataKey="currentPost" 
+              stroke="#6E59A5" 
+              strokeWidth={2}
+              dot={{ fill: "#6E59A5" }}
+              name={`${metricLabels[metric]} (${currentCreator})`}
+            />
+            <Line 
+              type="monotone" 
+              dataKey="comparisonPost" 
+              stroke="#FF6B6B" 
+              strokeWidth={2}
+              dot={{ fill: "#FF6B6B" }}
+              name={`${metricLabels[metric]} (${comparisonCreator})`}
+            />
+          </RechartsLineChart>
+        </ResponsiveContainer>
+      </div>
     </Card>
   );
 };

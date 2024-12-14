@@ -68,10 +68,10 @@ export const BarChart = () => {
   };
 
   return (
-    <Card className="p-6 h-[400px] animate-fade-in">
-      <div className="flex justify-between items-center mb-4">
+    <Card className="p-4 h-[500px] animate-fade-in">
+      <div className="flex justify-between items-center mb-6 flex-wrap gap-2">
         <h3 className="text-lg font-semibold">Daily Engagement Rate (%)</h3>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
           <Button 
             variant={interval === '5min' ? "default" : "outline"}
             size="sm"
@@ -102,19 +102,21 @@ export const BarChart = () => {
           </Button>
         </div>
       </div>
-      <ResponsiveContainer width="100%" height="100%">
-        <RechartsBarChart data={data}>
-          <CartesianGrid strokeDasharray="3 3" />
-          <XAxis 
-            dataKey="time"
-            interval="preserveStartEnd"
-            minTickGap={30}
-          />
-          <YAxis />
-          <Tooltip />
-          <Bar dataKey="engagement" fill="#E5DEFF" />
-        </RechartsBarChart>
-      </ResponsiveContainer>
+      <div className="h-[350px] w-full">
+        <ResponsiveContainer width="100%" height="100%">
+          <RechartsBarChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+            <CartesianGrid strokeDasharray="3 3" />
+            <XAxis 
+              dataKey="time"
+              interval="preserveStartEnd"
+              minTickGap={30}
+            />
+            <YAxis />
+            <Tooltip />
+            <Bar dataKey="engagement" fill="#E5DEFF" />
+          </RechartsBarChart>
+        </ResponsiveContainer>
+      </div>
     </Card>
   );
 };

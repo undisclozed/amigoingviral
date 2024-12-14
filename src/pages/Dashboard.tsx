@@ -9,9 +9,9 @@ const Dashboard = () => {
   return (
     <div className="min-h-screen bg-[#FAFAFA] flex">
       <Sidebar />
-      <div className="flex-1 ml-16">
+      <div className="flex-1 ml-16 pb-8">
         {/* Header */}
-        <header className="border-b bg-white">
+        <header className="border-b bg-white mb-8">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
@@ -22,7 +22,7 @@ const Dashboard = () => {
         </header>
 
         {/* Main Content */}
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Overview Section */}
           <div className="mb-8">
             <h2 className="text-2xl font-semibold mb-4">Overview</h2>
@@ -33,7 +33,7 @@ const Dashboard = () => {
                 change={2.5}
                 subValue="Growth: +156 this week"
                 period="Last 7 days"
-                icon={<Users size={24} />}
+                icon={<Users className="h-4 w-4" />}
               />
               <MetricCard
                 title="Total Posts"
@@ -41,7 +41,7 @@ const Dashboard = () => {
                 change={12}
                 subValue="New: 8 this week"
                 period="Last 7 days"
-                icon={<ImageIcon size={24} />}
+                icon={<ImageIcon className="h-4 w-4" />}
               />
               <MetricCard
                 title="Accounts Reached"
@@ -49,7 +49,7 @@ const Dashboard = () => {
                 change={5.8}
                 subValue="+12.3K from last period"
                 period="Last 30 days"
-                icon={<Target size={24} />}
+                icon={<Target className="h-4 w-4" />}
               />
               <MetricCard
                 title="Accounts Engaged"
@@ -57,7 +57,7 @@ const Dashboard = () => {
                 change={3.2}
                 subValue="+2.1K from last period"
                 period="Last 30 days"
-                icon={<Zap size={24} />}
+                icon={<Zap className="h-4 w-4" />}
               />
             </div>
           </div>
@@ -78,7 +78,7 @@ const Dashboard = () => {
                 change={-1.2}
                 subValue="Avg. per post"
                 period="Last 30 days"
-                icon={<Heart size={24} />}
+                icon={<Heart className="h-4 w-4" />}
               />
               <MetricCard
                 title="Average Likes"
@@ -86,7 +86,7 @@ const Dashboard = () => {
                 change={5.8}
                 subValue="Per post"
                 period="Last 30 days"
-                icon={<Heart size={24} />}
+                icon={<Heart className="h-4 w-4" />}
               />
               <MetricCard
                 title="Average Comments"
@@ -94,7 +94,7 @@ const Dashboard = () => {
                 change={2.1}
                 subValue="Per post"
                 period="Last 30 days"
-                icon={<MessageSquare size={24} />}
+                icon={<MessageSquare className="h-4 w-4" />}
               />
               <MetricCard
                 title="Average Views"
@@ -102,7 +102,7 @@ const Dashboard = () => {
                 change={7.5}
                 subValue="Per post"
                 period="Last 30 days"
-                icon={<Eye size={24} />}
+                icon={<Eye className="h-4 w-4" />}
               />
             </div>
           </div>
