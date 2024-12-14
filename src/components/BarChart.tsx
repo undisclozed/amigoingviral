@@ -3,38 +3,66 @@ import { BarChart as RechartsBarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 
-const generateTimeData = (interval: '5min' | 'hourly') => {
+type Interval = '5min' | 'hourly' | 'daily' | 'weekly';
+
+const generateTimeData = (interval: Interval) => {
   const now = new Date();
   const data = [];
   
-  if (interval === '5min') {
-    // Generate data for last 30 minutes in 5-minute intervals
-    for (let i = 6; i >= 0; i--) {
-      const time = new Date(now.getTime() - i * 5 * 60000);
-      data.push({
-        time: time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        engagement: Number((2 + Math.random() * 3).toFixed(1))
-      });
-    }
-  } else {
-    // Generate hourly data for last 6 hours
-    for (let i = 6; i >= 0; i--) {
-      const time = new Date(now.getTime() - i * 60 * 60000);
-      data.push({
-        time: time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-        engagement: Number((2 + Math.random() * 3).toFixed(1))
-      });
-    }
+  switch (interval) {
+    case '5min':
+      // Generate data for last 30 minutes in 5-minute intervals
+      for (let i = 6; i >= 0; i--) {
+        const time = new Date(now.getTime() - i * 5 * 60000);
+        data.push({
+          time: time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          engagement: Number((2 + Math.random() * 3).toFixed(1))
+        });
+      }
+      break;
+      
+    case 'hourly':
+      // Generate hourly data for last 6 hours
+      for (let i = 6; i >= 0; i--) {
+        const time = new Date(now.getTime() - i * 60 * 60000);
+        data.push({
+          time: time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
+          engagement: Number((2 + Math.random() * 3).toFixed(1))
+        });
+      }
+      break;
+      
+    case 'daily':
+      // Generate daily data for last 7 days
+      for (let i = 6; i >= 0; i--) {
+        const time = new Date(now.getTime() - i * 24 * 60 * 60000);
+        data.push({
+          time: time.toLocaleDateString([], { weekday: 'short' }),
+          engagement: Number((2 + Math.random() * 3).toFixed(1))
+        });
+      }
+      break;
+      
+    case 'weekly':
+      // Generate weekly data for last 8 weeks
+      for (let i = 7; i >= 0; i--) {
+        const time = new Date(now.getTime() - i * 7 * 24 * 60 * 60000);
+        data.push({
+          time: `Week ${i + 1}`,
+          engagement: Number((2 + Math.random() * 3).toFixed(1))
+        });
+      }
+      break;
   }
   
   return data;
 };
 
 export const BarChart = () => {
-  const [interval, setInterval] = useState<'5min' | 'hourly'>('5min');
+  const [interval, setInterval] = useState<Interval>('5min');
   const [data, setData] = useState(() => generateTimeData('5min'));
 
-  const handleIntervalChange = (newInterval: '5min' | 'hourly') => {
+  const handleIntervalChange = (newInterval: Interval) => {
     setInterval(newInterval);
     setData(generateTimeData(newInterval));
   };
@@ -57,6 +85,20 @@ export const BarChart = () => {
             onClick={() => handleIntervalChange('hourly')}
           >
             Hourly
+          </Button>
+          <Button 
+            variant={interval === 'daily' ? "default" : "outline"}
+            size="sm"
+            onClick={() => handleIntervalChange('daily')}
+          >
+            Daily
+          </Button>
+          <Button 
+            variant={interval === 'weekly' ? "default" : "outline"}
+            size="sm"
+            onClick={() => handleIntervalChange('weekly')}
+          >
+            Weekly
           </Button>
         </div>
       </div>
