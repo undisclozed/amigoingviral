@@ -2,6 +2,7 @@ import { Users, Heart, Image as ImageIcon, TrendingUp, MessageSquare, Eye, Targe
 import { MetricCard } from "@/components/MetricCard";
 import { LineChart } from "@/components/LineChart";
 import { BarChart } from "@/components/BarChart";
+import { PostComparison } from "@/components/PostComparison";
 import Sidebar from "@/components/ui/sidebar";
 import {
   Tooltip,
@@ -147,6 +148,11 @@ const Dashboard = () => {
                   icon={<Eye className="h-4 w-4" />}
                 />
               </div>
+            </div>
+
+            {/* Post Performance Comparison */}
+            <div>
+              <PostComparison />
             </div>
 
             {/* Charts Section */}
