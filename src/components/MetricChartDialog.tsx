@@ -20,6 +20,11 @@ export const MetricChartDialog = ({ title, metric, currentValue, change }: Metri
   const [isOpen, setIsOpen] = useState(false);
   const [timeframe, setTimeframe] = useState<'daily' | 'weekly' | 'monthly'>('daily');
 
+  const handleTimeframeChange = (newTimeframe: 'daily' | 'weekly' | 'monthly') => (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setTimeframe(newTimeframe);
+  };
+
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger className="hidden" id={`${metric}-dialog`} />
@@ -31,19 +36,19 @@ export const MetricChartDialog = ({ title, metric, currentValue, change }: Metri
           <div className="flex gap-2">
             <Button 
               variant={timeframe === 'daily' ? "default" : "outline"}
-              onClick={() => setTimeframe('daily')}
+              onClick={handleTimeframeChange('daily')}
             >
               Daily
             </Button>
             <Button 
               variant={timeframe === 'weekly' ? "default" : "outline"}
-              onClick={() => setTimeframe('weekly')}
+              onClick={handleTimeframeChange('weekly')}
             >
               Weekly
             </Button>
             <Button 
               variant={timeframe === 'monthly' ? "default" : "outline"}
-              onClick={() => setTimeframe('monthly')}
+              onClick={handleTimeframeChange('monthly')}
             >
               Monthly
             </Button>
