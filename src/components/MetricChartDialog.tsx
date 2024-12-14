@@ -23,7 +23,7 @@ export const MetricChartDialog = ({ title, metric, currentValue, change }: Metri
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger className="hidden" id={`${metric}-dialog`} />
-      <DialogContent className="max-w-3xl">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>{title} Over Time</DialogTitle>
         </DialogHeader>
@@ -44,7 +44,6 @@ export const MetricChartDialog = ({ title, metric, currentValue, change }: Metri
           </div>
           <div className="h-[400px]">
             <LineChart 
-              currentCreator="@janedoe"
               metric={metric}
               interval={timeframe}
             />
