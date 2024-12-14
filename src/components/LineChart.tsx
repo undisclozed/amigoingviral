@@ -1,24 +1,28 @@
 import { Card } from "@/components/ui/card";
 import { LineChart as RechartsLineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useState, useEffect } from 'react';
+import { Button } from "./ui/button";
 
 type Interval = 'daily' | 'weekly' | 'monthly';
-type Metric = 'followers' | 'growth' | 'reached' | 'engaged';
+type PostMetric = 'views' | 'likes' | 'comments' | 'shares' | 'engagement';
 
-const generateTimeData = (interval: Interval, metric: Metric) => {
+const generateTimeData = (interval: Interval, metric: PostMetric, isComparison: boolean = false) => {
   const now = new Date();
   const data = [];
   
   const getMetricValue = (base: number) => {
+    const multiplier = isComparison ? 0.8 : 1; // Comparison data slightly lower for demo
     switch(metric) {
-      case 'followers':
-        return Math.floor(base + Math.random() * 1000);
-      case 'growth':
-        return Math.floor(50 + Math.random() * 50);
-      case 'reached':
-        return Math.floor(base * 1.5 + Math.random() * 5000);
-      case 'engaged':
-        return Math.floor(base * 0.3 + Math.random() * 1000);
+      case 'views':
+        return Math.floor((base + Math.random() * 1000) * multiplier);
+      case 'likes':
+        return Math.floor((base * 0.1 + Math.random() * 100) * multiplier);
+      case 'comments':
+        return Math.floor((base * 0.01 + Math.random() * 50) * multiplier);
+      case 'shares':
+        return Math.floor((base * 0.05 + Math.random() * 20) * multiplier);
+      case 'engagement':
+        return Math.floor((base * 0.15 + Math.random() * 5) * multiplier);
       default:
         return 0;
     }
@@ -59,51 +63,127 @@ const generateTimeData = (interval: Interval, metric: Metric) => {
   return data;
 };
 
-const metricLabels: Record<Metric, string> = {
-  followers: 'Followers',
-  growth: 'Growth Score',
-  reached: 'Accounts Reached',
-  engaged: 'Accounts Engaged'
+const metricLabels: Record<PostMetric, string> = {
+  views: 'Views',
+  likes: 'Likes',
+  comments: 'Comments',
+  shares: 'Shares',
+  engagement: 'Engagement Rate'
 };
 
 interface LineChartProps {
-  metric?: Metric;
+  metric?: PostMetric;
   interval?: Interval;
+  showComparison?: boolean;
+  currentCreator?: string;
+  comparisonCreator?: string;
 }
 
 export const LineChart = ({ 
-  metric = 'followers',
-  interval = 'daily'
+  metric = 'views',
+  interval = 'daily',
+  showComparison = false,
+  currentCreator,
+  comparisonCreator
 }: LineChartProps) => {
+  const [currentInterval, setCurrentInterval] = useState<Interval>(interval);
+  const [currentMetric, setCurrentMetric] = useState<PostMetric>(metric);
   const [data, setData] = useState(() => generateTimeData(interval, metric));
+  const [comparisonData, setComparisonData] = useState(() => 
+    showComparison ? generateTimeData(interval, metric, true) : []
+  );
 
   useEffect(() => {
-    setData(generateTimeData(interval, metric));
-  }, [interval, metric]);
+    setData(generateTimeData(currentInterval, currentMetric));
+    if (showComparison) {
+      setComparisonData(generateTimeData(currentInterval, currentMetric, true));
+    }
+  }, [currentInterval, currentMetric, showComparison]);
+
+  const handleTimeframeChange = (newInterval: Interval) => (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentInterval(newInterval);
+  };
+
+  const handleMetricChange = (newMetric: PostMetric) => (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setCurrentMetric(newMetric);
+  };
 
   return (
     <Card className="p-4 h-full w-full">
-      <div className="h-full w-full">
-        <ResponsiveContainer width="100%" height="100%">
-          <RechartsLineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
-            <CartesianGrid strokeDasharray="3 3" />
-            <XAxis 
-              dataKey="date"
-              interval="preserveStartEnd"
-              minTickGap={30}
-            />
-            <YAxis />
-            <Tooltip />
-            <Line 
-              type="monotone" 
-              dataKey="value" 
-              stroke="#00F37F" 
-              strokeWidth={2}
-              dot={{ fill: "#00F37F" }}
-              name={metricLabels[metric]}
-            />
-          </RechartsLineChart>
-        </ResponsiveContainer>
+      <div className="space-y-4">
+        <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
+          <div className="flex gap-2">
+            <Button 
+              variant={currentInterval === 'daily' ? "default" : "outline"}
+              onClick={handleTimeframeChange('daily')}
+              size="sm"
+            >
+              Daily
+            </Button>
+            <Button 
+              variant={currentInterval === 'weekly' ? "default" : "outline"}
+              onClick={handleTimeframeChange('weekly')}
+              size="sm"
+            >
+              Weekly
+            </Button>
+            <Button 
+              variant={currentInterval === 'monthly' ? "default" : "outline"}
+              onClick={handleTimeframeChange('monthly')}
+              size="sm"
+            >
+              Monthly
+            </Button>
+          </div>
+          <div className="flex gap-2 overflow-x-auto">
+            {Object.entries(metricLabels).map(([key, label]) => (
+              <Button
+                key={key}
+                variant={currentMetric === key ? "default" : "outline"}
+                onClick={handleMetricChange(key as PostMetric)}
+                size="sm"
+              >
+                {label}
+              </Button>
+            ))}
+          </div>
+        </div>
+        
+        <div className="h-[400px]">
+          <ResponsiveContainer width="100%" height="100%">
+            <RechartsLineChart data={data} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis 
+                dataKey="date"
+                interval="preserveStartEnd"
+                minTickGap={30}
+              />
+              <YAxis />
+              <Tooltip />
+              <Line 
+                type="monotone" 
+                dataKey="value" 
+                stroke="#00F37F" 
+                strokeWidth={2}
+                dot={{ fill: "#00F37F" }}
+                name={currentCreator || metricLabels[currentMetric]}
+              />
+              {showComparison && comparisonData.length > 0 && (
+                <Line 
+                  type="monotone" 
+                  data={comparisonData}
+                  dataKey="value" 
+                  stroke="#FF6B6B" 
+                  strokeWidth={2}
+                  dot={{ fill: "#FF6B6B" }}
+                  name={comparisonCreator || "Comparison"}
+                />
+              )}
+            </RechartsLineChart>
+          </ResponsiveContainer>
+        </div>
       </div>
     </Card>
   );

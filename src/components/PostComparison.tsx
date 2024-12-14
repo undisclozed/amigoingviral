@@ -27,8 +27,9 @@ export const PostComparison = ({ selectedPost }: PostComparisonProps) => {
 
       <div className="h-[500px]">
         <LineChart 
+          showComparison={!!selectedPost}
           currentCreator="@janedoe"
-          comparisonCreator={selectedPost?.username || "@cristiano"}
+          comparisonCreator={selectedPost?.username}
         />
       </div>
     </Card>
