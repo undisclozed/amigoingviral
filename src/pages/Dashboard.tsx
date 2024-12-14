@@ -1,9 +1,15 @@
-import { Users, Heart, Image as ImageIcon, TrendingUp, MessageSquare, Eye, Target, Zap } from "lucide-react";
+import { Users, Heart, Image as ImageIcon, TrendingUp, MessageSquare, Eye, Target, Zap, Info } from "lucide-react";
 import { MetricCard } from "@/components/MetricCard";
 import { LineChart } from "@/components/LineChart";
 import { BarChart } from "@/components/BarChart";
 import { PostComparison } from "@/components/PostComparison";
 import Sidebar from "@/components/ui/sidebar";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const Dashboard = () => {
   return (
@@ -25,7 +31,22 @@ const Dashboard = () => {
         <main className="px-4 pb-32">
           {/* Overview Section */}
           <div className="mb-8">
-            <h2 className="text-xl sm:text-2xl font-semibold mb-4">Overview</h2>
+            <div className="flex items-center gap-2 mb-4">
+              <h2 className="text-xl sm:text-2xl font-semibold">Account Overview</h2>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <Info className="h-4 w-4 text-gray-400" />
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p className="max-w-xs">
+                      Account Growth Score is calculated based on follower growth, engagement rate,
+                      and content consistency over the last 30 days.
+                    </p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               <MetricCard
                 title="Total Followers"
@@ -36,12 +57,12 @@ const Dashboard = () => {
                 icon={<Users className="h-4 w-4" />}
               />
               <MetricCard
-                title="Total Posts"
-                value="486"
+                title="Account Growth Score"
+                value="78"
                 change={12}
-                subValue="New: 8 this week"
-                period="Last 7 days"
-                icon={<ImageIcon className="h-4 w-4" />}
+                subValue="Strong growth trajectory"
+                period="Last 30 days"
+                icon={<TrendingUp className="h-4 w-4" />}
               />
               <MetricCard
                 title="Accounts Reached"
@@ -60,12 +81,6 @@ const Dashboard = () => {
                 icon={<Zap className="h-4 w-4" />}
               />
             </div>
-          </div>
-
-          {/* Post Comparison Section */}
-          <div className="mb-8">
-            <h2 className="text-xl sm:text-2xl font-semibold mb-4">Post Analytics</h2>
-            <PostComparison />
           </div>
 
           {/* Engagement Metrics */}
@@ -105,6 +120,12 @@ const Dashboard = () => {
                 icon={<Eye className="h-4 w-4" />}
               />
             </div>
+          </div>
+
+          {/* Post Comparison Section */}
+          <div className="mb-8">
+            <h2 className="text-xl sm:text-2xl font-semibold mb-4">Post Analytics</h2>
+            <PostComparison />
           </div>
 
           {/* Charts Section */}
