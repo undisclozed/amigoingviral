@@ -86,7 +86,7 @@ const Profile = () => {
         </div>
 
         <AccountOverview />
-        <PostComparison selectedPost={null} />
+        <PostComparison />
         <GrowthAnalytics />
         <WordCloudAnalysis />
         <ViralityScore score={85} avgScore={75} />
