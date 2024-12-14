@@ -25,13 +25,8 @@ export default {
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
         primary: {
-          DEFAULT: "#6E59A5",
-          light: "#E5DEFF",
-        },
-        chart: {
-          blue: "#D3E4FD",
-          pink: "#FFDEE2",
-          purple: "#E5DEFF",
+          DEFAULT: "#00F37F",
+          light: "#DFFDED",
         },
       },
       fontFamily: {
