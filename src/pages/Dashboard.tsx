@@ -1,8 +1,9 @@
-import { Users, Heart, Image as ImageIcon, TrendingUp, MessageSquare, Eye, Target, Zap, Info } from "lucide-react";
+import { Users, Heart, MessageSquare, Eye, Target, Zap, Info } from "lucide-react";
 import { MetricCard } from "@/components/MetricCard";
 import { LineChart } from "@/components/LineChart";
 import { BarChart } from "@/components/BarChart";
 import { PostComparison } from "@/components/PostComparison";
+import { ViralityScore } from "@/components/ViralityScore";
 import Sidebar from "@/components/ui/sidebar";
 import {
   Tooltip,
@@ -98,6 +99,7 @@ const Dashboard = () => {
                     <p className="text-sm text-muted-foreground">Sep 24, 11:11 AM</p>
                   </div>
                 </div>
+                <ViralityScore score={82} avgScore={75} />
               </div>
               <div className="p-4 border rounded-lg">
                 <h4 className="font-medium mb-2">Select Post to Compare</h4>
