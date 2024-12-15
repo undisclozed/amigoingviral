@@ -13,25 +13,59 @@ export const useAccountMetrics = () => {
       if (!user) return null;
 
       try {
-        const { data, error } = await supabase
+        // First try to fetch existing metrics
+        const { data: existingMetrics, error: fetchError } = await supabase
           .from("account_metrics")
           .select("*")
           .eq("user_id", user.id)
-          .order("created_at", { ascending: false })
-          .limit(1)
           .maybeSingle();
 
-        if (error) {
-          console.error("Error fetching metrics:", error);
+        if (fetchError && fetchError.code !== 'PGRST116') {
+          console.error("Error fetching metrics:", fetchError);
           toast({
             title: "Error fetching metrics",
-            description: error.message,
+            description: fetchError.message,
             variant: "destructive",
           });
           return null;
         }
 
-        return data;
+        // If no metrics exist, create initial metrics
+        if (!existingMetrics) {
+          console.log('No metrics found, creating initial metrics');
+          const { data: newMetrics, error: insertError } = await supabase
+            .from("account_metrics")
+            .insert([{
+              user_id: user.id,
+              follower_count: 0,
+              follower_growth: 0,
+              post_count: 0,
+              posts_last_period: 0,
+              accounts_reached: 0,
+              accounts_engaged: 0,
+              avg_engagement_rate: 0,
+              avg_likes: 0,
+              avg_comments: 0,
+              avg_views: 0,
+              growth_score: 0
+            }])
+            .select()
+            .single();
+
+          if (insertError) {
+            console.error("Error creating initial metrics:", insertError);
+            toast({
+              title: "Error creating metrics",
+              description: insertError.message,
+              variant: "destructive",
+            });
+            return null;
+          }
+
+          return newMetrics;
+        }
+
+        return existingMetrics;
       } catch (error) {
         console.error("Error in useAccountMetrics:", error);
         toast({
