@@ -7,9 +7,9 @@ export function AppLayout() {
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="min-h-screen flex">
+      <div className="flex min-h-screen">
         <AppSidebar onCollapse={setIsCollapsed} />
-        <main className={`flex-1 ${isCollapsed ? 'pl-24' : 'pl-72'} p-6 transition-all duration-300`}>
+        <main className={`flex-1 ${isCollapsed ? 'pl-24' : 'pl-72'} p-6 transition-all duration-300 bg-background`}>
           <div className="max-w-7xl mx-auto">
             <Outlet />
           </div>

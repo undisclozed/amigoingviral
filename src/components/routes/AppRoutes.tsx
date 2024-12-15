@@ -9,7 +9,7 @@ import { AuthGuard } from "@/components/auth/AuthGuard";
 export function AppRoutes() {
   return (
     <Routes>
-      <Route path="/" element={<AuthGuard><AppLayout /></AuthGuard>}>
+      <Route element={<AuthGuard><AppLayout /></AuthGuard>}>
         <Route index element={<Navigate to="/dashboard" replace />} />
         <Route path="dashboard" element={<Dashboard />} />
         <Route path="posts" element={<Posts />} />
