@@ -4,12 +4,11 @@ import { LoginForm } from "@/components/auth/LoginForm";
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Search, Play } from "lucide-react";
+import { Search } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
-  const [showDemoDialog, setShowDemoDialog] = useState(false);
   const [creatorSearch, setCreatorSearch] = useState("");
 
   const handleCreatorSearch = (e: React.FormEvent) => {
@@ -46,21 +45,6 @@ const Index = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Demo Dialog */}
-      <Dialog open={showDemoDialog} onOpenChange={setShowDemoDialog}>
-        <DialogContent className="sm:max-w-4xl">
-          <div className="space-y-4">
-            <h2 className="text-2xl font-bold">Platform Highlights</h2>
-            <div className="aspect-video bg-gray-100 rounded-lg">
-              {/* Demo video or screenshots would go here */}
-              <div className="h-full flex items-center justify-center text-gray-500">
-                Demo Content
-              </div>
-            </div>
-          </div>
-        </DialogContent>
-      </Dialog>
-
       {/* Hero Section with Creator Search */}
       <main className="pt-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -90,13 +74,9 @@ const Index = () => {
               </form>
             </div>
 
-            <div className="flex justify-center gap-4">
+            <div className="flex justify-center">
               <Button size="lg" onClick={() => setShowLoginDialog(true)}>
                 Start tracking for free
-              </Button>
-              <Button size="lg" variant="outline" onClick={() => setShowDemoDialog(true)}>
-                <Play className="mr-2 h-4 w-4" />
-                View demo
               </Button>
             </div>
           </div>
