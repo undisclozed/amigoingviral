@@ -91,13 +91,13 @@ export const PostAnalytics = ({ post }: PostAnalyticsProps) => {
       <Card className="p-6">
         <h3 className="text-lg font-semibold mb-4">Engagement Breakdown</h3>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="h-[300px]">
+          <div className="h-[400px]">
             <LineChart 
               metric="likes"
               interval="hourly"
             />
           </div>
-          <div className="h-[300px]">
+          <div className="h-[400px]">
             <LineChart 
               metric="comments"
               interval="hourly"
