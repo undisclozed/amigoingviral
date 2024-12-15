@@ -3,7 +3,7 @@ import { MetricsOverview } from "@/components/shared/MetricsOverview";
 import { fetchAccountMetrics } from "@/lib/api";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { userMetrics } from "@/components/competitor-analytics/mock-data";
-import { toast } from "@/components/ui/use-toast";
+import { toast } from "@/hooks/use-toast";
 import { Instagram } from "lucide-react";
 
 const Profile = () => {
