@@ -119,10 +119,9 @@ export const LineChart = ({
                   type="monotone"
                   data={averageData}
                   dataKey="value"
-                  stroke="#9CA3AF"
+                  stroke="#1E40AF"
                   strokeWidth={2}
-                  strokeDasharray="5 5"
-                  dot={false}
+                  dot={{ fill: "#1E40AF" }}
                   name={`Average (${averagePeriod} posts)`}
                   isAnimationActive={false}
                 />
