@@ -1,0 +1,11 @@
+[build]
+  command = "npm run build"
+  publish = "dist"
+
+[build.environment]
+  NODE_VERSION = "18"
+  NPM_FLAGS = "--legacy-peer-deps"
+
+# Skip Python installation since we don't need it
+[build.environment.PYTHON]
+  PYTHON_VERSION = "false"
