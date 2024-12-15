@@ -10,8 +10,8 @@ import { AppLayout } from '@/components/layout/AppLayout';
 export const AppRoutes = () => {
   console.log('AppRoutes rendering');
   return (
-    <AppLayout>
-      <Routes>
+    <Routes>
+      <Route element={<AppLayout />}>
         <Route path="/" element={<Navigate to="/dashboard" replace />} />
         <Route path="/dashboard" element={
           <>
@@ -40,7 +40,7 @@ export const AppRoutes = () => {
           </>
         } />
         <Route path="*" element={<Navigate to="/dashboard" replace />} />
-      </Routes>
-    </AppLayout>
+      </Route>
+    </Routes>
   );
 };

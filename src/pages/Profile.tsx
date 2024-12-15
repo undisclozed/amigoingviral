@@ -1,8 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { MetricsOverview } from "@/components/shared/MetricsOverview";
 import { useEffect } from "react";
-import { fetchAccountMetrics } from "@/lib/api";
-import type { AccountMetrics } from "@/types/metrics";
+import { fetchAccountMetrics, type AccountMetrics } from "@/lib/api";
 
 const Profile = () => {
   const { data: metrics, isLoading, error } = useQuery<AccountMetrics>({
