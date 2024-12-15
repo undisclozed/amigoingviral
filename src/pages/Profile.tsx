@@ -4,6 +4,7 @@ import { fetchAccountMetrics } from "@/lib/api";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { userMetrics } from "@/components/competitor-analytics/mock-data";
 import { toast } from "@/components/ui/use-toast";
+import { Instagram } from "lucide-react";
 
 const Profile = () => {
   const { user } = useAuth();
@@ -13,12 +14,14 @@ const Profile = () => {
     queryFn: () => fetchAccountMetrics(user?.id),
     enabled: !!user,
     retry: 1,
-    onError: () => {
-      console.log("Error fetching metrics, falling back to mock data");
-      toast({
-        title: "Using demo data",
-        description: "Currently displaying sample metrics while we connect to your account.",
-      });
+    meta: {
+      onError: () => {
+        console.log("Error fetching metrics, falling back to mock data");
+        toast({
+          title: "Using demo data",
+          description: "Currently displaying sample metrics while we connect to your account.",
+        });
+      }
     }
   });
 
@@ -37,6 +40,11 @@ const Profile = () => {
 
   return (
     <div className="space-y-6">
+      <div className="flex items-center gap-2 mb-4">
+        <Instagram className="h-5 w-5" />
+        <h1 className="text-2xl font-bold">Instagram Analytics</h1>
+      </div>
+      
       <MetricsOverview
         type="account"
         metrics={{
