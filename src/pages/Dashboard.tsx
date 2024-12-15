@@ -1,7 +1,7 @@
 import { AccountOverview } from "@/components/AccountOverview";
-import { ChartsSection } from "@/components/dashboard/ChartsSection";
-import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
-import { PostSelectionSection } from "@/components/dashboard/PostSelectionSection";
+import ChartsSection from "@/components/dashboard/ChartsSection";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
+import PostSelectionSection from "@/components/dashboard/PostSelectionSection";
 
 const Dashboard = () => {
   return (

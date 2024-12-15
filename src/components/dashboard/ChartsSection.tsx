@@ -1,12 +1,7 @@
 import { LineChart } from "@/components/LineChart";
 import { BarChart } from "@/components/BarChart";
-import { Post } from "./types";
 
-interface ChartsSectionProps {
-  selectedPost: Post | null;
-}
-
-const ChartsSection = ({ selectedPost }: ChartsSectionProps) => {
+const ChartsSection = () => {
   return (
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
       <div className="w-full">
