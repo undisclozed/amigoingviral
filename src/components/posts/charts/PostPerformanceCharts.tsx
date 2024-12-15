@@ -11,12 +11,23 @@ import { Info } from "lucide-react";
 interface PostPerformanceChartsProps {
   selectedPost: Post | null;
   selectedComparisonPost: Post | null;
+  isLoading?: boolean;
 }
 
 export const PostPerformanceCharts = ({ 
   selectedPost, 
-  selectedComparisonPost 
+  selectedComparisonPost,
+  isLoading = false
 }: PostPerformanceChartsProps) => {
+  if (isLoading) {
+    return (
+      <div className="animate-pulse">
+        <div className="h-8 w-48 bg-gray-200 rounded mb-4"></div>
+        <div className="h-[400px] bg-gray-100 rounded"></div>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="flex items-center gap-2 mb-4">
