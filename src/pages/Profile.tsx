@@ -1,4 +1,4 @@
-import { CompetitorAnalytics } from "@/components/CompetitorAnalytics";
+import CompetitorAnalytics from "@/components/CompetitorAnalytics";
 import { GrowthAnalytics } from "@/components/GrowthAnalytics";
 import { WordCloudAnalysis } from "@/components/WordCloudAnalysis";
 import { PostComparison } from "@/components/PostComparison";
