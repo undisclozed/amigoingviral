@@ -14,6 +14,7 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
   const { user } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [showLogin, setShowLogin] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -115,7 +116,7 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
 
   if (!user) {
     console.log('No user, showing login form');
-    return <LoginForm />;
+    return <LoginForm open={true} onOpenChange={setShowLogin} />;
   }
 
   if (!profile?.instagram_account || !profile?.name) {

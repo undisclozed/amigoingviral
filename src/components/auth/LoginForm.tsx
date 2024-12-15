@@ -17,10 +17,15 @@ export function LoginForm({ open, onOpenChange, onSuccess }: LoginFormProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 
+  const validateEmail = (email: string) => {
+    const regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
+    return regex.test(email);
+  };
+
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
-    if (!email || !email.includes('@')) {
+    if (!validateEmail(email)) {
       toast({
         title: "Invalid email",
         description: "Please enter a valid email address",
