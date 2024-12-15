@@ -3,10 +3,20 @@ import { Button } from "@/components/ui/button";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { useState } from "react";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Search, Play } from "lucide-react";
 
 const Index = () => {
   const navigate = useNavigate();
   const [showLoginDialog, setShowLoginDialog] = useState(false);
+  const [showDemoDialog, setShowDemoDialog] = useState(false);
+  const [creatorSearch, setCreatorSearch] = useState("");
+
+  const handleCreatorSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    // In a real implementation, this would search for creators
+    console.log("Searching for:", creatorSearch);
+  };
 
   return (
     <div className="min-h-screen bg-white">
@@ -36,7 +46,22 @@ const Index = () => {
         </DialogContent>
       </Dialog>
 
-      {/* Hero Section */}
+      {/* Demo Dialog */}
+      <Dialog open={showDemoDialog} onOpenChange={setShowDemoDialog}>
+        <DialogContent className="sm:max-w-4xl">
+          <div className="space-y-4">
+            <h2 className="text-2xl font-bold">Platform Highlights</h2>
+            <div className="aspect-video bg-gray-100 rounded-lg">
+              {/* Demo video or screenshots would go here */}
+              <div className="h-full flex items-center justify-center text-gray-500">
+                Demo Content
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Hero Section with Creator Search */}
       <main className="pt-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center space-y-8 py-20">
@@ -47,11 +72,30 @@ const Index = () => {
             <p className="max-w-2xl mx-auto text-xl text-gray-600">
               Get detailed analytics and insights for your Instagram account. Track engagement, growth, and understand what content performs best.
             </p>
+            
+            {/* Creator Search Bar */}
+            <div className="max-w-2xl mx-auto">
+              <form onSubmit={handleCreatorSearch} className="flex gap-2">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-5 w-5" />
+                  <Input
+                    type="text"
+                    placeholder="Search for popular Instagram creators..."
+                    value={creatorSearch}
+                    onChange={(e) => setCreatorSearch(e.target.value)}
+                    className="pl-10"
+                  />
+                </div>
+                <Button type="submit">Search</Button>
+              </form>
+            </div>
+
             <div className="flex justify-center gap-4">
               <Button size="lg" onClick={() => setShowLoginDialog(true)}>
                 Start tracking for free
               </Button>
-              <Button size="lg" variant="outline">
+              <Button size="lg" variant="outline" onClick={() => setShowDemoDialog(true)}>
+                <Play className="mr-2 h-4 w-4" />
                 View demo
               </Button>
             </div>
@@ -88,9 +132,8 @@ const Index = () => {
               <p className="text-gray-600">Compare your performance with competitors</p>
             </div>
           </div>
-        </div>
 
-        {/* Footer */}
+          {/* Footer */}
         <footer className="border-t mt-20">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
             <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
@@ -132,6 +175,7 @@ const Index = () => {
             </div>
           </div>
         </footer>
+        </div>
       </main>
     </div>
   );
