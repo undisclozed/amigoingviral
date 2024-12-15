@@ -1,7 +1,9 @@
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
-import { PostSection } from "@/components/post-comparison/PostSection";
-import type { Post } from "@/components/post-comparison/types";
+import { AppSidebar } from "@/components/shared/AppSidebar";
+import { AccountMetricsOverview } from "@/components/posts/AccountMetricsOverview";
+import { EmptyPostsState } from "@/components/posts/EmptyPostsState";
+import { PostsList } from "@/components/posts/PostsList";
 
 const postImages = [
   "https://images.unsplash.com/photo-1509440159596-0249088772ff",
@@ -12,48 +14,67 @@ const postImages = [
   "https://images.unsplash.com/photo-1464305795204-6f5bbfc7fb81",
 ];
 
-const generateMockPosts = (): Post[] => {
+const generateMockPosts = () => {
   return Array.from({ length: 34 }, (_, index) => ({
     id: index + 1,
-    username: "sarahsidequest",
-    timestamp: new Date(Date.now() - index * 24 * 60 * 60 * 1000).toISOString(),
     thumbnail: postImages[index % postImages.length],
     caption: `Post ${index + 1} - This is a sample caption for testing purposes. #testing #sample`,
+    timestamp: new Date(Date.now() - index * 24 * 60 * 60 * 1000).toISOString(),
     metrics: {
       views: Math.floor(Math.random() * 50000) + 10000,
       likes: Math.floor(Math.random() * 5000) + 500,
       comments: Math.floor(Math.random() * 300) + 50,
       shares: Math.floor(Math.random() * 100) + 20,
       saves: Math.floor(Math.random() * 500) + 100,
-      engagement: Number((Math.random() * 5 + 5).toFixed(1))
-    },
-    engagementScore: Math.floor(Math.random() * 30) + 70,
-    url: `https://instagram.com/p/example${index + 1}`
+      engagement: Number((Math.random() * 0.1 + 0.05).toFixed(3))
+    }
   }));
 };
 
 const Posts = () => {
-  const [mockPosts, setMockPosts] = useState<Post[]>([]);
+  const [posts, setPosts] = useState([]);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   useEffect(() => {
-    setMockPosts(generateMockPosts());
+    setPosts(generateMockPosts());
   }, []);
 
+  const mockAccountMetrics = {
+    views: 150000,
+    likes: 25000,
+    comments: 1500,
+    shares: 500,
+    saves: 2000,
+    engagement: 5.2,
+    followers: 10000
+  };
+
   return (
-    <div className="space-y-6">
-      <Card className="p-6">
-        <h2 className="text-xl font-semibold mb-4">Recent Posts</h2>
-        <div className="space-y-4">
-          {mockPosts.map((post) => (
-            <PostSection
-              key={post.id}
-              title=""
-              posts={[post]}
-              badgeText=""
+    <div className="min-h-screen bg-gray-50">
+      <AppSidebar onCollapse={setSidebarCollapsed} />
+      <main className={`transition-all duration-300 ${
+        sidebarCollapsed ? 'ml-16' : 'ml-64'
+      }`}>
+        <div className="container mx-auto px-4 py-8 space-y-6">
+          {posts.length === 0 ? (
+            <EmptyPostsState 
+              searchQuery={searchQuery} 
+              setSearchQuery={setSearchQuery} 
             />
-          ))}
+          ) : (
+            <>
+              <AccountMetricsOverview 
+                accountMetrics={mockAccountMetrics}
+                postsCount={posts.length}
+              />
+              <Card className="p-6">
+                <PostsList posts={posts} />
+              </Card>
+            </>
+          )}
         </div>
-      </Card>
+      </main>
     </div>
   );
 };
