@@ -30,7 +30,7 @@ const Profile = () => {
         <SidebarProvider>
           <div className="min-h-screen flex w-full">
             <AppSidebar />
-            <div className="flex-1 p-6">
+            <div className="flex-1 pl-64 p-6"> {/* Added pl-64 for sidebar width offset */}
               <div className="max-w-7xl mx-auto space-y-6">
                 <div className="flex items-center gap-4 mb-8">
                   <Skeleton className="h-24 w-24 rounded-full" />
@@ -59,7 +59,7 @@ const Profile = () => {
       <SidebarProvider>
         <div className="min-h-screen flex w-full">
           <AppSidebar />
-          <div className="flex-1 p-6">
+          <div className="flex-1 pl-64 p-6"> {/* Added pl-64 for sidebar width offset */}
             <div className="max-w-7xl mx-auto space-y-6">
               <div className="flex flex-col md:flex-row md:items-start gap-6 mb-8 animate-fade-in">
                 <div className="h-24 w-24 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
