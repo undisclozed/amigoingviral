@@ -17,18 +17,18 @@ const accountMetrics = {
   followers: 10500,
 };
 
-// Array of realistic tech/social media related images
+// Array of baking-related images
 const postImages = [
-  "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b",
-  "https://images.unsplash.com/photo-1461749280684-dccba630e2f6",
-  "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d",
-  "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158",
-  "https://images.unsplash.com/photo-1485827404703-89b55fcc595e",
-  "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5",
-  "https://images.unsplash.com/photo-1531297484001-80022131f5a1",
-  "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7",
-  "https://images.unsplash.com/photo-1649972904349-6e44c42644a7",
-  "https://images.unsplash.com/photo-1518770660439-4636190af475",
+  "https://images.unsplash.com/photo-1483695028939-5bb13f8648b0", // Freshly baked bread
+  "https://images.unsplash.com/photo-1509440159596-0249088772ff", // Colorful macarons
+  "https://images.unsplash.com/photo-1517686469429-8bdb88b9f907", // Birthday cake
+  "https://images.unsplash.com/photo-1497534446932-c925b458314e", // Chocolate chip cookies
+  "https://images.unsplash.com/photo-1516684732162-798a0062be99", // Croissants
+  "https://images.unsplash.com/photo-1488477181946-6428a0291777", // Cupcakes
+  "https://images.unsplash.com/photo-1464195244916-405fa0a82545", // Pie
+  "https://images.unsplash.com/photo-1509440159596-0249088772ff", // Pastries
+  "https://images.unsplash.com/photo-1556471013-0001958d2f12", // Sourdough
+  "https://images.unsplash.com/photo-1486427944299-d1955d23e34d", // Muffins
 ];
 
 // Generate 34 mock posts
@@ -37,11 +37,11 @@ const generateMockPosts = () => {
     id: index + 1,
     thumbnail: postImages[index % postImages.length], // Cycle through available images
     caption: `Post ${index + 1}: ${[
-      "Check out this amazing new feature! #tech #innovation",
-      "Behind the scenes look at our process #behindthescenes",
-      "Quick tip for better productivity #productivity",
-      "Exciting announcement coming soon! 🎉",
-      "Thank you for all your support! ❤️",
+      "Just pulled these golden croissants out of the oven! 🥐 The lamination is perfect! #BakingLife #Pastries",
+      "Today's sourdough turned out amazing! Look at that crumb structure 🍞 #Breadmaking #Sourdough",
+      "New recipe alert! These chocolate chip cookies are crispy outside, chewy inside 🍪 #BakingTips",
+      "Wedding cake commission complete! Three tiers of pure vanilla bliss 🎂 #WeddingCake",
+      "Testing new macaron flavors today - matcha, lavender, and raspberry 🇫🇷 #MacaronMagic",
     ][index % 5]}`,
     timestamp: new Date(Date.now() - index * 24 * 60 * 60 * 1000).toISOString(), // Each post 1 day apart
     metrics: {
