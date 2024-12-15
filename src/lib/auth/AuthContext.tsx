@@ -37,7 +37,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const { error } = await supabase.auth.signInWithOtp({
       email,
       options: {
-        emailRedirectTo: 'https://www.amigoingviral.com',
+        emailRedirectTo: window.location.origin,
       },
     });
     if (error) throw error;
