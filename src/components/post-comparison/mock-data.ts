@@ -1,6 +1,8 @@
 export const posts = [
   {
     id: 1,
+    username: "sarahsidequest",
+    timestamp: "2024-03-15T10:00:00Z",
     thumbnail: "https://images.unsplash.com/photo-1509440159596-0249088772ff",
     caption: "Finally nailed the perfect croissant lamination! Took 3 days but so worth it 🥐✨ #BakingJourney #Croissants",
     metrics: {
@@ -11,10 +13,13 @@ export const posts = [
       saves: 420,
       engagement: 8.6
     },
-    engagementScore: 92
+    engagementScore: 92,
+    url: "https://instagram.com/p/example1"
   },
   {
     id: 2,
+    username: "sarahsidequest",
+    timestamp: "2024-03-14T09:30:00Z",
     thumbnail: "https://images.unsplash.com/photo-1549931319-a545dcf3bc73",
     caption: "Sunday morning sourdough. Still learning but getting better with each loaf! 🍞 #Sourdough #HomeBaker",
     metrics: {
@@ -25,10 +30,13 @@ export const posts = [
       saves: 385,
       engagement: 7.8
     },
-    engagementScore: 85
+    engagementScore: 85,
+    url: "https://instagram.com/p/example2"
   },
   {
     id: 3,
+    username: "sarahsidequest",
+    timestamp: "2024-03-13T08:15:00Z",
     thumbnail: "https://images.unsplash.com/photo-1486427944299-d1955d23e34d",
     caption: "First try at French macarons! Not perfect but they taste amazing 🤍 #BakingProgress #Macarons",
     metrics: {
@@ -39,10 +47,13 @@ export const posts = [
       saves: 405,
       engagement: 8.2
     },
-    engagementScore: 89
+    engagementScore: 89,
+    url: "https://instagram.com/p/example3"
   },
   {
     id: 4,
+    username: "sarahsidequest",
+    timestamp: "2024-03-12T07:45:00Z",
     thumbnail: "https://images.unsplash.com/photo-1517686469429-8bdb88b9f907",
     caption: "Testing new pie crust techniques today. The secret? COLD butter! 🥧 #PieBaking #BakingTips",
     metrics: {
@@ -53,10 +64,13 @@ export const posts = [
       saves: 280,
       engagement: 6.5
     },
-    engagementScore: 71
+    engagementScore: 71,
+    url: "https://instagram.com/p/example4"
   },
   {
     id: 5,
+    username: "sarahsidequest",
+    timestamp: "2024-03-11T06:30:00Z",
     thumbnail: "https://images.unsplash.com/photo-1509440159596-0249088772ff",
     caption: "Simple pleasures: Fresh bread and coffee for breakfast ☕️ #HomeBaking #MorningRituals",
     metrics: {
@@ -67,10 +81,13 @@ export const posts = [
       saves: 315,
       engagement: 7.1
     },
-    engagementScore: 76
+    engagementScore: 76,
+    url: "https://instagram.com/p/example5"
   },
   {
     id: 6,
+    username: "sarahsidequest",
+    timestamp: "2024-03-10T05:15:00Z",
     thumbnail: "https://images.unsplash.com/photo-1549931319-a545dcf3bc73",
     caption: "When the crumb structure hits just right 👌 #BreadBaking #Sourdough",
     metrics: {
@@ -81,6 +98,7 @@ export const posts = [
       saves: 245,
       engagement: 6.2
     },
-    engagementScore: 68
+    engagementScore: 68,
+    url: "https://instagram.com/p/example6"
   }
 ];

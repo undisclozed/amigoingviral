@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
-import { posts } from "@/components/post-comparison/mock-data";
 import { PostSection } from "@/components/post-comparison/PostSection";
+import type { Post } from "@/components/post-comparison/types";
 
 const postImages = [
   "https://images.unsplash.com/photo-1509440159596-0249088772ff",
@@ -12,9 +12,11 @@ const postImages = [
   "https://images.unsplash.com/photo-1464305795204-6f5bbfc7fb81",
 ];
 
-const generateMockPosts = () => {
+const generateMockPosts = (): Post[] => {
   return Array.from({ length: 34 }, (_, index) => ({
     id: index + 1,
+    username: "sarahsidequest",
+    timestamp: new Date(Date.now() - index * 24 * 60 * 60 * 1000).toISOString(),
     thumbnail: postImages[index % postImages.length],
     caption: `${[
       "Sunday baking session! Finally achieved that perfect ear on my sourdough 🌾 The crumb is so open and airy! #HomeBaker #SourdoughBread",
@@ -24,20 +26,21 @@ const generateMockPosts = () => {
       "Simple pleasures: Fresh sourdough and coffee for breakfast. The morning light was too perfect not to share ☕️ #MorningBakes",
       "When the crumb structure hits just right 👌 Three days of patience for this open crumb! #BreadGoals"
     ][index % 6]}`,
-    timestamp: new Date(Date.now() - index * 24 * 60 * 60 * 1000).toISOString(),
     metrics: {
       views: Math.floor(Math.random() * 50000) + 10000,
       likes: Math.floor(Math.random() * 5000) + 500,
       comments: Math.floor(Math.random() * 300) + 50,
       shares: Math.floor(Math.random() * 100) + 20,
       saves: Math.floor(Math.random() * 500) + 100,
-      engagement: (Math.random() * 5 + 5).toFixed(1)
-    }
+      engagement: Number((Math.random() * 5 + 5).toFixed(1))
+    },
+    engagementScore: Math.floor(Math.random() * 30) + 70,
+    url: `https://instagram.com/p/example${index + 1}`
   }));
 };
 
 const Posts = () => {
-  const [mockPosts, setMockPosts] = useState(generateMockPosts());
+  const [mockPosts, setMockPosts] = useState<Post[]>([]);
 
   useEffect(() => {
     setMockPosts(generateMockPosts());
@@ -46,8 +49,17 @@ const Posts = () => {
   return (
     <div className="space-y-6">
       <Card className="p-6">
-        <h2 className="text-xl font-semibold">Recent Posts</h2>
-        <PostSection posts={mockPosts} />
+        <h2 className="text-xl font-semibold mb-4">Recent Posts</h2>
+        <div className="space-y-4">
+          {mockPosts.map((post) => (
+            <PostSection
+              key={post.id}
+              title=""
+              posts={[post]}
+              badgeText=""
+            />
+          ))}
+        </div>
       </Card>
     </div>
   );

@@ -1,5 +1,5 @@
 export interface Post {
-  id: string;
+  id: number;
   username: string;
   timestamp: string;
   caption: string;
@@ -7,6 +7,9 @@ export interface Post {
     views: number;
     likes: number;
     comments: number;
+    shares: number;
+    saves: number;
+    engagement: number;
   };
   thumbnail: string;
   engagementScore: number;
