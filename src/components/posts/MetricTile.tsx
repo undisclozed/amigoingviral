@@ -20,11 +20,11 @@ export const MetricTile = ({ title, value, change, icon, metric }: MetricTilePro
   const changeColor = change && change >= 0 ? 'text-green-500' : 'text-red-500';
   
   return (
-    <div className="flex items-center gap-3 p-2 rounded-lg bg-white shadow-sm">
+    <div className="flex flex-col items-center gap-1 p-2 rounded-lg bg-gray-50 hover:bg-gray-100 transition-colors">
       <div className="text-gray-600">{icon}</div>
-      <div>
-        <div className="flex items-center gap-1">
-          <span className="text-sm text-gray-600">{title}</span>
+      <div className="text-center">
+        <div className="flex items-center justify-center gap-1">
+          <span className="text-xs text-gray-600 truncate max-w-[60px]">{title}</span>
           {metric && (
             <TooltipProvider>
               <Tooltip>
@@ -38,8 +38,8 @@ export const MetricTile = ({ title, value, change, icon, metric }: MetricTilePro
             </TooltipProvider>
           )}
         </div>
-        <div className="flex items-center gap-2">
-          <span className="font-semibold">{value}</span>
+        <div className="flex items-center justify-center gap-1">
+          <span className="font-semibold text-sm truncate max-w-[60px]">{value}</span>
           {change !== undefined && (
             <span className={`text-xs ${changeColor}`}>
               {change >= 0 ? '+' : ''}{change}%
