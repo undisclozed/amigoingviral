@@ -32,8 +32,8 @@ export const LineChart = ({
   };
 
   return (
-    <Card className="p-4 h-[550px] w-full">
-      <div className="space-y-4">
+    <Card className="p-6 h-[550px] w-full">
+      <div className="flex flex-col h-full space-y-4">
         <div className="flex flex-col gap-4">
           <div className="flex justify-between items-center">
             <h3 className="text-lg font-semibold">Performance Metrics</h3>
@@ -56,7 +56,7 @@ export const LineChart = ({
           />
         </div>
         
-        <div className="h-[350px] w-full">
+        <div className="flex-1 min-h-[300px] w-full">
           <ResponsiveContainer width="100%" height="100%">
             <RechartsLineChart 
               data={data} 
