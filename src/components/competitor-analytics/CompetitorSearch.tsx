@@ -15,12 +15,12 @@ export const CompetitorSearch = ({
   return (
     <form onSubmit={onSearch} className="flex gap-2">
       <Input
-        placeholder="Enter creator's handle"
+        placeholder="Search for a creator..."
         value={competitorHandle}
         onChange={(e) => onHandleChange(e.target.value)}
         className="w-64"
       />
-      <Button type="submit">Compare</Button>
+      <Button type="submit">Search</Button>
     </form>
   );
 };

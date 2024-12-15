@@ -4,6 +4,8 @@ import { AppSidebar } from "@/components/shared/AppSidebar";
 import { AccountMetricsOverview } from "@/components/posts/AccountMetricsOverview";
 import { EmptyPostsState } from "@/components/posts/EmptyPostsState";
 import { PostsList } from "@/components/posts/PostsList";
+import { CompetitorSearch } from "@/components/competitor-analytics/CompetitorSearch";
+import { toast } from "sonner";
 
 const postImages = [
   "https://images.unsplash.com/photo-1509440159596-0249088772ff",
@@ -35,6 +37,7 @@ const Posts = () => {
   const [posts, setPosts] = useState([]);
   const [searchQuery, setSearchQuery] = useState("");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+  const [competitorHandle, setCompetitorHandle] = useState("");
 
   useEffect(() => {
     setPosts(generateMockPosts());
@@ -50,6 +53,19 @@ const Posts = () => {
     followers: 10000
   };
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!competitorHandle) return;
+
+    // This is where you would typically make an API call to fetch creator data
+    // For now, we'll just show a toast message
+    toast.info(
+      posts.length > 0 
+        ? `Viewing analytics for ${competitorHandle}`
+        : "Start Tracking Now! This creator's data is not yet available."
+    );
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       <AppSidebar onCollapse={setSidebarCollapsed} />
@@ -57,6 +73,15 @@ const Posts = () => {
         sidebarCollapsed ? 'ml-16' : 'ml-64'
       }`}>
         <div className="container mx-auto px-4 py-8 space-y-6">
+          <div className="flex justify-between items-center">
+            <h1 className="text-2xl font-bold">Creator Analytics</h1>
+            <CompetitorSearch
+              competitorHandle={competitorHandle}
+              onHandleChange={setCompetitorHandle}
+              onSearch={handleSearch}
+            />
+          </div>
+
           {posts.length === 0 ? (
             <EmptyPostsState 
               searchQuery={searchQuery} 
