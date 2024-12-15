@@ -1,7 +1,9 @@
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Eye, ThumbsUp, MessageCircle, Share2, Bookmark, Users } from "lucide-react";
 import { MetricTile } from "./MetricTile";
+import { PostAnalytics } from "./PostAnalytics";
 
 interface Post {
   id: number;
@@ -23,6 +25,22 @@ interface PostsListProps {
 }
 
 export const PostsList = ({ posts }: PostsListProps) => {
+  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+
+  if (selectedPost) {
+    return (
+      <div className="space-y-4">
+        <button 
+          onClick={() => setSelectedPost(null)}
+          className="text-sm text-gray-600 hover:text-gray-900"
+        >
+          ← Back to all posts
+        </button>
+        <PostAnalytics post={selectedPost} />
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
@@ -30,7 +48,11 @@ export const PostsList = ({ posts }: PostsListProps) => {
         <p className="text-sm text-gray-600">Total: {posts.length} posts</p>
       </div>
       {posts.map((post) => (
-        <Card key={post.id} className="p-4 hover:shadow-lg transition-shadow cursor-pointer">
+        <Card 
+          key={post.id} 
+          className="p-4 hover:shadow-lg transition-shadow cursor-pointer"
+          onClick={() => setSelectedPost(post)}
+        >
           <div className="flex gap-4">
             <div className="w-32 h-32 rounded-lg overflow-hidden flex-shrink-0">
               <img 
