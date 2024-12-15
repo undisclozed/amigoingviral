@@ -14,11 +14,13 @@ import { useAccountMetrics } from "@/hooks/useAccountMetrics";
 import { MetricsDisplay } from "@/components/metrics/MetricsDisplay";
 
 const Profile = () => {
+  console.log('Profile component rendering');
   const [isLoading, setIsLoading] = useState(true);
   const { user } = useAuth();
   const { metrics, loading: metricsLoading } = useAccountMetrics();
 
   useEffect(() => {
+    console.log('Profile useEffect running');
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 1500);
@@ -26,7 +28,10 @@ const Profile = () => {
     return () => clearTimeout(timer);
   }, []);
 
+  console.log('Profile state:', { isLoading, user, metricsLoading });
+
   if (isLoading || metricsLoading) {
+    console.log('Profile showing loading state');
     return (
       <div className="max-w-7xl mx-auto space-y-6">
         <div className="flex items-center gap-4 mb-8">
@@ -47,6 +52,7 @@ const Profile = () => {
     );
   }
 
+  console.log('Profile rendering main content');
   return (
     <div className="max-w-7xl mx-auto space-y-6">
       <div className="flex flex-col md:flex-row md:items-start gap-6 mb-8">
