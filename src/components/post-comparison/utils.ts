@@ -7,7 +7,3 @@ export const formatNumber = (num: number): string => {
   }
   return num.toString();
 };
-
-export const calculatePostScore = (views: number, engagementScore: number): number => {
-  return views * engagementScore;
-};

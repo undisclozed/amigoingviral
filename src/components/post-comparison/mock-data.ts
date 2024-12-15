@@ -49,56 +49,5 @@ export const posts = [
     },
     engagementScore: 89,
     url: "https://instagram.com/p/example3"
-  },
-  {
-    id: 4,
-    username: "sarahsidequest",
-    timestamp: "2024-03-12T07:45:00Z",
-    thumbnail: "https://images.unsplash.com/photo-1517686469429-8bdb88b9f907",
-    caption: "Testing new pie crust techniques today. The secret? COLD butter! 🥧 #PieBaking #BakingTips",
-    metrics: {
-      views: 25400,
-      likes: 1850,
-      comments: 95,
-      shares: 45,
-      saves: 280,
-      engagement: 6.5
-    },
-    engagementScore: 71,
-    url: "https://instagram.com/p/example4"
-  },
-  {
-    id: 5,
-    username: "sarahsidequest",
-    timestamp: "2024-03-11T06:30:00Z",
-    thumbnail: "https://images.unsplash.com/photo-1509440159596-0249088772ff",
-    caption: "Simple pleasures: Fresh bread and coffee for breakfast ☕️ #HomeBaking #MorningRituals",
-    metrics: {
-      views: 28900,
-      likes: 2100,
-      comments: 112,
-      shares: 52,
-      saves: 315,
-      engagement: 7.1
-    },
-    engagementScore: 76,
-    url: "https://instagram.com/p/example5"
-  },
-  {
-    id: 6,
-    username: "sarahsidequest",
-    timestamp: "2024-03-10T05:15:00Z",
-    thumbnail: "https://images.unsplash.com/photo-1549931319-a545dcf3bc73",
-    caption: "When the crumb structure hits just right 👌 #BreadBaking #Sourdough",
-    metrics: {
-      views: 22100,
-      likes: 1650,
-      comments: 85,
-      shares: 38,
-      saves: 245,
-      engagement: 6.2
-    },
-    engagementScore: 68,
-    url: "https://instagram.com/p/example6"
   }
 ];
