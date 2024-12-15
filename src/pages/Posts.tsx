@@ -35,15 +35,15 @@ const postImages = [
 const generateMockPosts = () => {
   return Array.from({ length: 34 }, (_, index) => ({
     id: index + 1,
-    thumbnail: postImages[index % postImages.length], // Cycle through available images
+    thumbnail: postImages[index % postImages.length],
     caption: `Post ${index + 1}: ${[
-      "Just pulled these golden croissants out of the oven! 🥐 The lamination is perfect! #BakingLife #Pastries",
-      "Today's sourdough turned out amazing! Look at that crumb structure 🍞 #Breadmaking #Sourdough",
-      "New recipe alert! These chocolate chip cookies are crispy outside, chewy inside 🍪 #BakingTips",
-      "Wedding cake commission complete! Three tiers of pure vanilla bliss 🎂 #WeddingCake",
-      "Testing new macaron flavors today - matcha, lavender, and raspberry 🇫🇷 #MacaronMagic",
+      "Sunday baking session! Made these rustic sourdough loaves with locally milled flour 🌾 #HomeBaker #BreadBaking",
+      "First attempt at French macarons - getting better with each batch! Vanilla bean filling inside 🤍 #BakingJourney",
+      "Weekly meal prep: Whole grain sandwich loaves and some cinnamon rolls for good measure 🍞 #BreadBaking",
+      "Testing a new pie crust recipe today - all butter, extra flaky! 🥧 #BakingFromScratch",
+      "Simple pleasures: Fresh croissants and coffee for breakfast ☕️ #MorningBakes",
     ][index % 5]}`,
-    timestamp: new Date(Date.now() - index * 24 * 60 * 60 * 1000).toISOString(), // Each post 1 day apart
+    timestamp: new Date(Date.now() - index * 24 * 60 * 60 * 1000).toISOString(),
     metrics: {
       views: Math.floor(Math.random() * 50000) + 10000,
       likes: Math.floor(Math.random() * 5000) + 500,
