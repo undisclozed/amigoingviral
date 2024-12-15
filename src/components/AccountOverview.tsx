@@ -1,16 +1,33 @@
 import { useAccountMetrics } from "@/hooks/useAccountMetrics";
 import { MetricsSkeleton } from "./metrics/MetricsSkeleton";
 import { MetricsDisplay } from "./metrics/MetricsDisplay";
+import { Alert, AlertDescription } from "@/components/ui/alert";
 
 export const AccountOverview = () => {
-  const { metrics, loading } = useAccountMetrics();
+  const { data: metrics, isLoading, error } = useAccountMetrics();
 
-  if (loading) {
+  if (isLoading) {
     return <MetricsSkeleton />;
   }
 
+  if (error) {
+    return (
+      <Alert variant="destructive">
+        <AlertDescription>
+          Failed to load account metrics. Please try again later.
+        </AlertDescription>
+      </Alert>
+    );
+  }
+
   if (!metrics) {
-    return null;
+    return (
+      <Alert>
+        <AlertDescription>
+          No metrics available. They will appear here once your account starts gathering data.
+        </AlertDescription>
+      </Alert>
+    );
   }
 
   return (

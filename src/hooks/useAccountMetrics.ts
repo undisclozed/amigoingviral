@@ -1,68 +1,47 @@
-import { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
-import { useAuth } from '@/lib/auth/AuthContext';
-import { toast } from 'sonner';
-import type { AccountMetrics } from '@/types/database';
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth/AuthContext";
+import { toast } from "@/components/ui/use-toast";
+import type { AccountMetrics } from "@/types/database";
 
 export const useAccountMetrics = () => {
   const { user } = useAuth();
-  const [metrics, setMetrics] = useState<AccountMetrics | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
 
-  useEffect(() => {
-    if (!user) return;
+  return useQuery({
+    queryKey: ["accountMetrics", user?.id],
+    queryFn: async (): Promise<AccountMetrics | null> => {
+      if (!user) return null;
 
-    const fetchMetrics = async () => {
       try {
-        console.log('Fetching metrics for user:', user.id);
         const { data, error } = await supabase
-          .from('account_metrics')
-          .select('*')
-          .eq('user_id', user.id)
-          .order('created_at', { ascending: false })
+          .from("account_metrics")
+          .select("*")
+          .eq("user_id", user.id)
+          .order("created_at", { ascending: false })
           .limit(1)
-          .maybeSingle(); // This is the key change - using maybeSingle() instead of single()
+          .maybeSingle();
 
-        if (error) throw error;
-        console.log('Fetched metrics:', data);
-        setMetrics(data);
-        setError(null);
-      } catch (error) {
-        console.error('Error fetching metrics:', error);
-        setError(error as Error);
-        toast.error('Failed to load metrics');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchMetrics();
-
-    // Set up real-time subscription
-    const channel = supabase
-      .channel('account-metrics-changes')
-      .on(
-        'postgres_changes',
-        {
-          event: '*',
-          schema: 'public',
-          table: 'account_metrics',
-          filter: `user_id=eq.${user.id}`
-        },
-        (payload) => {
-          console.log('Real-time metrics update:', payload);
-          if (payload.new) {
-            setMetrics(payload.new as AccountMetrics);
-          }
+        if (error) {
+          console.error("Error fetching metrics:", error);
+          toast({
+            title: "Error fetching metrics",
+            description: error.message,
+            variant: "destructive",
+          });
+          return null;
         }
-      )
-      .subscribe();
 
-    return () => {
-      supabase.removeChannel(channel);
-    };
-  }, [user]);
-
-  return { metrics, loading, error };
+        return data;
+      } catch (error) {
+        console.error("Error in useAccountMetrics:", error);
+        toast({
+          title: "Error",
+          description: "Failed to fetch account metrics",
+          variant: "destructive",
+        });
+        return null;
+      }
+    },
+    enabled: !!user,
+  });
 };
