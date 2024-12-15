@@ -1,24 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { useAuth } from "@/lib/auth/AuthContext";
-import { toast } from "@/components/ui/use-toast";
+import { LoginForm } from "@/components/auth/LoginForm";
+import { useState } from "react";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 
 const Index = () => {
   const navigate = useNavigate();
-  const { signIn } = useAuth();
-
-  const handleSignIn = async () => {
-    try {
-      await signIn(""); // This will be handled by the LoginForm
-      navigate("/dashboard");
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to sign in. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
+  const [showLoginDialog, setShowLoginDialog] = useState(false);
 
   return (
     <div className="min-h-screen bg-white">
@@ -31,12 +19,22 @@ const Index = () => {
               <span className="font-bold text-xl">ViewStats</span>
             </div>
             <div className="flex items-center gap-4">
-              <Button variant="ghost" onClick={handleSignIn}>Log in</Button>
-              <Button onClick={handleSignIn}>Sign up free</Button>
+              <Button variant="ghost" onClick={() => setShowLoginDialog(true)}>Log in</Button>
+              <Button onClick={() => setShowLoginDialog(true)}>Sign up free</Button>
             </div>
           </div>
         </div>
       </header>
+
+      {/* Login Dialog */}
+      <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
+        <DialogContent className="sm:max-w-md">
+          <LoginForm onSuccess={() => {
+            setShowLoginDialog(false);
+            navigate("/dashboard");
+          }} />
+        </DialogContent>
+      </Dialog>
 
       {/* Hero Section */}
       <main className="pt-24">
@@ -50,7 +48,7 @@ const Index = () => {
               Get detailed analytics and insights for your Instagram account. Track engagement, growth, and understand what content performs best.
             </p>
             <div className="flex justify-center gap-4">
-              <Button size="lg" onClick={handleSignIn}>
+              <Button size="lg" onClick={() => setShowLoginDialog(true)}>
                 Start tracking for free
               </Button>
               <Button size="lg" variant="outline">

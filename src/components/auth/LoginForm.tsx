@@ -5,7 +5,11 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 
-export function LoginForm() {
+interface LoginFormProps {
+  onSuccess?: () => void;
+}
+
+export function LoginForm({ onSuccess }: LoginFormProps) {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { signIn } = useAuth();
@@ -13,6 +17,15 @@ export function LoginForm() {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
+    if (!email) {
+      toast({
+        title: "Error",
+        description: "Please enter your email address",
+        variant: "destructive",
+      });
+      return;
+    }
+    
     setIsLoading(true);
     try {
       console.log('Attempting to sign in with email:', email);
@@ -30,6 +43,9 @@ export function LoginForm() {
         description: "We've sent you a magic link to sign in.",
       });
       console.log('Magic link sent successfully');
+      if (onSuccess) {
+        onSuccess();
+      }
     } catch (error) {
       console.error('Login error:', error);
       toast({
@@ -43,25 +59,23 @@ export function LoginForm() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="mx-auto max-w-sm space-y-6 p-4">
-        <div className="space-y-2 text-center">
-          <h1 className="text-2xl font-bold">Welcome to Am I Going Viral</h1>
-          <p className="text-gray-500">Enter your email to sign in or create an account</p>
-        </div>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            type="email"
-            placeholder="Enter your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
-          <Button className="w-full" type="submit" disabled={isLoading}>
-            {isLoading ? "Sending..." : "Continue with Email"}
-          </Button>
-        </form>
+    <div className="space-y-6 p-4">
+      <div className="space-y-2 text-center">
+        <h1 className="text-2xl font-bold">Welcome to ViewStats</h1>
+        <p className="text-gray-500">Enter your email to sign in or create an account</p>
       </div>
+      <form onSubmit={handleSubmit} className="space-y-4">
+        <Input
+          type="email"
+          placeholder="Enter your email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          required
+        />
+        <Button className="w-full" type="submit" disabled={isLoading}>
+          {isLoading ? "Sending..." : "Continue with Email"}
+        </Button>
+      </form>
     </div>
   );
 }
