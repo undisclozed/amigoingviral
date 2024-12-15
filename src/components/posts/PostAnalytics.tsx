@@ -9,6 +9,9 @@ import {
 import { LineChart } from "../LineChart";
 import { ViralityScore } from "../ViralityScore";
 import { MetricTile } from "./MetricTile";
+import PostSelectionSection from "../dashboard/PostSelectionSection";
+import { useState } from "react";
+import { Post } from "../dashboard/types";
 
 interface PostAnalyticsProps {
   post: {
@@ -28,6 +31,8 @@ interface PostAnalyticsProps {
 }
 
 export const PostAnalytics = ({ post }: PostAnalyticsProps) => {
+  const [selectedComparisonPost, setSelectedComparisonPost] = useState<Post | null>(null);
+
   const viralityScore = Math.round((post.metrics.engagement * 100) + 
     (post.metrics.views / 1000) + 
     (post.metrics.likes / 100));
@@ -48,6 +53,11 @@ export const PostAnalytics = ({ post }: PostAnalyticsProps) => {
 
   return (
     <div className="space-y-6">
+      <PostSelectionSection
+        selectedPost={selectedComparisonPost}
+        setSelectedPost={setSelectedComparisonPost}
+      />
+
       <Card className="p-6">
         <div className="flex items-center justify-between mb-6">
           <div>
@@ -83,6 +93,7 @@ export const PostAnalytics = ({ post }: PostAnalyticsProps) => {
             <LineChart 
               metric="engagement"
               interval="hourly"
+              comparisonPostId={selectedComparisonPost?.id}
             />
           </div>
         </div>
@@ -95,12 +106,14 @@ export const PostAnalytics = ({ post }: PostAnalyticsProps) => {
             <LineChart 
               metric="likes"
               interval="hourly"
+              comparisonPostId={selectedComparisonPost?.id}
             />
           </div>
           <div className="h-[400px]">
             <LineChart 
               metric="comments"
               interval="hourly"
+              comparisonPostId={selectedComparisonPost?.id}
             />
           </div>
         </div>
