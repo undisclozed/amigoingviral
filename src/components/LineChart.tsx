@@ -54,6 +54,20 @@ export const LineChart = ({
     setAverageData(averagePoints);
   }, [currentInterval, currentMetric, showComparison, averagePeriod]);
 
+  const formatYAxisTick = (value: number) => {
+    if (currentMetric === 'engagement') {
+      return `${(value * 100).toFixed(1)}%`;
+    }
+    return value.toLocaleString();
+  };
+
+  const formatTooltipValue = (value: number) => {
+    if (currentMetric === 'engagement') {
+      return `${(value * 100).toFixed(1)}%`;
+    }
+    return value.toLocaleString();
+  };
+
   return (
     <Card className="w-full h-[400px] flex flex-col">
       <div className="p-6 flex flex-col h-full">
@@ -91,8 +105,9 @@ export const LineChart = ({
               <YAxis 
                 tick={{ fontSize: 12 }}
                 width={60}
+                tickFormatter={formatYAxisTick}
               />
-              <Tooltip />
+              <Tooltip formatter={formatTooltipValue} />
               <Line 
                 type="monotone" 
                 dataKey="value" 
