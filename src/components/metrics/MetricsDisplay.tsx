@@ -1,6 +1,6 @@
 import { MetricCard } from "@/components/MetricCard";
 import { MetricChartDialog } from "@/components/MetricChartDialog";
-import { Users, Eye, Percent, Users2 } from "lucide-react";
+import { Users, Eye, Percent, Users2, TrendingUp, MessageCircle, Play } from "lucide-react";
 import type { AccountMetrics } from "@/types/database";
 
 interface MetricsDisplayProps {
@@ -57,7 +57,7 @@ export const MetricsDisplay = ({ metrics }: MetricsDisplayProps) => {
 
       <div onClick={() => document.getElementById('engagement-dialog')?.click()}>
         <MetricCard
-          title="Avg. Engagement"
+          title="Engagement Rate"
           value={`${metrics.avg_engagement_rate.toFixed(1)}%`}
           change={0}
           subValue={`${formatMetricValue(metrics.avg_likes)} avg likes`}
@@ -80,7 +80,7 @@ export const MetricsDisplay = ({ metrics }: MetricsDisplayProps) => {
           change={0}
           subValue="Based on overall performance"
           period="Last 30 days"
-          icon={<Users2 className="h-4 w-4" />}
+          icon={<TrendingUp className="h-4 w-4" />}
           metric="growth"
         />
         <MetricChartDialog

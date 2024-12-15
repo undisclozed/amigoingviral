@@ -6,15 +6,20 @@ import { PostComparison } from "@/components/PostComparison";
 import CompetitorAnalytics from "@/components/CompetitorAnalytics";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
-import { CalendarDays } from "lucide-react";
+import { CalendarDays, MapPin, Link as LinkIcon } from "lucide-react";
 import { useState, useEffect } from "react";
+import { useAuth } from "@/lib/auth/AuthContext";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAccountMetrics } from "@/hooks/useAccountMetrics";
+import { MetricsDisplay } from "@/components/metrics/MetricsDisplay";
 
 const Profile = () => {
   const [isLoading, setIsLoading] = useState(true);
-  const [selectedCompetitor, setSelectedCompetitor] = useState<string | null>(null);
+  const { user } = useAuth();
+  const { metrics, loading: metricsLoading } = useAccountMetrics();
 
   useEffect(() => {
-    // Simulate loading state
+    // Simulate loading state for components that need external data
     const timer = setTimeout(() => {
       setIsLoading(false);
     }, 1500);
@@ -22,7 +27,7 @@ const Profile = () => {
     return () => clearTimeout(timer);
   }, []);
 
-  if (isLoading) {
+  if (isLoading || metricsLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto space-y-6">
@@ -48,45 +53,46 @@ const Profile = () => {
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="max-w-7xl mx-auto space-y-6">
-        <div className="flex flex-col md:flex-row md:items-start gap-6 mb-8 animate-fade-in">
-          <div className="h-24 w-24 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
-            <img
-              src="https://images.unsplash.com/photo-1649972904349-6e44c42644a7"
-              alt="Profile"
-              className="h-full w-full object-cover"
-            />
+        <div className="flex flex-col md:flex-row md:items-start gap-6 mb-8">
+          <div className="h-24 w-24 rounded-full overflow-hidden flex-shrink-0">
+            <Avatar className="h-24 w-24">
+              <AvatarImage src="https://images.unsplash.com/photo-1649972904349-6e44c42644a7" alt="Sarah's Quest" />
+              <AvatarFallback>SQ</AvatarFallback>
+            </Avatar>
           </div>
           <div className="space-y-4 flex-grow">
             <div>
               <div className="flex items-center gap-3">
-                <h1 className="text-2xl font-bold">Sarah Johnson</h1>
+                <h1 className="text-2xl font-bold">Sarah's Quest</h1>
                 <Badge variant="secondary">Creator</Badge>
               </div>
-              <p className="text-gray-600">@sarahjcreates</p>
+              <p className="text-gray-600">@sarahsidequest</p>
             </div>
             
             <div className="space-y-2">
-              <p className="text-sm text-gray-700">Content Creator & Digital Artist specializing in lifestyle content and creative tutorials. Based in San Francisco, CA.</p>
-              <div className="flex items-center gap-2 text-sm text-gray-500">
-                <CalendarDays className="h-4 w-4" />
-                <span>Profile last updated: 2 hours ago</span>
-              </div>
-            </div>
-            
-            <div className="flex flex-wrap gap-4 text-sm">
-              <div className="bg-primary-light rounded-full px-4 py-1">
-                <span className="font-medium">342</span> Total Posts
-              </div>
-              <div className="bg-primary-light rounded-full px-4 py-1">
-                <span className="font-medium">156</span> Posts this month
-              </div>
-              <div className="bg-primary-light rounded-full px-4 py-1">
-                <span className="font-medium">4.8%</span> Avg. Engagement
+              <p className="text-sm text-gray-700">
+                Digital creator sharing life's adventures & creative journey 🌟
+                Based in San Francisco, CA 🌉
+              </p>
+              <div className="flex flex-wrap gap-4 text-sm text-gray-500">
+                <div className="flex items-center gap-1">
+                  <MapPin className="h-4 w-4" />
+                  <span>San Francisco, CA</span>
+                </div>
+                <div className="flex items-center gap-1">
+                  <LinkIcon className="h-4 w-4" />
+                  <a href="#" className="text-blue-500 hover:underline">sarahsidequest.com</a>
+                </div>
+                <div className="flex items-center gap-1">
+                  <CalendarDays className="h-4 w-4" />
+                  <span>Updated 2 hours ago</span>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
+        {metrics && <MetricsDisplay metrics={metrics} />}
         <AccountOverview />
         <PostComparison />
         <GrowthAnalytics />
