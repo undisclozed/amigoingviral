@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 
 interface LoginFormProps {
   onSuccess?: () => void;
@@ -62,32 +62,34 @@ export function LoginForm({ onSuccess }: LoginFormProps) {
   };
 
   return (
-    <>
-      <DialogHeader>
-        <DialogTitle>Welcome to ViewStats</DialogTitle>
-      </DialogHeader>
-      <div className="space-y-6 p-4">
-        <p className="text-center text-gray-500">
-          Enter your email to sign in or create an account
-        </p>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <Input
-            type="email"
-            placeholder="Enter your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-            className="w-full"
-          />
-          <Button 
-            className="w-full bg-green-500 hover:bg-green-600" 
-            type="submit" 
-            disabled={isLoading}
-          >
-            {isLoading ? "Sending..." : "Continue with Email"}
-          </Button>
-        </form>
-      </div>
-    </>
+    <Dialog>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Welcome to ViewStats</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-6 p-4">
+          <p className="text-center text-gray-500">
+            Enter your email to sign in or create an account
+          </p>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <Input
+              type="email"
+              placeholder="Enter your email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              className="w-full"
+            />
+            <Button 
+              className="w-full bg-green-500 hover:bg-green-600" 
+              type="submit" 
+              disabled={isLoading}
+            >
+              {isLoading ? "Sending..." : "Continue with Email"}
+            </Button>
+          </form>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 }
