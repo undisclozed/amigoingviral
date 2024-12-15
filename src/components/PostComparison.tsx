@@ -3,6 +3,7 @@ import { Info } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
+  TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { PostSection } from "./post-comparison/PostSection";
@@ -24,14 +25,16 @@ export const PostComparison = () => {
     <Card className="p-6">
       <div className="flex items-center gap-2 mb-6">
         <h3 className="text-xl font-semibold">Post Performance Analysis</h3>
-        <Tooltip>
-          <TooltipTrigger>
-            <Info className="h-4 w-4 text-gray-400" />
-          </TooltipTrigger>
-          <TooltipContent>
-            <p className="max-w-xs">Posts are ranked based on a combination of views and engagement score.</p>
-          </TooltipContent>
-        </Tooltip>
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger>
+              <Info className="h-4 w-4 text-gray-400" />
+            </TooltipTrigger>
+            <TooltipContent>
+              <p className="max-w-xs">Posts are ranked based on a combination of views and engagement score.</p>
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
       </div>
 
       <div className="grid md:grid-cols-2 gap-6">
