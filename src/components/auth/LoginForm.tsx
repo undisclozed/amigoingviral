@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useAuth } from '@/lib/auth/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,11 +16,23 @@ interface LoginFormProps {
 export function LoginForm({ open, onOpenChange, onSuccess }: LoginFormProps) {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [cooldownTime, setCooldownTime] = useState(0);
   const { toast } = useToast();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (cooldownTime > 0) {
+      timer = setInterval(() => {
+        setCooldownTime((time) => Math.max(0, time - 1));
+      }, 1000);
+    }
+    return () => {
+      if (timer) clearInterval(timer);
+    };
+  }, [cooldownTime]);
+
   const validateEmail = (email: string) => {
-    // More comprehensive email validation
     const regex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
     return regex.test(email.toLowerCase());
   };
@@ -28,6 +40,15 @@ export function LoginForm({ open, onOpenChange, onSuccess }: LoginFormProps) {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     
+    if (cooldownTime > 0) {
+      toast({
+        title: "Please wait",
+        description: `You can request another login link in ${cooldownTime} seconds`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     if (!validateEmail(email)) {
       toast({
         title: "Invalid email",
@@ -40,14 +61,17 @@ export function LoginForm({ open, onOpenChange, onSuccess }: LoginFormProps) {
     setIsLoading(true);
     try {
       const { error } = await supabase.auth.signInWithOtp({
-        email: email.toLowerCase().trim(), // Normalize email
+        email: email.toLowerCase().trim(),
         options: {
           emailRedirectTo: `${window.location.origin}/dashboard`,
         },
       });
 
       if (error) {
-        console.error('Login error:', error);
+        if (error.message.includes('rate_limit')) {
+          setCooldownTime(15); // Set 15 second cooldown
+          throw new Error('Please wait 15 seconds before requesting another login link');
+        }
         throw error;
       }
 
@@ -60,10 +84,7 @@ export function LoginForm({ open, onOpenChange, onSuccess }: LoginFormProps) {
         onSuccess();
       }
 
-      // Close the dialog after successful login
       onOpenChange(false);
-      
-      // Navigate to dashboard
       navigate('/dashboard');
     } catch (error: any) {
       console.error('Login error:', error);
@@ -76,6 +97,12 @@ export function LoginForm({ open, onOpenChange, onSuccess }: LoginFormProps) {
       setIsLoading(false);
     }
   };
+
+  const buttonText = cooldownTime > 0 
+    ? `Wait ${cooldownTime}s`
+    : isLoading 
+      ? "Sending..." 
+      : "Continue with Email";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -99,9 +126,9 @@ export function LoginForm({ open, onOpenChange, onSuccess }: LoginFormProps) {
             <Button 
               className="w-full bg-green-500 hover:bg-green-600" 
               type="submit" 
-              disabled={isLoading}
+              disabled={isLoading || cooldownTime > 0}
             >
-              {isLoading ? "Sending..." : "Continue with Email"}
+              {buttonText}
             </Button>
           </form>
         </div>
