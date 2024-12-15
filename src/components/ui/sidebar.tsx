@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, User, Image, Settings, Menu } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Menu } from "lucide-react";
 import { useState } from "react";
 import { useIsMobile } from "@/hooks/use-mobile";
 
@@ -9,16 +9,8 @@ interface SidebarProps {
 }
 
 const Sidebar = ({ children }: SidebarProps) => {
-  const location = useLocation();
   const isMobile = useIsMobile();
   const [isOpen, setIsOpen] = useState(false);
-
-  const links = [
-    { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/profile", label: "Profile", icon: User },
-    { href: "/posts", label: "Posts", icon: Image },
-    { href: "/settings", label: "Settings", icon: Settings },
-  ];
 
   return (
     <>
@@ -31,7 +23,7 @@ const Sidebar = ({ children }: SidebarProps) => {
 
       <aside 
         className={cn(
-          "fixed left-0 top-0 bottom-0 w-16 bg-white border-r flex flex-col items-center py-8 transition-transform duration-300 z-40",
+          "fixed left-0 top-0 bottom-0 w-64 bg-white border-r flex flex-col py-8 transition-transform duration-300 z-40",
           isMobile && !isOpen && "-translate-x-full",
           isMobile && isOpen && "translate-x-0"
         )}
@@ -47,7 +39,7 @@ interface SidebarContentProps {
 }
 
 const SidebarContent = ({ children }: SidebarContentProps) => (
-  <div className="flex-1 w-full">{children}</div>
+  <div className="flex-1 w-full overflow-y-auto">{children}</div>
 );
 
 interface SidebarGroupProps {
@@ -55,7 +47,7 @@ interface SidebarGroupProps {
 }
 
 const SidebarGroup = ({ children }: SidebarGroupProps) => (
-  <div className="px-2 py-2">{children}</div>
+  <div className="px-4 py-2">{children}</div>
 );
 
 interface SidebarGroupLabelProps {
@@ -63,7 +55,7 @@ interface SidebarGroupLabelProps {
 }
 
 const SidebarGroupLabel = ({ children }: SidebarGroupLabelProps) => (
-  <h3 className="mb-2 px-2 text-xs font-semibold tracking-tight">{children}</h3>
+  <h3 className="mb-4 text-sm font-semibold text-gray-500 uppercase tracking-wider">{children}</h3>
 );
 
 interface SidebarGroupContentProps {
@@ -79,7 +71,7 @@ interface SidebarMenuProps {
 }
 
 const SidebarMenu = ({ children }: SidebarMenuProps) => (
-  <nav>{children}</nav>
+  <nav className="space-y-1">{children}</nav>
 );
 
 interface SidebarMenuItemProps {
@@ -87,7 +79,7 @@ interface SidebarMenuItemProps {
 }
 
 const SidebarMenuItem = ({ children }: SidebarMenuItemProps) => (
-  <div className="px-2">{children}</div>
+  <div>{children}</div>
 );
 
 interface SidebarMenuButtonProps {
@@ -95,8 +87,10 @@ interface SidebarMenuButtonProps {
   asChild?: boolean;
 }
 
-const SidebarMenuButton = ({ children, asChild }: SidebarMenuButtonProps) => (
-  <div className="w-full">{children}</div>
+const SidebarMenuButton = ({ children }: SidebarMenuButtonProps) => (
+  <div className="w-full rounded-md hover:bg-gray-100 transition-colors">
+    {children}
+  </div>
 );
 
 interface SidebarProviderProps {
