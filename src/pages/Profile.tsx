@@ -3,7 +3,7 @@ import { MetricsOverview } from "@/components/shared/MetricsOverview";
 import { fetchAccountMetrics } from "@/lib/api";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { userMetrics } from "@/components/competitor-analytics/mock-data";
-import { toast } from "@/hooks/use-toast";
+import { toast } from "@/components/ui/use-toast";
 import { Instagram } from "lucide-react";
 
 const Profile = () => {
@@ -30,31 +30,26 @@ const Profile = () => {
   }
 
   // Always have displayMetrics defined, either from API or mock data
-  const displayMetrics = metrics || {
-    avg_views: userMetrics.avgViews,
-    avg_likes: userMetrics.avgLikes,
-    avg_comments: userMetrics.avgComments,
-    avg_engagement_rate: userMetrics.engagementRate,
-    follower_count: userMetrics.followers
+  const displayMetrics = {
+    views: userMetrics.avgViews,
+    likes: userMetrics.avgLikes,
+    comments: userMetrics.avgComments,
+    engagement: userMetrics.engagementRate / 100, // Convert to decimal for proper display
+    followers: userMetrics.followers
   };
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center gap-2 mb-4">
-        <Instagram className="h-5 w-5" />
-        <h1 className="text-2xl font-bold">Instagram Analytics</h1>
+    <div className="space-y-6 p-6">
+      <div className="flex items-center justify-center gap-2 mb-8">
+        <Instagram className="h-6 w-6" />
+        <h1 className="text-2xl font-semibold">Instagram Analytics</h1>
       </div>
       
       <MetricsOverview
         type="account"
-        metrics={{
-          views: displayMetrics.avg_views || 0,
-          likes: displayMetrics.avg_likes || 0,
-          comments: displayMetrics.avg_comments || 0,
-          engagement: displayMetrics.avg_engagement_rate || 0,
-          followers: displayMetrics.follower_count || 0
-        }}
-        accountHandle={user?.email || "@username"}
+        metrics={displayMetrics}
+        accountHandle={user?.email || "sternzac@gmail.com"}
+        period="Last 30 days"
       />
     </div>
   );
