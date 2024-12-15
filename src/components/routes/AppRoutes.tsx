@@ -18,7 +18,6 @@ export const AppRoutes = () => {
       } />
       <Route path="/profile" element={<Profile />} />
       <Route path="/posts" element={<Posts />} />
-      {/* Catch-all route for 404 */}
       <Route path="*" element={<Navigate to="/dashboard" replace />} />
     </Routes>
   );
