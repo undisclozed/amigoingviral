@@ -94,7 +94,7 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
         setProfile(data);
 
         // Only create initial metrics if profile exists but metrics don't
-        if (data?.instagram_account) {
+        if (data) {
           const { data: metricsData, error: metricsError } = await supabase
             .from('account_metrics')
             .select('id')
@@ -148,8 +148,8 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
     return <LoginForm open={true} onOpenChange={setShowLogin} />;
   }
 
-  // Only show ProfileForm if profile doesn't exist or required fields are missing
-  if (!profile || (!profile.instagram_account && !profile.name)) {
+  // Only show ProfileForm if profile doesn't exist
+  if (!profile) {
     console.log('No profile info, showing profile form');
     return <ProfileForm />;
   }
