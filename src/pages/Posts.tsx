@@ -20,6 +20,7 @@ const postImages = [
 const generateMockPosts = () => {
   return Array.from({ length: 34 }, (_, index) => ({
     id: index + 1,
+    username: "@creator",
     thumbnail: postImages[index % postImages.length],
     caption: `Post ${index + 1} - This is a sample caption for testing purposes. #testing #sample`,
     timestamp: new Date(Date.now() - index * 24 * 60 * 60 * 1000).toISOString(),
