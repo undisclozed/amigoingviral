@@ -3,6 +3,7 @@ import { AppSidebar } from "../shared/AppSidebar";
 import { useState } from "react";
 
 export function AppLayout() {
+  console.log("AppLayout rendering");
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (

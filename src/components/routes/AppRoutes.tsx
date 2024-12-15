@@ -1,4 +1,4 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { AuthGuard } from "@/components/auth/AuthGuard";
 import { AppLayout } from "@/components/layout/AppLayout";
 import Dashboard from "@/pages/Dashboard";
@@ -8,6 +8,7 @@ import Settings from "@/pages/Settings";
 import Index from "@/pages/Index";
 
 export function AppRoutes() {
+  console.log("AppRoutes rendering");
   return (
     <Routes>
       <Route path="/" element={<Index />} />
