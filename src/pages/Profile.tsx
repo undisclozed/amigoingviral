@@ -3,21 +3,30 @@ import { MetricsOverview } from "@/components/shared/MetricsOverview";
 import { fetchAccountMetrics } from "@/lib/api";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { userMetrics } from "@/components/competitor-analytics/mock-data";
+import { toast } from "@/components/ui/use-toast";
 
 const Profile = () => {
   const { user } = useAuth();
   
-  const { data: metrics, isLoading, error } = useQuery({
+  const { data: metrics, isLoading } = useQuery({
     queryKey: ['accountMetrics', user?.id],
     queryFn: () => fetchAccountMetrics(user?.id),
     enabled: !!user,
+    retry: 1,
+    onError: () => {
+      console.log("Error fetching metrics, falling back to mock data");
+      toast({
+        title: "Using demo data",
+        description: "Currently displaying sample metrics while we connect to your account.",
+      });
+    }
   });
 
   if (isLoading) {
     return <div className="flex items-center justify-center min-h-[200px]">Loading...</div>;
   }
 
-  // Use mock data if there's an error or no metrics
+  // Always have displayMetrics defined, either from API or mock data
   const displayMetrics = metrics || {
     avg_views: userMetrics.avgViews,
     avg_likes: userMetrics.avgLikes,
