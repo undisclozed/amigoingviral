@@ -4,9 +4,11 @@ import { LoginForm } from '@/components/auth/LoginForm';
 import { ProfileForm } from '@/components/auth/ProfileForm';
 import { Toaster } from '@/components/ui/toaster';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AccountOverview } from '@/components/AccountOverview';
 import { GrowthAnalytics } from '@/components/GrowthAnalytics';
 import ChartsSection from '@/components/dashboard/ChartsSection';
+import { AppSidebar } from '@/components/shared/AppSidebar';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -92,10 +94,24 @@ function AppContent() {
   }
 
   return (
-    <div>
-      <AccountOverview />
-      <GrowthAnalytics />
-      <ChartsSection />
+    <div className="flex h-screen">
+      <AppSidebar />
+      <main className="flex-1 overflow-y-auto p-8 ml-64">
+        <Routes>
+          <Route path="/" element={<Navigate to="/dashboard" replace />} />
+          <Route
+            path="/dashboard"
+            element={
+              <div>
+                <AccountOverview />
+                <GrowthAnalytics />
+                <ChartsSection />
+              </div>
+            }
+          />
+          {/* Add other routes as needed */}
+        </Routes>
+      </main>
     </div>
   );
 }
@@ -104,8 +120,10 @@ function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>
-        <AppContent />
-        <Toaster />
+        <Router>
+          <AppContent />
+          <Toaster />
+        </Router>
       </AuthProvider>
     </QueryClientProvider>
   );
