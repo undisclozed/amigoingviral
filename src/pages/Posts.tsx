@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { AppSidebar } from "@/components/shared/AppSidebar";
+import { AccountMetricsOverview } from "@/components/posts/AccountMetricsOverview";
 import { EmptyPostsState } from "@/components/posts/EmptyPostsState";
 import { PostsList } from "@/components/posts/PostsList";
 import { CompetitorSearch } from "@/components/competitor-analytics/CompetitorSearch";
@@ -37,6 +38,17 @@ const Posts = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [competitorHandle, setCompetitorHandle] = useState("");
+  const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
+
+  const mockAccountMetrics = {
+    views: 150000,
+    likes: 25000,
+    comments: 1500,
+    shares: 500,
+    saves: 2000,
+    engagement: 5.2,
+    followers: 10000
+  };
 
   useEffect(() => {
     setPosts(generateMockPosts());
@@ -75,9 +87,17 @@ const Posts = () => {
               setSearchQuery={setSearchQuery} 
             />
           ) : (
-            <Card className="p-6">
-              <PostsList posts={posts} />
-            </Card>
+            <>
+              {!selectedPostId && (
+                <AccountMetricsOverview 
+                  accountMetrics={mockAccountMetrics}
+                  postsCount={posts.length}
+                />
+              )}
+              <Card className="p-6">
+                <PostsList posts={posts} onPostSelect={setSelectedPostId} />
+              </Card>
+            </>
           )}
         </div>
       </main>
