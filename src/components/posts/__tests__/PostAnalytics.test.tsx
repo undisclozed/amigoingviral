@@ -1,7 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { PostAnalytics } from '../PostAnalytics';
 import { mockPost } from '../__mocks__/mockData';
-import { describe, it, expect, jest } from '@jest/globals';
+import '@testing-library/jest-dom';
 
 describe('PostAnalytics', () => {
   it('renders loading skeleton when isLoading is true', () => {
@@ -17,10 +17,10 @@ describe('PostAnalytics', () => {
 
   it('renders metrics when data is loaded', () => {
     render(<PostAnalytics post={mockPost} />);
-    expect(screen.getByText(/Post Performance/i)).toBeInTheDocument();
+    expect(screen.getByRole('region', { name: /Post Analytics Dashboard/i })).toBeInTheDocument();
   });
 
-  it('handles retry action when error occurs', () => {
+  it('calls onRetry when retry button is clicked', () => {
     const onRetry = jest.fn();
     render(<PostAnalytics post={mockPost} onRetry={onRetry} />);
     const retryButton = screen.getByRole('button', { name: /retry/i });
