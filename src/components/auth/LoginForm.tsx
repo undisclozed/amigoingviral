@@ -5,6 +5,7 @@ import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { useNavigate } from 'react-router-dom';
 
 interface LoginFormProps {
   open: boolean;
@@ -16,6 +17,7 @@ export function LoginForm({ open, onOpenChange, onSuccess }: LoginFormProps) {
   const [email, setEmail] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const validateEmail = (email: string) => {
     // More comprehensive email validation
@@ -57,6 +59,12 @@ export function LoginForm({ open, onOpenChange, onSuccess }: LoginFormProps) {
       if (onSuccess) {
         onSuccess();
       }
+
+      // Close the dialog after successful login
+      onOpenChange(false);
+      
+      // Navigate to dashboard
+      navigate('/dashboard');
     } catch (error: any) {
       console.error('Login error:', error);
       toast({
