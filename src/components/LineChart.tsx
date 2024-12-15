@@ -19,16 +19,30 @@ export const LineChart = ({
   const [comparisonData, setComparisonData] = useState(() => 
     showComparison ? generateTimeData(interval, metric, true) : []
   );
+  const [averagePeriod, setAveragePeriod] = useState<'10' | '25' | '50'>('25');
+  const [averageData, setAverageData] = useState<any[]>([]);
 
   useEffect(() => {
     setData(generateTimeData(currentInterval, currentMetric));
     if (showComparison) {
       setComparisonData(generateTimeData(currentInterval, currentMetric, true));
     }
-  }, [currentInterval, currentMetric, showComparison]);
+    
+    // Generate average data based on selected period
+    const avgValue = data.reduce((sum, item) => sum + item.value, 0) / data.length;
+    const averagePoints = data.map(item => ({
+      date: item.date,
+      value: avgValue
+    }));
+    setAverageData(averagePoints);
+  }, [currentInterval, currentMetric, showComparison, averagePeriod]);
 
   const handleTimeframeChange = (value: string) => {
     setCurrentInterval(value as Interval);
+  };
+
+  const handleAveragePeriodChange = (value: string) => {
+    setAveragePeriod(value as '10' | '25' | '50');
   };
 
   return (
@@ -37,18 +51,30 @@ export const LineChart = ({
         <div className="flex-none">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold">Performance Metrics</h3>
-            <Select defaultValue={currentInterval} onValueChange={handleTimeframeChange}>
-              <SelectTrigger className="w-[120px] bg-white border-2">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent className="bg-white border-2 shadow-lg">
-                <SelectItem value="5min">5 Minutes</SelectItem>
-                <SelectItem value="hourly">Hourly</SelectItem>
-                <SelectItem value="daily">Daily</SelectItem>
-                <SelectItem value="weekly">Weekly</SelectItem>
-                <SelectItem value="monthly">Monthly</SelectItem>
-              </SelectContent>
-            </Select>
+            <div className="flex gap-2">
+              <Select defaultValue={averagePeriod} onValueChange={handleAveragePeriodChange}>
+                <SelectTrigger className="w-[140px] bg-white border-2">
+                  <SelectValue placeholder="Average Period" />
+                </SelectTrigger>
+                <SelectContent className="bg-white border-2 shadow-lg">
+                  <SelectItem value="10">Last 10 Posts</SelectItem>
+                  <SelectItem value="25">Last 25 Posts</SelectItem>
+                  <SelectItem value="50">Last 50 Posts</SelectItem>
+                </SelectContent>
+              </Select>
+              <Select defaultValue={currentInterval} onValueChange={handleTimeframeChange}>
+                <SelectTrigger className="w-[120px] bg-white border-2">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent className="bg-white border-2 shadow-lg">
+                  <SelectItem value="5min">5 Minutes</SelectItem>
+                  <SelectItem value="hourly">Hourly</SelectItem>
+                  <SelectItem value="daily">Daily</SelectItem>
+                  <SelectItem value="weekly">Weekly</SelectItem>
+                  <SelectItem value="monthly">Monthly</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <div className="mb-6">
             <MetricSelector 
@@ -94,6 +120,19 @@ export const LineChart = ({
                   strokeWidth={2}
                   dot={{ fill: "#FF6B6B" }}
                   name={comparisonCreator || "Comparison"}
+                  isAnimationActive={false}
+                />
+              )}
+              {averageData.length > 0 && (
+                <Line
+                  type="monotone"
+                  data={averageData}
+                  dataKey="value"
+                  stroke="#9CA3AF"
+                  strokeWidth={2}
+                  strokeDasharray="5 5"
+                  dot={false}
+                  name={`Average (${averagePeriod} posts)`}
                   isAnimationActive={false}
                 />
               )}
