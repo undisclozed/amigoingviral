@@ -64,7 +64,6 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
       }
     });
 
-    // Cleanup subscription
     return () => {
       subscription.unsubscribe();
     };
@@ -148,9 +147,12 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
     return <LoginForm open={true} onOpenChange={setShowLogin} />;
   }
 
-  // Only show ProfileForm if profile doesn't exist
-  if (!profile) {
-    console.log('No profile info, showing profile form');
+  // Check if we're on the dashboard route and profile exists
+  const isDashboardRoute = location.pathname === '/dashboard';
+  const hasProfile = Boolean(profile);
+
+  if (isDashboardRoute && !hasProfile) {
+    console.log('On dashboard but no profile, showing profile form');
     return <ProfileForm />;
   }
 
