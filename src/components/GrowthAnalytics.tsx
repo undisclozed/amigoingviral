@@ -7,6 +7,11 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { LineChart } from "./LineChart";
+import { useAuth } from "@/lib/auth/AuthContext";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
+import type { AccountMetrics } from "@/types/database";
 
 const generateDynamicTips = (score: number): string[] => {
   if (score >= 90) {
@@ -41,8 +46,70 @@ const generateDynamicTips = (score: number): string[] => {
 };
 
 export const GrowthAnalytics = () => {
-  const growthScore = 85;
-  const previousScore = 78;
+  const { user } = useAuth();
+  const [metrics, setMetrics] = useState<AccountMetrics | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) return;
+
+    const fetchMetrics = async () => {
+      try {
+        const { data, error } = await supabase
+          .from('account_metrics')
+          .select('*')
+          .eq('user_id', user.id)
+          .single();
+
+        if (error) throw error;
+        setMetrics(data);
+      } catch (error) {
+        console.error('Error fetching metrics:', error);
+        toast.error('Failed to load growth analytics');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchMetrics();
+
+    // Set up real-time subscription
+    const channel = supabase
+      .channel('growth-analytics-changes')
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'account_metrics',
+          filter: `user_id=eq.${user.id}`
+        },
+        (payload) => {
+          console.log('Real-time growth update:', payload);
+          if (payload.new) {
+            setMetrics(payload.new as AccountMetrics);
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [user]);
+
+  if (loading || !metrics) {
+    return (
+      <div className="space-y-6 animate-pulse">
+        <Card className="p-6">
+          <div className="h-[600px] bg-gray-100 rounded-lg"></div>
+        </Card>
+      </div>
+    );
+  }
+
+  const growthScore = metrics.growth_score;
+  const previousScore = growthScore - 5; // We'll implement historical tracking later
   const scoreChange = growthScore - previousScore;
 
   const growthTips = generateDynamicTips(growthScore);

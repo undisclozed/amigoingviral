@@ -9,6 +9,7 @@ import { GrowthAnalytics } from '@/components/GrowthAnalytics';
 import ChartsSection from '@/components/dashboard/ChartsSection';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 const queryClient = new QueryClient();
 
@@ -33,8 +34,43 @@ function AppContent() {
 
         if (error) throw error;
         setProfile(data);
+
+        // Check if account metrics exist for the user
+        const { data: metricsData, error: metricsError } = await supabase
+          .from('account_metrics')
+          .select('id')
+          .eq('user_id', user.id)
+          .single();
+
+        if (metricsError && metricsError.code === 'PGRST116') {
+          // No metrics found, create initial metrics
+          const { error: insertError } = await supabase
+            .from('account_metrics')
+            .insert([
+              {
+                user_id: user.id,
+                follower_count: 0,
+                follower_growth: 0,
+                post_count: 0,
+                posts_last_period: 0,
+                accounts_reached: 0,
+                accounts_engaged: 0,
+                avg_engagement_rate: 0,
+                avg_likes: 0,
+                avg_comments: 0,
+                avg_views: 0,
+                growth_score: 0
+              }
+            ]);
+
+          if (insertError) {
+            console.error('Error creating initial metrics:', insertError);
+            toast.error('Failed to initialize metrics');
+          }
+        }
       } catch (error) {
         console.error('Error loading profile:', error);
+        toast.error('Failed to load profile');
       } finally {
         setLoading(false);
       }
@@ -51,7 +87,6 @@ function AppContent() {
     return <div>Loading...</div>;
   }
 
-  // If profile is incomplete (no instagram_account or name), show profile form
   if (!profile?.instagram_account || !profile?.name) {
     return <ProfileForm />;
   }
