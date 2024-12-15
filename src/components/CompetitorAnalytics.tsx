@@ -6,10 +6,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { LineChart } from "./LineChart";
-import { Input } from "./ui/input";
-import { Button } from "./ui/button";
 import { useState } from "react";
+import { CompetitorSearch } from "./competitor-analytics/CompetitorSearch";
+import { MetricsComparison } from "./competitor-analytics/MetricsComparison";
+import { CompetitorInsights } from "./competitor-analytics/CompetitorInsights";
+import { GrowthChart } from "./competitor-analytics/GrowthChart";
 
 // Mock competitor data - in a real app, this would come from an API
 const competitorData = {
@@ -86,7 +87,7 @@ const CompetitorAnalytics = () => {
     <Card className="p-6 animate-fade-in">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-2">
-          <h3 className="text-xl font-semibold">Competitor Analysis</h3>
+          <h3 className="text-xl font-semibold">Creator Analysis</h3>
           <TooltipProvider>
             <Tooltip>
               <TooltipTrigger>
@@ -98,95 +99,25 @@ const CompetitorAnalytics = () => {
             </Tooltip>
           </TooltipProvider>
         </div>
-        <form onSubmit={handleCompetitorSearch} className="flex gap-2">
-          <Input
-            placeholder="Enter competitor's handle"
-            value={competitorHandle}
-            onChange={(e) => setCompetitorHandle(e.target.value)}
-            className="w-64"
-          />
-          <Button type="submit">Compare</Button>
-        </form>
+        <CompetitorSearch
+          competitorHandle={competitorHandle}
+          onHandleChange={setCompetitorHandle}
+          onSearch={handleCompetitorSearch}
+        />
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
-        <div className="space-y-4">
-          <h4 className="font-medium">Your Metrics</h4>
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Followers</span>
-              <span className="font-medium">{userMetrics.followers.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Follower Growth</span>
-              <span className="font-medium">{userMetrics.followerGrowth}%</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Engagement Rate</span>
-              <span className="font-medium">{userMetrics.engagementRate}%</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Avg. Likes</span>
-              <span className="font-medium">{userMetrics.avgLikes.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Avg. Comments</span>
-              <span className="font-medium">{userMetrics.avgComments.toLocaleString()}</span>
-            </div>
-          </div>
-        </div>
+      <MetricsComparison
+        userMetrics={userMetrics}
+        competitorMetrics={selectedCompetitor?.metrics || competitorData.metrics}
+        competitorUsername={selectedCompetitor?.username || competitorData.username}
+      />
 
-        <div className="space-y-4">
-          <h4 className="font-medium">Creator Metrics ({selectedCompetitor?.username || competitorData.username})</h4>
-          <div className="space-y-2">
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Followers</span>
-              <span className="font-medium">{(selectedCompetitor?.metrics || competitorData.metrics).followers.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Follower Growth</span>
-              <span className="font-medium">{(selectedCompetitor?.metrics || competitorData.metrics).followerGrowth}%</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Engagement Rate</span>
-              <span className="font-medium">{(selectedCompetitor?.metrics || competitorData.metrics).engagementRate}%</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Avg. Likes</span>
-              <span className="font-medium">{(selectedCompetitor?.metrics || competitorData.metrics).avgLikes.toLocaleString()}</span>
-            </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-gray-600">Avg. Comments</span>
-              <span className="font-medium">{(selectedCompetitor?.metrics || competitorData.metrics).avgComments.toLocaleString()}</span>
-            </div>
-          </div>
-        </div>
-      </div>
+      <CompetitorInsights insights={generateInsights()} />
 
-      <div className="mt-6 space-y-4">
-        <h4 className="font-medium">Competitive Insights</h4>
-        <ul className="space-y-2">
-          {generateInsights().map((insight, index) => (
-            <li key={index} className="flex items-start gap-2 text-sm text-gray-600">
-              <div className="h-1.5 w-1.5 rounded-full bg-primary flex-shrink-0 mt-1.5" />
-              {insight}
-            </li>
-          ))}
-        </ul>
-      </div>
-
-      <div className="mt-6">
-        <h4 className="font-medium mb-4">Growth Comparison</h4>
-        <div className="h-[550px]">
-          <LineChart 
-            metric="followers"
-            interval="monthly"
-            showComparison={true}
-            currentCreator="Your Account"
-            comparisonCreator={selectedCompetitor?.username || competitorData.username}
-          />
-        </div>
-      </div>
+      <GrowthChart
+        currentCreator="Your Account"
+        comparisonCreator={selectedCompetitor?.username || competitorData.username}
+      />
     </Card>
   );
 };
