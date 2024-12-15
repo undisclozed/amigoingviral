@@ -1,17 +1,11 @@
 import { Card } from "@/components/ui/card";
-import { Info, Clock, Play, Users } from "lucide-react";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { LineChart } from "../LineChart";
-import { ViralityScore } from "../ViralityScore";
-import { MetricTile } from "./MetricTile";
-import { Post } from "../dashboard/types";
 import { useState, useEffect } from "react";
 import { getTimeSincePost, getUpdateInterval } from "@/utils/timeUtils";
+import { ViralityScore } from "../ViralityScore";
+import { Post } from "../dashboard/types";
+import { PostMetricsTiles } from "./metrics/PostMetricsTiles";
+import { PostRatioMetrics } from "./metrics/PostRatioMetrics";
+import { PostPerformanceCharts } from "./charts/PostPerformanceCharts";
 
 interface PostAnalyticsProps {
   post: Post;
@@ -22,13 +16,10 @@ export const PostAnalytics = ({ post }: PostAnalyticsProps) => {
   const [updateInterval, setUpdateInterval] = useState<number>(5);
 
   useEffect(() => {
-    // Update the interval based on post age
     const interval = getUpdateInterval(post.timestamp);
     setUpdateInterval(interval);
 
-    // Set up the update timer
     const timer = setInterval(() => {
-      // This is where we would fetch fresh data
       console.log(`Updating data every ${interval} minutes`);
     }, interval * 60 * 1000);
 
@@ -55,17 +46,6 @@ export const PostAnalytics = ({ post }: PostAnalyticsProps) => {
     averageWatchPercentage: post.metrics.averageWatchPercentage * 0.8,
   };
 
-  // Calculate engagement metrics
-  const totalEngagements = post.metrics.likes + post.metrics.comments + 
-    post.metrics.saves + post.metrics.shares;
-  const engagementRate = (totalEngagements / post.metrics.views) * 100;
-
-  // Calculate ratios
-  const likesToReachRatio = (post.metrics.likes / post.metrics.views) * 100;
-  const commentsToReachRatio = (post.metrics.comments / post.metrics.views) * 100;
-  const savesToReachRatio = (post.metrics.saves / post.metrics.views) * 100;
-  const followsToReachRatio = (post.metrics.followsFromPost / post.metrics.views) * 100;
-
   return (
     <div className="space-y-4">
       <Card className="p-4">
@@ -84,102 +64,22 @@ export const PostAnalytics = ({ post }: PostAnalyticsProps) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 mb-4">
-          {/* Core Metrics */}
-          <MetricTile
-            title="Views"
-            value={post.metrics.views.toLocaleString()}
-            change={getChangeFromAverage(post.metrics.views, averageMetrics.views)}
-            icon={<Info className="h-4 w-4" />}
-            metric="views"
-          />
-          <MetricTile
-            title="Likes"
-            value={post.metrics.likes.toLocaleString()}
-            change={getChangeFromAverage(post.metrics.likes, averageMetrics.likes)}
-            icon={<Info className="h-4 w-4" />}
-            metric="likes"
-          />
-          <MetricTile
-            title="Comments"
-            value={post.metrics.comments.toLocaleString()}
-            change={getChangeFromAverage(post.metrics.comments, averageMetrics.comments)}
-            icon={<Info className="h-4 w-4" />}
-            metric="comments"
-          />
-          <MetricTile
-            title="Shares"
-            value={post.metrics.shares.toLocaleString()}
-            change={getChangeFromAverage(post.metrics.shares, averageMetrics.shares)}
-            icon={<Info className="h-4 w-4" />}
-            metric="shares"
-          />
-          <MetricTile
-            title="Saves"
-            value={post.metrics.saves.toLocaleString()}
-            change={getChangeFromAverage(post.metrics.saves, averageMetrics.saves)}
-            icon={<Info className="h-4 w-4" />}
-            metric="saves"
-          />
-          <MetricTile
-            title="Engagement Rate"
-            value={`${engagementRate.toFixed(1)}%`}
-            change={getChangeFromAverage(engagementRate, averageMetrics.engagement)}
-            icon={<Info className="h-4 w-4" />}
-            metric="engagement"
-          />
-          <MetricTile
-            title="New Follows"
-            value={post.metrics.followsFromPost.toLocaleString()}
-            change={getChangeFromAverage(post.metrics.followsFromPost, averageMetrics.followsFromPost)}
-            icon={<Users className="h-4 w-4" />}
-          />
-          <MetricTile
-            title="Watch Time"
-            value={`${post.metrics.averageWatchPercentage}%`}
-            change={getChangeFromAverage(post.metrics.averageWatchPercentage, averageMetrics.averageWatchPercentage)}
-            icon={<Play className="h-4 w-4" />}
-          />
-        </div>
+        <PostMetricsTiles 
+          post={post}
+          averageMetrics={averageMetrics}
+          getChangeFromAverage={getChangeFromAverage}
+        />
 
-        {/* Ratio Metrics */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
-          <MetricTile
-            title="Likes/Reach"
-            value={`${likesToReachRatio.toFixed(1)}%`}
-            icon={<Info className="h-4 w-4" />}
-          />
-          <MetricTile
-            title="Comments/Reach"
-            value={`${commentsToReachRatio.toFixed(1)}%`}
-            icon={<Info className="h-4 w-4" />}
-          />
-          <MetricTile
-            title="Saves/Reach"
-            value={`${savesToReachRatio.toFixed(1)}%`}
-            icon={<Info className="h-4 w-4" />}
-          />
-          <MetricTile
-            title="Follows/Reach"
-            value={`${followsToReachRatio.toFixed(1)}%`}
-            icon={<Info className="h-4 w-4" />}
-          />
-        </div>
+        <PostRatioMetrics post={post} />
 
         <ViralityScore score={viralityScore} avgScore={avgScore} />
       </Card>
 
       <Card className="p-4">
-        <h3 className="text-lg font-semibold mb-4">Performance Over Time</h3>
-        <div className="h-[400px]">
-          <LineChart 
-            metric="engagement"
-            interval="hourly"
-            showComparison={!!selectedComparisonPost}
-            currentCreator="Current Post"
-            comparisonCreator={selectedComparisonPost?.caption}
-          />
-        </div>
+        <PostPerformanceCharts 
+          selectedPost={post}
+          selectedComparisonPost={selectedComparisonPost}
+        />
       </Card>
 
       <Card className="p-4">
