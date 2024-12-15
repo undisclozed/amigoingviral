@@ -21,6 +21,20 @@ function AppContent() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
+    // Listen for auth changes
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      if (event === 'SIGNED_IN') {
+        console.log('User signed in:', session?.user);
+      }
+    });
+
+    // Cleanup subscription
+    return () => {
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  useEffect(() => {
     async function getProfile() {
       if (!user) {
         setLoading(false);
@@ -28,13 +42,19 @@ function AppContent() {
       }
 
       try {
+        console.log('Fetching profile for user:', user.id);
         const { data, error } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', user.id)
           .single();
 
-        if (error) throw error;
+        if (error) {
+          console.error('Error fetching profile:', error);
+          throw error;
+        }
+        
+        console.log('Profile data:', data);
         setProfile(data);
 
         // Check if account metrics exist for the user
@@ -82,6 +102,7 @@ function AppContent() {
   }, [user]);
 
   if (!user) {
+    console.log('No user, showing login form');
     return <LoginForm />;
   }
 
@@ -90,9 +111,11 @@ function AppContent() {
   }
 
   if (!profile?.instagram_account || !profile?.name) {
+    console.log('No profile info, showing profile form');
     return <ProfileForm />;
   }
 
+  console.log('Rendering main app content');
   return (
     <div className="flex h-screen">
       <AppSidebar />
@@ -109,7 +132,6 @@ function AppContent() {
               </div>
             }
           />
-          {/* Add other routes as needed */}
         </Routes>
       </main>
     </div>

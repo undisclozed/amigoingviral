@@ -3,6 +3,7 @@ import { useAuth } from '@/lib/auth/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { useToast } from '@/components/ui/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
 export function LoginForm() {
   const [email, setEmail] = useState('');
@@ -14,12 +15,23 @@ export function LoginForm() {
     e.preventDefault();
     setIsLoading(true);
     try {
-      await signIn(email);
+      console.log('Attempting to sign in with email:', email);
+      const { error } = await supabase.auth.signInWithOtp({
+        email,
+        options: {
+          emailRedirectTo: window.location.origin,
+        },
+      });
+
+      if (error) throw error;
+
       toast({
         title: "Check your email",
         description: "We've sent you a magic link to sign in.",
       });
+      console.log('Magic link sent successfully');
     } catch (error) {
+      console.error('Login error:', error);
       toast({
         title: "Error",
         description: "Failed to send login link. Please try again.",
