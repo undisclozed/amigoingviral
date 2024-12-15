@@ -10,13 +10,11 @@ import { Info } from "lucide-react";
 
 interface PostPerformanceChartsProps {
   selectedPost: Post | null;
-  selectedComparisonPost: Post | null;
   isLoading?: boolean;
 }
 
 export const PostPerformanceCharts = ({ 
-  selectedPost, 
-  selectedComparisonPost,
+  selectedPost,
   isLoading = false
 }: PostPerformanceChartsProps) => {
   if (isLoading) {
@@ -39,8 +37,8 @@ export const PostPerformanceCharts = ({
             </TooltipTrigger>
             <TooltipContent>
               <p className="max-w-xs">
-                The blue line shows the average performance across your last 25 posts at the same time since posting.
-                This helps you understand how this post is performing compared to your typical content.
+                Track how this post is performing compared to your average content over time.
+                The blue line shows the average performance across your last 25 posts.
               </p>
             </TooltipContent>
           </Tooltip>
@@ -50,9 +48,7 @@ export const PostPerformanceCharts = ({
         <LineChart 
           metric="engagement"
           interval="hourly"
-          showComparison={!!selectedComparisonPost}
           currentCreator="Current Post"
-          comparisonCreator={selectedComparisonPost?.caption}
         />
       </div>
     </>
