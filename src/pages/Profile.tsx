@@ -27,11 +27,10 @@ const Profile = () => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <SidebarProvider>
-          <div className="min-h-screen flex w-full">
-            <AppSidebar />
-            <div className="flex-1 pl-72 p-6"> {/* Increased pl-64 to pl-72 for more padding */}
-              <div className="max-w-7xl mx-auto space-y-6">
+        <div className="min-h-screen flex w-full">
+          <AppSidebar />
+          <div className="flex-1 pl-24 lg:pl-72 p-6 transition-all duration-300">
+            <div className="max-w-7xl mx-auto space-y-6">
                 <div className="flex items-center gap-4 mb-8">
                   <Skeleton className="h-24 w-24 rounded-full" />
                   <div className="space-y-2">
@@ -46,21 +45,19 @@ const Profile = () => {
                   <Skeleton className="h-[300px] w-full" />
                   <Skeleton className="h-[200px] w-full" />
                 </div>
-              </div>
             </div>
           </div>
-        </SidebarProvider>
+        </div>
       </div>
     );
   }
 
   return (
     <div className="min-h-screen bg-background">
-      <SidebarProvider>
-        <div className="min-h-screen flex w-full">
-          <AppSidebar />
-          <div className="flex-1 pl-72 p-6"> {/* Increased pl-64 to pl-72 for more padding */}
-            <div className="max-w-7xl mx-auto space-y-6">
+      <div className="min-h-screen flex w-full">
+        <AppSidebar />
+        <div className="flex-1 pl-24 lg:pl-72 p-6 transition-all duration-300">
+          <div className="max-w-7xl mx-auto space-y-6">
               <div className="flex flex-col md:flex-row md:items-start gap-6 mb-8 animate-fade-in">
                 <div className="h-24 w-24 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">
                   <img
@@ -109,7 +106,7 @@ const Profile = () => {
             </div>
           </div>
         </div>
-      </SidebarProvider>
+      </div>
     </div>
   );
 };
