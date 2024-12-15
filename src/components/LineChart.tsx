@@ -32,9 +32,9 @@ export const LineChart = ({
   };
 
   return (
-    <Card className="p-6 w-full h-[400px]">
-      <div className="flex flex-col h-full">
-        <div className="mb-4">
+    <Card className="w-full h-[400px] flex flex-col">
+      <div className="p-6 flex flex-col h-full">
+        <div className="flex-none">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold">Performance Metrics</h3>
             <Select defaultValue={currentInterval} onValueChange={handleTimeframeChange}>
@@ -50,17 +50,19 @@ export const LineChart = ({
               </SelectContent>
             </Select>
           </div>
-          <MetricSelector 
-            currentMetric={currentMetric}
-            onMetricChange={(metric) => setCurrentMetric(metric)}
-          />
+          <div className="mb-6">
+            <MetricSelector 
+              currentMetric={currentMetric}
+              onMetricChange={(metric) => setCurrentMetric(metric)}
+            />
+          </div>
         </div>
         
-        <div className="flex-1">
+        <div className="flex-1 min-h-0">
           <ResponsiveContainer width="100%" height="100%">
             <RechartsLineChart 
               data={data} 
-              margin={{ top: 20, right: 30, left: 20, bottom: 20 }}
+              margin={{ top: 10, right: 30, left: 20, bottom: 20 }}
             >
               <CartesianGrid strokeDasharray="3 3" />
               <XAxis 
