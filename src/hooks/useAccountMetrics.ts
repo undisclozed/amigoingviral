@@ -15,13 +15,17 @@ export const useAccountMetrics = () => {
 
     const fetchMetrics = async () => {
       try {
+        console.log('Fetching metrics for user:', user.id);
         const { data, error } = await supabase
           .from('account_metrics')
           .select('*')
           .eq('user_id', user.id)
+          .order('created_at', { ascending: false })
+          .limit(1)
           .single();
 
         if (error) throw error;
+        console.log('Fetched metrics:', data);
         setMetrics(data);
         setError(null);
       } catch (error) {
