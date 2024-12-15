@@ -53,21 +53,10 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
       }
     });
 
-    // Check initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      console.log('Initial session check:', session?.user?.id);
-      if (!session) {
-        setLoading(false);
-        if (location.pathname !== '/') {
-          navigate('/');
-        }
-      }
-    });
-
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate, location.pathname]);
+  }, [navigate]);
 
   useEffect(() => {
     async function getProfile() {
@@ -142,17 +131,18 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
     return <div>Loading...</div>;
   }
 
+  // If no user, show login form
   if (!user) {
     console.log('No user, showing login form');
     return <LoginForm open={true} onOpenChange={setShowLogin} />;
   }
 
-  // Check if we're on the dashboard route and profile exists
+  // Check if profile exists and has required fields
+  const hasRequiredProfileFields = profile && (profile.name || profile.instagram_account);
   const isDashboardRoute = location.pathname === '/dashboard';
-  const hasProfile = Boolean(profile);
 
-  if (isDashboardRoute && !hasProfile) {
-    console.log('On dashboard but no profile, showing profile form');
+  if (isDashboardRoute && !hasRequiredProfileFields) {
+    console.log('Profile missing required fields, showing profile form');
     return <ProfileForm />;
   }
 
