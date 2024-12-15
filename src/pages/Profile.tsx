@@ -13,6 +13,7 @@ import { AppSidebar } from "@/components/shared/AppSidebar";
 const Profile = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedCompetitor, setSelectedCompetitor] = useState<string | null>(null);
+  const [isCollapsed, setIsCollapsed] = useState(false);
 
   useEffect(() => {
     // Simulate loading state
@@ -27,8 +28,8 @@ const Profile = () => {
     return (
       <div className="min-h-screen bg-background">
         <div className="min-h-screen flex w-full">
-          <AppSidebar />
-          <div className="flex-1 pl-24 lg:pl-72 p-6 transition-all duration-300">
+          <AppSidebar onCollapse={setIsCollapsed} />
+          <div className={`flex-1 ${isCollapsed ? 'pl-24' : 'pl-72'} p-6 transition-all duration-300`}>
             <div className="max-w-7xl mx-auto space-y-6">
               <div className="flex items-center gap-4 mb-8">
                 <Skeleton className="h-24 w-24 rounded-full" />
@@ -54,8 +55,8 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-background">
       <div className="min-h-screen flex w-full">
-        <AppSidebar />
-        <div className="flex-1 pl-24 lg:pl-72 p-6 transition-all duration-300">
+        <AppSidebar onCollapse={setIsCollapsed} />
+        <div className={`flex-1 ${isCollapsed ? 'pl-24' : 'pl-72'} p-6 transition-all duration-300`}>
           <div className="max-w-7xl mx-auto space-y-6">
             <div className="flex flex-col md:flex-row md:items-start gap-6 mb-8 animate-fade-in">
               <div className="h-24 w-24 rounded-full bg-gray-200 overflow-hidden flex-shrink-0">

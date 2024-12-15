@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 import { LayoutDashboard, User, BarChart2, Settings, Menu } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 const items = [
   {
@@ -25,9 +25,17 @@ const items = [
   },
 ];
 
-export function AppSidebar() {
+interface AppSidebarProps {
+  onCollapse?: (collapsed: boolean) => void;
+}
+
+export function AppSidebar({ onCollapse }: AppSidebarProps) {
   const location = useLocation();
   const [isCollapsed, setIsCollapsed] = useState(false);
+
+  useEffect(() => {
+    onCollapse?.(isCollapsed);
+  }, [isCollapsed, onCollapse]);
 
   return (
     <>
