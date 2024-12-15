@@ -1,17 +1,21 @@
 import { useQuery } from "@tanstack/react-query";
 import { MetricsOverview } from "@/components/shared/MetricsOverview";
-import { useEffect } from "react";
-import { fetchAccountMetrics, type AccountMetrics } from "@/lib/api";
+import { supabase } from "@/integrations/supabase/client";
+import type { AccountMetrics } from "@/types/database";
 
 const Profile = () => {
-  const { data: metrics, isLoading, error } = useQuery<AccountMetrics>({
+  const { data: metrics, isLoading, error } = useQuery({
     queryKey: ['accountMetrics'],
-    queryFn: fetchAccountMetrics
-  });
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('account_metrics')
+        .select('*')
+        .maybeSingle();
 
-  useEffect(() => {
-    console.log("Profile component rendering");
-  }, []);
+      if (error) throw error;
+      return data as AccountMetrics;
+    }
+  });
 
   if (isLoading) {
     return <div>Loading...</div>;
