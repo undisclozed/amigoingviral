@@ -2,6 +2,7 @@ import { MetricCard } from "@/components/MetricCard";
 import { MetricChartDialog } from "@/components/MetricChartDialog";
 import { Eye, ThumbsUp, MessageCircle, Share2, Bookmark, Users, TrendingUp } from "lucide-react";
 import { ViralityScore } from "@/components/ViralityScore";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import type { MetricType } from "@/components/charts/types";
 
 interface MetricsOverviewProps {
@@ -25,53 +26,56 @@ interface MetricsOverviewProps {
     followers?: number;
   };
   period?: string;
+  accountHandle?: string;
+  profileImage?: string;
 }
 
 export const MetricsOverview = ({ 
   type, 
   metrics, 
   previousPeriodMetrics,
-  period = 'Last 30 days'
+  period = 'Last 30 days',
+  accountHandle = '@username',
+  profileImage
 }: MetricsOverviewProps) => {
   const calculateChange = (current: number, previous: number) => {
     if (!previous) return 0;
     return ((current - previous) / previous) * 100;
   };
 
-  const getViralityScore = () => {
-    const score = type === 'post' 
-      ? Math.round((metrics.engagement * 100 + metrics.views / 1000) / 2)
-      : Math.round((metrics.engagement * 100 + (metrics.followers || 0) / 1000) / 2);
-    
-    const avgScore = type === 'post' ? 75 : 70;
-    return { score, avgScore };
-  };
-
   return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div className="space-y-4">
+      <div className="flex items-center gap-4 mb-6">
+        <Avatar className="h-16 w-16">
+          <AvatarImage src={profileImage} alt={accountHandle} />
+          <AvatarFallback>{accountHandle.slice(1, 3).toUpperCase()}</AvatarFallback>
+        </Avatar>
+        <div>
+          <h2 className="text-2xl font-semibold">{accountHandle}</h2>
+          <p className="text-sm text-gray-500">{period}</p>
+        </div>
+      </div>
+      
+      <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-2">
         <MetricCard
           title="Views"
           value={metrics.views.toLocaleString()}
           change={previousPeriodMetrics ? calculateChange(metrics.views, previousPeriodMetrics.views) : undefined}
-          period={period}
-          icon={<Eye className="h-5 w-5" />}
+          icon={<Eye className="h-4 w-4" />}
           metric="views"
         />
         <MetricCard
           title="Likes"
           value={metrics.likes.toLocaleString()}
           change={previousPeriodMetrics ? calculateChange(metrics.likes, previousPeriodMetrics.likes) : undefined}
-          period={period}
-          icon={<ThumbsUp className="h-5 w-5" />}
+          icon={<ThumbsUp className="h-4 w-4" />}
           metric="likes"
         />
         <MetricCard
           title="Comments"
           value={metrics.comments.toLocaleString()}
           change={previousPeriodMetrics ? calculateChange(metrics.comments, previousPeriodMetrics.comments) : undefined}
-          period={period}
-          icon={<MessageCircle className="h-5 w-5" />}
+          icon={<MessageCircle className="h-4 w-4" />}
           metric="comments"
         />
         {type === 'post' ? (
@@ -81,8 +85,7 @@ export const MetricsOverview = ({
                 title="Shares"
                 value={metrics.shares.toLocaleString()}
                 change={previousPeriodMetrics?.shares ? calculateChange(metrics.shares, previousPeriodMetrics.shares) : undefined}
-                period={period}
-                icon={<Share2 className="h-5 w-5" />}
+                icon={<Share2 className="h-4 w-4" />}
                 metric="shares"
               />
             )}
@@ -91,8 +94,7 @@ export const MetricsOverview = ({
                 title="Saves"
                 value={metrics.saves.toLocaleString()}
                 change={previousPeriodMetrics?.saves ? calculateChange(metrics.saves, previousPeriodMetrics.saves) : undefined}
-                period={period}
-                icon={<Bookmark className="h-5 w-5" />}
+                icon={<Bookmark className="h-4 w-4" />}
                 metric="saves"
               />
             )}
@@ -104,24 +106,20 @@ export const MetricsOverview = ({
                 title="Followers"
                 value={metrics.followers.toLocaleString()}
                 change={previousPeriodMetrics?.followers ? calculateChange(metrics.followers, previousPeriodMetrics.followers) : undefined}
-                period={period}
-                icon={<Users className="h-5 w-5" />}
+                icon={<Users className="h-4 w-4" />}
                 metric="followers"
               />
             )}
           </>
         )}
         <MetricCard
-          title="Engagement Rate"
+          title="Engagement"
           value={`${(metrics.engagement * 100).toFixed(1)}%`}
           change={previousPeriodMetrics ? calculateChange(metrics.engagement, previousPeriodMetrics.engagement) : undefined}
-          period={period}
-          icon={<TrendingUp className="h-5 w-5" />}
+          icon={<TrendingUp className="h-4 w-4" />}
           metric="engagement"
         />
       </div>
-
-      <ViralityScore {...getViralityScore()} />
 
       {Object.entries(metrics).map(([key, value]) => (
         <MetricChartDialog

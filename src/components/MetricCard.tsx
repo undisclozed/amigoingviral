@@ -29,15 +29,15 @@ export const MetricCard = ({
   metric 
 }: MetricCardProps) => {
   return (
-    <Card className="p-6 hover:shadow-lg transition-shadow animate-fade-in cursor-pointer">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
+    <Card className="p-3 hover:shadow-lg transition-shadow animate-fade-in cursor-pointer">
+      <div className="flex items-center justify-between mb-1">
+        <div className="flex items-center gap-1.5">
           <div className="text-gray-600">{icon}</div>
           {metric && (
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Info className="h-4 w-4 text-gray-400 hover:text-gray-600 cursor-help" />
+                  <Info className="h-3 w-3 text-gray-400 hover:text-gray-600 cursor-help" />
                 </TooltipTrigger>
                 <TooltipContent>
                   <p className="max-w-xs">{metricTooltips[metric]}</p>
@@ -47,17 +47,17 @@ export const MetricCard = ({
           )}
         </div>
         {change !== undefined && (
-          <div className={`flex items-center ${change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-            {change >= 0 ? <ArrowUp size={20} /> : <ArrowDown size={20} />}
-            <span className="ml-1">{Math.abs(change)}%</span>
+          <div className={`flex items-center text-xs ${change >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+            {change >= 0 ? <ArrowUp size={12} /> : <ArrowDown size={12} />}
+            <span className="ml-0.5">{Math.abs(change)}%</span>
           </div>
         )}
       </div>
-      <div className="mt-4">
-        <h3 className="text-gray-600 text-sm font-medium">{title}</h3>
-        <p className="text-2xl font-bold mt-1">{value}</p>
-        {subValue && <p className="text-sm text-gray-500 mt-1">{subValue}</p>}
-        {period && <p className="text-xs text-gray-400 mt-1">{period}</p>}
+      <div>
+        <h3 className="text-xs text-gray-600 font-medium">{title}</h3>
+        <p className="text-sm font-bold mt-0.5">{value}</p>
+        {subValue && <p className="text-xs text-gray-500 mt-0.5">{subValue}</p>}
+        {period && <p className="text-xs text-gray-400 mt-0.5">{period}</p>}
       </div>
     </Card>
   );
