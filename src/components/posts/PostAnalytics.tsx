@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { Info } from "lucide-react";
+import { Info, Clock, Play, Users } from "lucide-react";
 import {
   Tooltip,
   TooltipContent,
@@ -10,7 +10,8 @@ import { LineChart } from "../LineChart";
 import { ViralityScore } from "../ViralityScore";
 import { MetricTile } from "./MetricTile";
 import { Post } from "../dashboard/types";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { getTimeSincePost, getUpdateInterval } from "@/utils/timeUtils";
 
 interface PostAnalyticsProps {
   post: Post;
@@ -18,6 +19,21 @@ interface PostAnalyticsProps {
 
 export const PostAnalytics = ({ post }: PostAnalyticsProps) => {
   const [selectedComparisonPost, setSelectedComparisonPost] = useState<Post | null>(null);
+  const [updateInterval, setUpdateInterval] = useState<number>(5);
+
+  useEffect(() => {
+    // Update the interval based on post age
+    const interval = getUpdateInterval(post.timestamp);
+    setUpdateInterval(interval);
+
+    // Set up the update timer
+    const timer = setInterval(() => {
+      // This is where we would fetch fresh data
+      console.log(`Updating data every ${interval} minutes`);
+    }, interval * 60 * 1000);
+
+    return () => clearInterval(timer);
+  }, [post.timestamp]);
 
   const viralityScore = Math.round((post.metrics.engagement * 100) + 
     (post.metrics.views / 1000) + 
@@ -39,7 +55,7 @@ export const PostAnalytics = ({ post }: PostAnalyticsProps) => {
     averageWatchPercentage: post.metrics.averageWatchPercentage * 0.8,
   };
 
-  // Calculate engagement rate
+  // Calculate engagement metrics
   const totalEngagements = post.metrics.likes + post.metrics.comments + 
     post.metrics.saves + post.metrics.shares;
   const engagementRate = (totalEngagements / post.metrics.views) * 100;
@@ -48,15 +64,23 @@ export const PostAnalytics = ({ post }: PostAnalyticsProps) => {
   const likesToReachRatio = (post.metrics.likes / post.metrics.views) * 100;
   const commentsToReachRatio = (post.metrics.comments / post.metrics.views) * 100;
   const savesToReachRatio = (post.metrics.saves / post.metrics.views) * 100;
+  const followsToReachRatio = (post.metrics.followsFromPost / post.metrics.views) * 100;
 
   return (
     <div className="space-y-4">
       <Card className="p-4">
-        <div className="flex items-center gap-4 mb-4">
-          <img src={post.thumbnail} alt="Post thumbnail" className="w-16 h-16 rounded-lg object-cover" />
-          <div>
-            <h2 className="text-lg font-semibold">Post Performance</h2>
-            <p className="text-sm text-gray-600">Posted on {new Date(post.timestamp).toLocaleDateString()}</p>
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-4">
+            <img src={post.thumbnail} alt="Post thumbnail" className="w-16 h-16 rounded-lg object-cover" />
+            <div>
+              <h2 className="text-lg font-semibold">Post Performance</h2>
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                <Clock className="h-4 w-4" />
+                <span>Posted {getTimeSincePost(post.timestamp)}</span>
+                <span className="text-gray-400">•</span>
+                <span>Updates every {updateInterval} minutes</span>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -105,21 +129,21 @@ export const PostAnalytics = ({ post }: PostAnalyticsProps) => {
             metric="engagement"
           />
           <MetricTile
-            title="Follows"
+            title="New Follows"
             value={post.metrics.followsFromPost.toLocaleString()}
             change={getChangeFromAverage(post.metrics.followsFromPost, averageMetrics.followsFromPost)}
-            icon={<Info className="h-4 w-4" />}
+            icon={<Users className="h-4 w-4" />}
           />
           <MetricTile
-            title="Avg Watch %"
+            title="Watch Time"
             value={`${post.metrics.averageWatchPercentage}%`}
             change={getChangeFromAverage(post.metrics.averageWatchPercentage, averageMetrics.averageWatchPercentage)}
-            icon={<Info className="h-4 w-4" />}
+            icon={<Play className="h-4 w-4" />}
           />
         </div>
 
         {/* Ratio Metrics */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
           <MetricTile
             title="Likes/Reach"
             value={`${likesToReachRatio.toFixed(1)}%`}
@@ -133,6 +157,11 @@ export const PostAnalytics = ({ post }: PostAnalyticsProps) => {
           <MetricTile
             title="Saves/Reach"
             value={`${savesToReachRatio.toFixed(1)}%`}
+            icon={<Info className="h-4 w-4" />}
+          />
+          <MetricTile
+            title="Follows/Reach"
+            value={`${followsToReachRatio.toFixed(1)}%`}
             icon={<Info className="h-4 w-4" />}
           />
         </div>
