@@ -18,8 +18,9 @@ export function LoginForm({ open, onOpenChange, onSuccess }: LoginFormProps) {
   const { toast } = useToast();
 
   const validateEmail = (email: string) => {
-    const regex = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,6}$/;
-    return regex.test(email);
+    // More comprehensive email validation
+    const regex = /^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$/;
+    return regex.test(email.toLowerCase());
   };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
@@ -37,7 +38,7 @@ export function LoginForm({ open, onOpenChange, onSuccess }: LoginFormProps) {
     setIsLoading(true);
     try {
       const { error } = await supabase.auth.signInWithOtp({
-        email,
+        email: email.toLowerCase().trim(), // Normalize email
         options: {
           emailRedirectTo: `${window.location.origin}/dashboard`,
         },
