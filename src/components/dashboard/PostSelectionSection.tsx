@@ -64,17 +64,7 @@ const PostSelectionSection = ({ selectedPost, setSelectedPost }: PostSelectionSe
   };
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-      <div className="p-4 border rounded-lg">
-        <h4 className="font-medium mb-2">Most Recent Post</h4>
-        <div className="flex items-center space-x-4">
-          <img src="/placeholder.svg" alt="Current post" className="h-20 w-20 object-cover rounded" />
-          <div>
-            <p className="font-medium">@janedoe</p>
-            <p className="text-sm text-muted-foreground">Sep 24, 11:11 AM</p>
-          </div>
-        </div>
-      </div>
+    <div className="grid grid-cols-1 gap-6">
       <Dialog>
         <DialogTrigger asChild>
           <div className="p-4 border rounded-lg cursor-pointer hover:bg-accent/50 transition-colors">
