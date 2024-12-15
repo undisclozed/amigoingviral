@@ -12,6 +12,8 @@ import { AppSidebar } from '@/components/shared/AppSidebar';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import Profile from '@/pages/Profile';
+import Posts from '@/pages/Posts';
 
 const queryClient = new QueryClient();
 
@@ -144,6 +146,8 @@ function AppContent() {
               </div>
             }
           />
+          <Route path="/profile" element={<Profile />} />
+          <Route path="/posts" element={<Posts />} />
         </Routes>
       </main>
     </div>
