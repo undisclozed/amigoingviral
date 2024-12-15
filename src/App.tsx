@@ -4,7 +4,7 @@ import { LoginForm } from '@/components/auth/LoginForm';
 import { ProfileForm } from '@/components/auth/ProfileForm';
 import { Toaster } from '@/components/ui/toaster';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, useNavigate } from 'react-router-dom';
 import { AccountOverview } from '@/components/AccountOverview';
 import { GrowthAnalytics } from '@/components/GrowthAnalytics';
 import ChartsSection from '@/components/dashboard/ChartsSection';
@@ -19,12 +19,25 @@ function AppContent() {
   const { user } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
   useEffect(() => {
     // Listen for auth changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
+      console.log('Auth state changed:', event, session?.user?.id);
       if (event === 'SIGNED_IN') {
-        console.log('User signed in:', session?.user);
+        navigate('/dashboard');
+      } else if (event === 'SIGNED_OUT') {
+        navigate('/');
+      }
+    });
+
+    // Check initial session
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      console.log('Initial session check:', session?.user?.id);
+      if (!session) {
+        setLoading(false);
+        navigate('/');
       }
     });
 
@@ -32,7 +45,7 @@ function AppContent() {
     return () => {
       subscription.unsubscribe();
     };
-  }, []);
+  }, [navigate]);
 
   useEffect(() => {
     async function getProfile() {
@@ -101,13 +114,13 @@ function AppContent() {
     getProfile();
   }, [user]);
 
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+
   if (!user) {
     console.log('No user, showing login form');
     return <LoginForm />;
-  }
-
-  if (loading) {
-    return <div>Loading...</div>;
   }
 
   if (!profile?.instagram_account || !profile?.name) {
@@ -115,7 +128,6 @@ function AppContent() {
     return <ProfileForm />;
   }
 
-  console.log('Rendering main app content');
   return (
     <div className="flex h-screen">
       <AppSidebar />
