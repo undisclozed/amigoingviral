@@ -22,7 +22,7 @@ export const useAccountMetrics = () => {
           .eq('user_id', user.id)
           .order('created_at', { ascending: false })
           .limit(1)
-          .single();
+          .maybeSingle(); // This is the key change - using maybeSingle() instead of single()
 
         if (error) throw error;
         console.log('Fetched metrics:', data);
