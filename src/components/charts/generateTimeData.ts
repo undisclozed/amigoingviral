@@ -1,5 +1,6 @@
 import { MetricType } from "./types";
-import { addDays, addHours, addMinutes, format, subDays, subHours, subMinutes } from "date-fns";
+import { format } from "date-fns";
+import { getTimeConfig, TimeConfig } from "./TimeIntervalUtils";
 
 const generateRandomValue = (baseValue: number, variance: number) => {
   return Math.floor(baseValue + (Math.random() - 0.5) * variance);
@@ -55,65 +56,30 @@ export const generateTimeData = (
   interval: string, 
   metric: MetricType, 
   isComparison = false,
-  timeOffset = 0 // Number of intervals to offset (for historical data)
+  timeOffset = 0
 ) => {
   const baseValue = getBaseMetricValue(metric);
   const variance = getVariance(metric);
   const now = new Date();
   const data = [];
 
-  // Adjust base value for comparison data
   const comparisonBaseValue = isComparison ? baseValue * 0.85 : baseValue;
+  const timeConfig: TimeConfig = getTimeConfig(interval as any);
+  
+  // Calculate the start date based on the offset
+  const startDate = timeConfig.subtractTime(
+    now, 
+    timeConfig.points * timeOffset
+  );
 
-  let points = 30;
-  let addTime;
-  let subtractTime;
-
-  switch (interval) {
-    case "5min":
-      points = 12;
-      addTime = addMinutes;
-      subtractTime = subMinutes;
-      break;
-    case "hourly":
-      points = 24;
-      addTime = addHours;
-      subtractTime = subHours;
-      break;
-    case "daily":
-      points = 30;
-      addTime = addDays;
-      subtractTime = subDays;
-      break;
-    case "weekly":
-      points = 12;
-      addTime = (date: Date, amount: number) => addDays(date, amount * 7);
-      subtractTime = (date: Date, amount: number) => subDays(date, amount * 7);
-      break;
-    case "monthly":
-      points = 12;
-      addTime = (date: Date, amount: number) => addDays(date, amount * 30);
-      subtractTime = (date: Date, amount: number) => subDays(date, amount * 30);
-      break;
-    default:
-      addTime = addDays;
-      subtractTime = subDays;
-  }
-
-  // Start from the offset point
-  const startDate = subtractTime(now, points * timeOffset);
-
-  for (let i = points - 1; i >= 0; i--) {
-    const date = subtractTime(startDate, i);
-    let formatString = "MMM dd HH:mm";
+  // Generate data points with consistent intervals
+  for (let i = timeConfig.points - 1; i >= 0; i--) {
+    const date = timeConfig.subtractTime(startDate, i);
     
-    if (interval === "daily" || interval === "weekly" || interval === "monthly") {
-      formatString = "MMM dd";
-    }
-
     data.push({
-      date: format(date, formatString),
-      value: generateRandomValue(comparisonBaseValue, variance)
+      date: format(date, timeConfig.formatString),
+      value: generateRandomValue(comparisonBaseValue, variance),
+      timestamp: date.getTime() // Add timestamp for sorting
     });
   }
 

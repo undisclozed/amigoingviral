@@ -1,10 +1,10 @@
 import { Card } from "@/components/ui/card";
 import { LineChart as RechartsLineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { useState, useEffect } from 'react';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { MetricSelector } from './charts/MetricSelector';
 import { generateTimeData } from './charts/generateTimeData';
 import { LineChartProps, Interval, MetricType, metricLabels } from './charts/types';
+import { ChartControls } from './charts/ChartControls';
 
 export const LineChart = ({ 
   metric = 'views',
@@ -46,20 +46,13 @@ export const LineChart = ({
       
       return {
         date: item.date,
-        value: avgValue
+        value: avgValue,
+        timestamp: item.timestamp
       };
     });
 
     setAverageData(averagePoints);
   }, [currentInterval, currentMetric, showComparison, averagePeriod]);
-
-  const handleTimeframeChange = (value: string) => {
-    setCurrentInterval(value as Interval);
-  };
-
-  const handleAveragePeriodChange = (value: string) => {
-    setAveragePeriod(value as '10' | '25' | '50');
-  };
 
   return (
     <Card className="w-full h-[400px] flex flex-col">
@@ -67,30 +60,12 @@ export const LineChart = ({
         <div className="flex-none">
           <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold">Performance Metrics</h3>
-            <div className="flex gap-2">
-              <Select defaultValue={averagePeriod} onValueChange={handleAveragePeriodChange}>
-                <SelectTrigger className="w-[140px] bg-white border-2">
-                  <SelectValue placeholder="Average Period" />
-                </SelectTrigger>
-                <SelectContent className="bg-white border-2 shadow-lg">
-                  <SelectItem value="10">Last 10 Posts</SelectItem>
-                  <SelectItem value="25">Last 25 Posts</SelectItem>
-                  <SelectItem value="50">Last 50 Posts</SelectItem>
-                </SelectContent>
-              </Select>
-              <Select defaultValue={currentInterval} onValueChange={handleTimeframeChange}>
-                <SelectTrigger className="w-[120px] bg-white border-2">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="bg-white border-2 shadow-lg">
-                  <SelectItem value="5min">5 Minutes</SelectItem>
-                  <SelectItem value="hourly">Hourly</SelectItem>
-                  <SelectItem value="daily">Daily</SelectItem>
-                  <SelectItem value="weekly">Weekly</SelectItem>
-                  <SelectItem value="monthly">Monthly</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
+            <ChartControls 
+              currentInterval={currentInterval}
+              averagePeriod={averagePeriod}
+              onTimeframeChange={(value) => setCurrentInterval(value as Interval)}
+              onAveragePeriodChange={(value) => setAveragePeriod(value as '10' | '25' | '50')}
+            />
           </div>
           <div className="mb-6">
             <MetricSelector 
