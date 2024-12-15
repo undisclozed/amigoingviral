@@ -5,7 +5,7 @@ import { Eye, ThumbsUp, MessageCircle } from "lucide-react";
 
 interface PostsListProps {
   posts: Post[];
-  onPostSelect?: (postId: number | null) => void;
+  onPostSelect?: (postId: string | null) => void;
 }
 
 export const PostsList = ({ posts, onPostSelect }: PostsListProps) => {
@@ -15,7 +15,7 @@ export const PostsList = ({ posts, onPostSelect }: PostsListProps) => {
         <Card 
           key={post.id} 
           className="p-4 cursor-pointer hover:shadow-md transition-shadow overflow-hidden" 
-          onClick={() => onPostSelect?.(Number(post.id))}
+          onClick={() => onPostSelect?.(post.id)}
         >
           <div className="aspect-video relative mb-3 overflow-hidden rounded-lg">
             <img 
