@@ -25,10 +25,11 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
       const accessToken = hashParams.get('access_token');
       
       if (accessToken) {
+        console.log('Access token found, establishing session');
         // Clear the hash from URL
         window.history.replaceState({}, document.title, window.location.pathname);
         
-        // Set the session
+        // Get the session
         const { data: { session }, error } = await supabase.auth.getSession();
         
         if (session && !error) {
@@ -92,37 +93,39 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
         console.log('Profile data:', data);
         setProfile(data);
 
-        // Check if account metrics exist for the user
-        const { data: metricsData, error: metricsError } = await supabase
-          .from('account_metrics')
-          .select('id')
-          .eq('user_id', user.id)
-          .single();
-
-        if (metricsError && metricsError.code === 'PGRST116') {
-          // No metrics found, create initial metrics
-          const { error: insertError } = await supabase
+        // Only create initial metrics if profile exists but metrics don't
+        if (data?.instagram_account) {
+          const { data: metricsData, error: metricsError } = await supabase
             .from('account_metrics')
-            .insert([
-              {
-                user_id: user.id,
-                follower_count: 0,
-                follower_growth: 0,
-                post_count: 0,
-                posts_last_period: 0,
-                accounts_reached: 0,
-                accounts_engaged: 0,
-                avg_engagement_rate: 0,
-                avg_likes: 0,
-                avg_comments: 0,
-                avg_views: 0,
-                growth_score: 0
-              }
-            ]);
+            .select('id')
+            .eq('user_id', user.id)
+            .single();
 
-          if (insertError) {
-            console.error('Error creating initial metrics:', insertError);
-            toast.error('Failed to initialize metrics');
+          if (metricsError && metricsError.code === 'PGRST116') {
+            // No metrics found, create initial metrics
+            const { error: insertError } = await supabase
+              .from('account_metrics')
+              .insert([
+                {
+                  user_id: user.id,
+                  follower_count: 0,
+                  follower_growth: 0,
+                  post_count: 0,
+                  posts_last_period: 0,
+                  accounts_reached: 0,
+                  accounts_engaged: 0,
+                  avg_engagement_rate: 0,
+                  avg_likes: 0,
+                  avg_comments: 0,
+                  avg_views: 0,
+                  growth_score: 0
+                }
+              ]);
+
+            if (insertError) {
+              console.error('Error creating initial metrics:', insertError);
+              toast.error('Failed to initialize metrics');
+            }
           }
         }
       } catch (error) {
@@ -145,7 +148,8 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
     return <LoginForm open={true} onOpenChange={setShowLogin} />;
   }
 
-  if (!profile?.instagram_account || !profile?.name) {
+  // Only show ProfileForm if profile doesn't exist or required fields are missing
+  if (!profile || (!profile.instagram_account && !profile.name)) {
     console.log('No profile info, showing profile form');
     return <ProfileForm />;
   }
