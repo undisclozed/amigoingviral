@@ -6,6 +6,8 @@ import { Post } from "../dashboard/types";
 import { PostMetricsTiles } from "./metrics/PostMetricsTiles";
 import { PostRatioMetrics } from "./metrics/PostRatioMetrics";
 import { PostPerformanceCharts } from "./charts/PostPerformanceCharts";
+import { Clock } from "lucide-react";
+import { LineChart } from "@/components/LineChart";
 
 interface PostAnalyticsProps {
   post: Post;
