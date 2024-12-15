@@ -4,7 +4,7 @@ import { ProfileForm } from '@/components/auth/ProfileForm';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface AuthGuardProps {
   children: React.ReactNode;
@@ -16,6 +16,30 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
   const [loading, setLoading] = useState(true);
   const [showLogin, setShowLogin] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    // Handle access token in URL
+    const handleHashParams = async () => {
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const accessToken = hashParams.get('access_token');
+      
+      if (accessToken) {
+        // Clear the hash from URL
+        window.history.replaceState({}, document.title, window.location.pathname);
+        
+        // Set the session
+        const { data: { session }, error } = await supabase.auth.getSession();
+        
+        if (session && !error) {
+          console.log('Session established, navigating to dashboard');
+          navigate('/dashboard');
+        }
+      }
+    };
+
+    handleHashParams();
+  }, [navigate]);
 
   useEffect(() => {
     // Listen for auth changes
@@ -33,7 +57,9 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
       console.log('Initial session check:', session?.user?.id);
       if (!session) {
         setLoading(false);
-        navigate('/');
+        if (location.pathname !== '/') {
+          navigate('/');
+        }
       }
     });
 
@@ -41,7 +67,7 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
     return () => {
       subscription.unsubscribe();
     };
-  }, [navigate]);
+  }, [navigate, location.pathname]);
 
   useEffect(() => {
     async function getProfile() {
