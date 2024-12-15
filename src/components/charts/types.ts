@@ -1,12 +1,17 @@
-export type Interval = '5min' | 'hourly' | 'daily' | 'weekly' | 'monthly';
-export type PostMetric = 'views' | 'likes' | 'comments' | 'shares' | 'saves' | 'engagement' | 'posts';
-export type AccountMetric = 'followers' | 'growth' | 'reached' | 'engaged' | 'engagement' | 'likes' | 'comments' | 'views' | 'posts';
-export type MetricType = PostMetric | AccountMetric;
+export type MetricType = 
+  | "views"
+  | "likes"
+  | "comments"
+  | "shares"
+  | "saves"
+  | "engagement"
+  | "followers"
+  | "posts"
+  | "reached"
+  | "engaged"
+  | "watch_time";
 
-export interface ChartData {
-  date: string;
-  value: number;
-}
+export type Interval = "5min" | "hourly" | "daily" | "weekly" | "monthly";
 
 export interface LineChartProps {
   metric?: MetricType;
@@ -17,29 +22,29 @@ export interface LineChartProps {
 }
 
 export const metricLabels: Record<MetricType, string> = {
-  views: 'Views',
-  likes: 'Likes',
-  comments: 'Comments',
-  shares: 'Shares',
-  saves: 'Saves',
-  engagement: 'Engagement Rate',
-  followers: 'Followers',
-  growth: 'Growth',
-  reached: 'Reached',
-  engaged: 'Engaged',
-  posts: 'Posts'
+  views: "Views",
+  likes: "Likes",
+  comments: "Comments",
+  shares: "Shares",
+  saves: "Saves",
+  engagement: "Engagement Rate",
+  followers: "Followers",
+  posts: "Posts",
+  reached: "Accounts Reached",
+  engaged: "Accounts Engaged",
+  watch_time: "Watch Time"
 };
 
 export const metricTooltips: Record<MetricType, string> = {
-  followers: 'Total number of accounts following your profile',
-  growth: 'Overall account growth score based on followers, engagement, and reach',
-  reached: 'Number of unique accounts that have seen your content',
-  engaged: 'Number of unique accounts that interacted with your content',
-  engagement: 'Percentage of viewers who engage with your content through likes, comments, or shares',
-  likes: 'Average number of likes received per post in the selected time period',
-  comments: 'Average number of comments received per post in the selected time period',
-  views: 'Average number of views per post in the selected time period',
-  posts: 'Total number of posts published to your account',
-  shares: 'Number of times your content has been shared by other accounts',
-  saves: 'Number of times your content has been saved by other accounts'
+  views: "Total number of times your content has been viewed",
+  likes: "Total number of likes received",
+  comments: "Total number of comments received",
+  shares: "Number of times your content has been shared",
+  saves: "Number of times your content has been saved",
+  engagement: "Percentage of viewers who engaged with your content",
+  followers: "Total number of account followers",
+  posts: "Total number of posts published",
+  reached: "Number of unique accounts that saw your content",
+  engaged: "Number of unique accounts that engaged with your content",
+  watch_time: "Average duration viewers spent watching your content"
 };
