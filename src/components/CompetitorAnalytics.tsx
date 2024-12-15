@@ -7,6 +7,9 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { LineChart } from "./LineChart";
+import { Input } from "./ui/input";
+import { Button } from "./ui/button";
+import { useState } from "react";
 
 // Mock competitor data - in a real app, this would come from an API
 const competitorData = {
@@ -35,26 +38,48 @@ const userMetrics = {
 };
 
 const CompetitorAnalytics = () => {
+  const [competitorHandle, setCompetitorHandle] = useState("");
+  const [selectedCompetitor, setSelectedCompetitor] = useState<typeof competitorData | null>(null);
+
   const generateInsights = () => {
     const insights = [];
+    const metrics = selectedCompetitor?.metrics || competitorData.metrics;
     
-    if (userMetrics.engagementRate > competitorData.metrics.engagementRate) {
+    if (userMetrics.engagementRate > metrics.engagementRate) {
       insights.push("Your engagement rate is higher, indicating stronger audience connection");
     } else {
       insights.push("Focus on increasing engagement through more interactive content");
     }
 
-    if (userMetrics.followerGrowth > competitorData.metrics.followerGrowth) {
+    if (userMetrics.followerGrowth > metrics.followerGrowth) {
       insights.push("Your account is growing faster than the competitor");
     } else {
       insights.push("Consider analyzing competitor content strategy for growth opportunities");
     }
 
-    if (userMetrics.avgComments > competitorData.metrics.avgComments) {
+    if (userMetrics.avgComments > metrics.avgComments) {
       insights.push("You receive more comments, showing better audience interaction");
     }
 
     return insights;
+  };
+
+  const handleCompetitorSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    // Mock API call - in a real app, this would fetch actual competitor data
+    setSelectedCompetitor({
+      username: competitorHandle,
+      metrics: {
+        followers: Math.floor(Math.random() * 200000),
+        followerGrowth: Math.random() * 5,
+        posts: Math.floor(Math.random() * 1000),
+        reachLastMonth: Math.floor(Math.random() * 500000),
+        engagementRate: Math.random() * 6,
+        avgLikes: Math.floor(Math.random() * 5000),
+        avgComments: Math.floor(Math.random() * 200),
+        avgViews: Math.floor(Math.random() * 20000),
+      }
+    });
   };
 
   return (
@@ -73,6 +98,15 @@ const CompetitorAnalytics = () => {
             </Tooltip>
           </TooltipProvider>
         </div>
+        <form onSubmit={handleCompetitorSearch} className="flex gap-2">
+          <Input
+            placeholder="Enter competitor's handle"
+            value={competitorHandle}
+            onChange={(e) => setCompetitorHandle(e.target.value)}
+            className="w-64"
+          />
+          <Button type="submit">Compare</Button>
+        </form>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
@@ -103,27 +137,27 @@ const CompetitorAnalytics = () => {
         </div>
 
         <div className="space-y-4">
-          <h4 className="font-medium">Competitor Metrics ({competitorData.username})</h4>
+          <h4 className="font-medium">Competitor Metrics ({selectedCompetitor?.username || competitorData.username})</h4>
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Followers</span>
-              <span className="font-medium">{competitorData.metrics.followers.toLocaleString()}</span>
+              <span className="font-medium">{(selectedCompetitor?.metrics || competitorData.metrics).followers.toLocaleString()}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Follower Growth</span>
-              <span className="font-medium">{competitorData.metrics.followerGrowth}%</span>
+              <span className="font-medium">{(selectedCompetitor?.metrics || competitorData.metrics).followerGrowth}%</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Engagement Rate</span>
-              <span className="font-medium">{competitorData.metrics.engagementRate}%</span>
+              <span className="font-medium">{(selectedCompetitor?.metrics || competitorData.metrics).engagementRate}%</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Avg. Likes</span>
-              <span className="font-medium">{competitorData.metrics.avgLikes.toLocaleString()}</span>
+              <span className="font-medium">{(selectedCompetitor?.metrics || competitorData.metrics).avgLikes.toLocaleString()}</span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Avg. Comments</span>
-              <span className="font-medium">{competitorData.metrics.avgComments.toLocaleString()}</span>
+              <span className="font-medium">{(selectedCompetitor?.metrics || competitorData.metrics).avgComments.toLocaleString()}</span>
             </div>
           </div>
         </div>
@@ -143,10 +177,13 @@ const CompetitorAnalytics = () => {
 
       <div className="mt-6">
         <h4 className="font-medium mb-4">Growth Comparison</h4>
-        <div className="h-[300px]">
+        <div className="h-[550px]">
           <LineChart 
             metric="followers"
             interval="monthly"
+            showComparison={true}
+            currentCreator="Your Account"
+            comparisonCreator={selectedCompetitor?.username || competitorData.username}
           />
         </div>
       </div>
