@@ -23,20 +23,25 @@ export const LineChart = ({
   const [averageData, setAverageData] = useState<any[]>([]);
 
   useEffect(() => {
-    setData(generateTimeData(currentInterval, currentMetric));
+    // Generate current period data
+    const currentData = generateTimeData(currentInterval, currentMetric);
+    setData(currentData);
+
     if (showComparison) {
       setComparisonData(generateTimeData(currentInterval, currentMetric, true));
     }
     
-    // Generate multiple sets of data based on averagePeriod
+    // Generate historical datasets based on averagePeriod
     const numDatasets = parseInt(averagePeriod);
-    const datasets = Array.from({ length: numDatasets }, () => 
-      generateTimeData(currentInterval, currentMetric)
+    const historicalDatasets = Array.from({ length: numDatasets }, (_, i) => 
+      generateTimeData(currentInterval, currentMetric, false, i + 1)
     );
 
     // Calculate average value for each time point
-    const averagePoints = data.map((item, index) => {
-      const valuesAtTimePoint = datasets.map(dataset => dataset[index]?.value || 0);
+    const averagePoints = currentData.map((item, index) => {
+      const valuesAtTimePoint = historicalDatasets.map(dataset => 
+        dataset[index]?.value || 0
+      );
       const avgValue = valuesAtTimePoint.reduce((sum, val) => sum + val, 0) / valuesAtTimePoint.length;
       
       return {
