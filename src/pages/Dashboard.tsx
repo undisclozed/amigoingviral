@@ -9,7 +9,7 @@ const Dashboard = () => {
   const [selectedPost, setSelectedPost] = useState<Post | null>(null);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 bg-background rounded-lg p-6 shadow-sm">
       <DashboardHeader />
       <AccountOverview />
       <PostSelectionSection
