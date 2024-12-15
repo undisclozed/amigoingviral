@@ -1,5 +1,5 @@
 export type Interval = '5min' | 'hourly' | 'daily' | 'weekly' | 'monthly';
-export type PostMetric = 'views' | 'likes' | 'comments' | 'shares' | 'engagement' | 'posts';
+export type PostMetric = 'views' | 'likes' | 'comments' | 'shares' | 'saves' | 'engagement' | 'posts';
 export type AccountMetric = 'followers' | 'growth' | 'reached' | 'engaged' | 'engagement' | 'likes' | 'comments' | 'views' | 'posts';
 export type MetricType = PostMetric | AccountMetric;
 
@@ -21,6 +21,7 @@ export const metricLabels: Record<MetricType, string> = {
   likes: 'Likes',
   comments: 'Comments',
   shares: 'Shares',
+  saves: 'Saves',
   engagement: 'Engagement Rate',
   followers: 'Followers',
   growth: 'Growth',
@@ -39,5 +40,6 @@ export const metricTooltips: Record<MetricType, string> = {
   comments: 'Average number of comments received per post in the selected time period',
   views: 'Average number of views per post in the selected time period',
   posts: 'Total number of posts published to your account',
-  shares: 'Number of times your content has been shared by other accounts'
+  shares: 'Number of times your content has been shared by other accounts',
+  saves: 'Number of times your content has been saved by other accounts'
 };
