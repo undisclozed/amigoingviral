@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { Card } from "@/components/ui/card";
 import { Info } from "lucide-react";
 import {
@@ -6,7 +7,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import ReactWordcloud from "react-wordcloud";
+import * as d3 from "d3";
+import cloud from "d3-cloud";
 
 // Mock data - in a real app, this would come from analyzing user's posts
 const words = [
@@ -27,16 +29,54 @@ const words = [
   { text: "creative", value: 12 },
 ];
 
-const options = {
-  rotations: 2,
-  rotationAngles: [0, 90] as [number, number],
-  fontSizes: [12, 40] as [number, number],
-  padding: 5,
-  fontFamily: "Inter",
-  colors: ["#00F37F", "#1a1a1a", "#333333", "#666666"],
-};
-
 export const WordCloudAnalysis = () => {
+  const svgRef = useRef<SVGSVGElement>(null);
+
+  useEffect(() => {
+    if (!svgRef.current) return;
+
+    // Clear any existing content
+    d3.select(svgRef.current).selectAll("*").remove();
+
+    const width = svgRef.current.clientWidth;
+    const height = 300;
+
+    const layout = cloud()
+      .size([width, height])
+      .words(words.map(d => ({ 
+        text: d.text, 
+        size: 10 + (d.value / 2) // Scale the font size based on value
+      })))
+      .padding(5)
+      .rotate(() => 0)
+      .font("Inter")
+      .fontSize(d => d.size)
+      .on("end", draw);
+
+    function draw(words: any[]) {
+      const svg = d3.select(svgRef.current);
+      
+      const g = svg
+        .attr("width", width)
+        .attr("height", height)
+        .append("g")
+        .attr("transform", `translate(${width/2},${height/2})`);
+
+      g.selectAll("text")
+        .data(words)
+        .enter()
+        .append("text")
+        .style("font-size", d => `${d.size}px`)
+        .style("font-family", "Inter")
+        .style("fill", (_, i) => ["#00F37F", "#1a1a1a", "#333333", "#666666"][i % 4])
+        .attr("text-anchor", "middle")
+        .attr("transform", d => `translate(${d.x},${d.y}) rotate(${d.rotate})`)
+        .text(d => d.text);
+    }
+
+    layout.start();
+  }, []);
+
   return (
     <Card className="p-6 animate-fade-in">
       <div className="flex items-center justify-between mb-4">
@@ -56,7 +96,7 @@ export const WordCloudAnalysis = () => {
       </div>
 
       <div className="h-[300px] w-full">
-        <ReactWordcloud words={words} options={options} />
+        <svg ref={svgRef} className="w-full h-full" />
       </div>
 
       <div className="mt-4 space-y-2">
