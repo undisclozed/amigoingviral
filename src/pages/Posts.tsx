@@ -1,10 +1,11 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { AppSidebar } from "@/components/shared/AppSidebar";
 import { AccountMetricsOverview } from "@/components/posts/AccountMetricsOverview";
 import { EmptyPostsState } from "@/components/posts/EmptyPostsState";
 import { PostsList } from "@/components/posts/PostsList";
 import { CompetitorSearch } from "@/components/competitor-analytics/CompetitorSearch";
+import { PostAnalytics } from "@/components/posts/PostAnalytics";
 import { toast } from "sonner";
 
 const postImages = [
@@ -34,7 +35,7 @@ const generateMockPosts = () => {
 };
 
 const Posts = () => {
-  const [posts, setPosts] = useState([]);
+  const [posts, setPosts] = useState(generateMockPosts());
   const [searchQuery, setSearchQuery] = useState("");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [competitorHandle, setCompetitorHandle] = useState("");
@@ -50,20 +51,17 @@ const Posts = () => {
     followers: 10000
   };
 
-  useEffect(() => {
-    setPosts(generateMockPosts());
-  }, []);
-
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
     if (!competitorHandle) return;
-
     toast.info(
       posts.length > 0 
         ? `Viewing analytics for ${competitorHandle}`
         : "Start Tracking Now! This creator's data is not yet available."
     );
   };
+
+  const selectedPost = selectedPostId ? posts.find(post => post.id === selectedPostId) : null;
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -81,23 +79,28 @@ const Posts = () => {
             />
           </div>
 
+          <AccountMetricsOverview 
+            accountMetrics={mockAccountMetrics}
+            postsCount={posts.length}
+          />
+
           {posts.length === 0 ? (
             <EmptyPostsState 
               searchQuery={searchQuery} 
               setSearchQuery={setSearchQuery} 
             />
           ) : (
-            <>
-              {!selectedPostId && (
-                <AccountMetricsOverview 
-                  accountMetrics={mockAccountMetrics}
-                  postsCount={posts.length}
-                />
+            <div className="space-y-6">
+              {selectedPost && (
+                <PostAnalytics post={selectedPost} />
               )}
               <Card className="p-6">
-                <PostsList posts={posts} onPostSelect={setSelectedPostId} />
+                <PostsList 
+                  posts={posts} 
+                  onPostSelect={setSelectedPostId}
+                />
               </Card>
-            </>
+            </div>
           )}
         </div>
       </main>
