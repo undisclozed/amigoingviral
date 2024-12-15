@@ -2,7 +2,6 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { LoginForm } from "@/components/auth/LoginForm";
 import { useState } from "react";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 
@@ -35,15 +34,15 @@ const Index = () => {
         </div>
       </header>
 
-      {/* Login Dialog */}
-      <Dialog open={showLoginDialog} onOpenChange={setShowLoginDialog}>
-        <DialogContent className="sm:max-w-md">
-          <LoginForm onSuccess={() => {
-            setShowLoginDialog(false);
-            navigate("/dashboard");
-          }} />
-        </DialogContent>
-      </Dialog>
+      {/* Login Form */}
+      <LoginForm 
+        open={showLoginDialog}
+        onOpenChange={setShowLoginDialog}
+        onSuccess={() => {
+          setShowLoginDialog(false);
+          navigate("/dashboard");
+        }}
+      />
 
       {/* Hero Section with Creator Search */}
       <main className="pt-24">
@@ -114,47 +113,47 @@ const Index = () => {
           </div>
 
           {/* Footer */}
-        <footer className="border-t mt-20">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
-              <div>
-                <h4 className="font-semibold mb-4">Product</h4>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li>Features</li>
-                  <li>Pricing</li>
-                  <li>API</li>
-                </ul>
+          <footer className="border-t mt-20">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
+                <div>
+                  <h4 className="font-semibold mb-4">Product</h4>
+                  <ul className="space-y-2 text-sm text-gray-600">
+                    <li>Features</li>
+                    <li>Pricing</li>
+                    <li>API</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-semibold mb-4">Company</h4>
+                  <ul className="space-y-2 text-sm text-gray-600">
+                    <li>About</li>
+                    <li>Blog</li>
+                    <li>Careers</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-semibold mb-4">Resources</h4>
+                  <ul className="space-y-2 text-sm text-gray-600">
+                    <li>Documentation</li>
+                    <li>Support</li>
+                    <li>Terms</li>
+                  </ul>
+                </div>
+                <div>
+                  <h4 className="font-semibold mb-4">Connect</h4>
+                  <ul className="space-y-2 text-sm text-gray-600">
+                    <li>Twitter</li>
+                    <li>LinkedIn</li>
+                    <li>Instagram</li>
+                  </ul>
+                </div>
               </div>
-              <div>
-                <h4 className="font-semibold mb-4">Company</h4>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li>About</li>
-                  <li>Blog</li>
-                  <li>Careers</li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-4">Resources</h4>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li>Documentation</li>
-                  <li>Support</li>
-                  <li>Terms</li>
-                </ul>
-              </div>
-              <div>
-                <h4 className="font-semibold mb-4">Connect</h4>
-                <ul className="space-y-2 text-sm text-gray-600">
-                  <li>Twitter</li>
-                  <li>LinkedIn</li>
-                  <li>Instagram</li>
-                </ul>
+              <div className="mt-8 pt-8 border-t text-center text-sm text-gray-600">
+                © 2024 ViewStats. All rights reserved.
               </div>
             </div>
-            <div className="mt-8 pt-8 border-t text-center text-sm text-gray-600">
-              © 2024 ViewStats. All rights reserved.
-            </div>
-          </div>
-        </footer>
+          </footer>
         </div>
       </main>
     </div>
