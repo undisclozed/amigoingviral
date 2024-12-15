@@ -17,6 +17,7 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
   const [showLogin, setShowLogin] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const isDashboardRoute = location.pathname === '/dashboard';
 
   useEffect(() => {
     // Handle access token in URL
