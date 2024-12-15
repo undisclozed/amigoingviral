@@ -1,32 +1,64 @@
-import { Card } from "@/components/ui/card";
 import { useState, useEffect } from "react";
+import { Card } from "@/components/ui/card";
+import { Clock } from "lucide-react";
 import { getTimeSincePost, getUpdateInterval } from "@/utils/timeUtils";
 import { ViralityScore } from "../ViralityScore";
-import { Post } from "../dashboard/types";
 import { PostMetricsTiles } from "./metrics/PostMetricsTiles";
 import { PostRatioMetrics } from "./metrics/PostRatioMetrics";
 import { PostPerformanceCharts } from "./charts/PostPerformanceCharts";
-import { Clock } from "lucide-react";
 import { LineChart } from "@/components/LineChart";
+import { PostAnalyticsSkeleton } from "./loading/PostAnalyticsSkeleton";
+import { PostAnalyticsError } from "./error/PostAnalyticsError";
+import type { PostAnalyticsData, MetricError } from "./types/analytics";
+import { toast } from "sonner";
 
 interface PostAnalyticsProps {
-  post: Post;
+  post: PostAnalyticsData;
 }
 
 export const PostAnalytics = ({ post }: PostAnalyticsProps) => {
-  const [selectedComparisonPost, setSelectedComparisonPost] = useState<Post | null>(null);
+  const [selectedComparisonPost, setSelectedComparisonPost] = useState<PostAnalyticsData | null>(null);
   const [updateInterval, setUpdateInterval] = useState<number>(5);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<Error | null>(null);
 
   useEffect(() => {
     const interval = getUpdateInterval(post.timestamp);
     setUpdateInterval(interval);
 
-    const timer = setInterval(() => {
-      console.log(`Updating data every ${interval} minutes`);
-    }, interval * 60 * 1000);
+    const fetchLatestMetrics = async () => {
+      try {
+        setIsLoading(true);
+        // Simulated API call - replace with actual API call
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        // If the fetch fails, throw an error
+        if (Math.random() > 0.9) { // 10% chance of error for demo
+          throw new Error("Failed to fetch latest metrics");
+        }
+
+        setError(null);
+      } catch (err) {
+        setError(err as Error);
+        toast.error("Failed to update metrics");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    const timer = setInterval(fetchLatestMetrics, interval * 60 * 1000);
+    fetchLatestMetrics(); // Initial fetch
 
     return () => clearInterval(timer);
   }, [post.timestamp]);
+
+  if (error) {
+    return <PostAnalyticsError error={error} onRetry={() => window.location.reload()} />;
+  }
+
+  if (isLoading && !post) {
+    return <PostAnalyticsSkeleton />;
+  }
 
   const viralityScore = Math.round((post.metrics.engagement * 100) + 
     (post.metrics.views / 1000) + 
@@ -70,6 +102,7 @@ export const PostAnalytics = ({ post }: PostAnalyticsProps) => {
           post={post}
           averageMetrics={averageMetrics}
           getChangeFromAverage={getChangeFromAverage}
+          isLoading={isLoading}
         />
 
         <PostRatioMetrics post={post} />
@@ -81,6 +114,7 @@ export const PostAnalytics = ({ post }: PostAnalyticsProps) => {
         <PostPerformanceCharts 
           selectedPost={post}
           selectedComparisonPost={selectedComparisonPost}
+          isLoading={isLoading}
         />
       </Card>
 
