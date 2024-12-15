@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Card } from "@/components/ui/card";
-import { AppSidebar } from "@/components/shared/AppSidebar";
 import { AccountMetricsOverview } from "@/components/posts/AccountMetricsOverview";
 import { EmptyPostsState } from "@/components/posts/EmptyPostsState";
 import { PostsList } from "@/components/posts/PostsList";
@@ -41,7 +40,6 @@ const generateMockPosts = (): Post[] => {
 const Posts = () => {
   const [posts, setPosts] = useState<Post[]>(generateMockPosts());
   const [searchQuery, setSearchQuery] = useState("");
-  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [competitorHandle, setCompetitorHandle] = useState("");
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
 
@@ -67,53 +65,45 @@ const Posts = () => {
 
   const handlePostSelect = (postId: string | null) => {
     setSelectedPostId(postId);
-    // Smooth scroll to top of the page
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const selectedPost = selectedPostId ? posts.find(post => post.id === selectedPostId) : null;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <AppSidebar onCollapse={setSidebarCollapsed} />
-      <main className={`transition-all duration-300 ${
-        sidebarCollapsed ? 'ml-16' : 'ml-64'
-      }`}>
-        <div className="container mx-auto px-4 py-8 space-y-6">
-          <div className="flex justify-between items-center">
-            <h1 className="text-2xl font-bold">Creator Analytics</h1>
-            <CompetitorSearch
-              competitorHandle={competitorHandle}
-              onHandleChange={setCompetitorHandle}
-              onSearch={handleSearch}
-            />
-          </div>
+    <div className="container mx-auto px-4 py-8 space-y-6">
+      <div className="flex justify-between items-center">
+        <h1 className="text-2xl font-bold">Creator Analytics</h1>
+        <CompetitorSearch
+          competitorHandle={competitorHandle}
+          onHandleChange={setCompetitorHandle}
+          onSearch={handleSearch}
+        />
+      </div>
 
-          <AccountMetricsOverview 
-            accountMetrics={mockAccountMetrics}
-            postsCount={posts.length}
-          />
+      <AccountMetricsOverview 
+        accountMetrics={mockAccountMetrics}
+        postsCount={posts.length}
+      />
 
-          {posts.length === 0 ? (
-            <EmptyPostsState 
-              searchQuery={searchQuery} 
-              setSearchQuery={setSearchQuery} 
-            />
-          ) : (
-            <div className="space-y-6">
-              {selectedPost && (
-                <PostAnalytics post={selectedPost as any} />
-              )}
-              <Card className="p-6">
-                <PostsList 
-                  posts={posts} 
-                  onPostSelect={handlePostSelect}
-                />
-              </Card>
-            </div>
+      {posts.length === 0 ? (
+        <EmptyPostsState 
+          searchQuery={searchQuery} 
+          setSearchQuery={setSearchQuery} 
+        />
+      ) : (
+        <div className="space-y-6">
+          {selectedPost && (
+            <PostAnalytics post={selectedPost as any} />
           )}
+          <Card className="p-6">
+            <PostsList 
+              posts={posts} 
+              onPostSelect={handlePostSelect}
+            />
+          </Card>
         </div>
-      </main>
+      )}
     </div>
   );
 };
