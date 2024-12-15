@@ -1,39 +1,18 @@
-import { useState } from "react";
-import Sidebar from "@/components/ui/sidebar";
 import { AccountOverview } from "@/components/AccountOverview";
-import { PostComparison } from "@/components/PostComparison";
-import DashboardHeader from "@/components/dashboard/DashboardHeader";
-import PostSelectionSection from "@/components/dashboard/PostSelectionSection";
-import ChartsSection from "@/components/dashboard/ChartsSection";
-import { Post } from "@/components/dashboard/types";
+import { ChartsSection } from "@/components/dashboard/ChartsSection";
+import { DashboardHeader } from "@/components/dashboard/DashboardHeader";
+import { PostSelectionSection } from "@/components/dashboard/PostSelectionSection";
 
 const Dashboard = () => {
-  const [selectedPost, setSelectedPost] = useState<Post | null>(null);
-
   return (
-    <div className="min-h-screen bg-[#FAFAFA] flex">
-      <Sidebar />
-      <div className="flex-1 ml-0 sm:ml-16 w-full overflow-x-hidden">
+    <div className="min-h-screen bg-background p-6">
+      <div className="max-w-7xl mx-auto space-y-6">
         <DashboardHeader />
-
-        <main className="px-4 pb-32">
-          <AccountOverview />
-
-          <div className="space-y-8">
-            <h2 className="text-xl sm:text-2xl font-semibold">Post Analytics</h2>
-            
-            <PostSelectionSection 
-              selectedPost={selectedPost}
-              setSelectedPost={setSelectedPost}
-            />
-
-            <div>
-              <PostComparison selectedPost={selectedPost} />
-            </div>
-
-            <ChartsSection selectedPost={selectedPost} />
-          </div>
-        </main>
+        <AccountOverview />
+        <div className="grid gap-6 grid-cols-1 lg:grid-cols-2">
+          <ChartsSection />
+          <PostSelectionSection />
+        </div>
       </div>
     </div>
   );
