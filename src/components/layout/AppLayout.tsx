@@ -1,4 +1,4 @@
-import { AppRoutes } from '@/components/routes/AppRoutes';
+import { Outlet } from 'react-router-dom';
 import { AppSidebar } from '@/components/shared/AppSidebar';
 import { useState } from 'react';
 
@@ -13,7 +13,7 @@ export const AppLayout = () => {
         <main className={`flex-1 transition-all duration-300 ${
           isCollapsed ? 'pl-16' : 'pl-64'
         } bg-gray-50`}>
-          <AppRoutes />
+          <Outlet />
         </main>
       </div>
     </div>
