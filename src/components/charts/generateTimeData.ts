@@ -1,82 +1,100 @@
-import { Interval, MetricType, ChartData } from './types';
+import { MetricType } from "./types";
+import { addDays, addHours, addMinutes, format } from "date-fns";
 
-export const generateTimeData = (interval: Interval, metric: MetricType, isComparison: boolean = false): ChartData[] => {
+const generateRandomValue = (baseValue: number, variance: number) => {
+  return Math.floor(baseValue + (Math.random() - 0.5) * variance);
+};
+
+const getBaseMetricValue = (metric: MetricType): number => {
+  switch (metric) {
+    case "views":
+      return 45000;
+    case "likes":
+      return 3200;
+    case "comments":
+      return 180;
+    case "shares":
+      return 95;
+    case "saves":
+      return 420;
+    case "engagement":
+      return 8.5;
+    case "followers":
+      return 12500;
+    case "reach":
+      return 45200;
+    default:
+      return 1000;
+  }
+};
+
+const getVariance = (metric: MetricType): number => {
+  switch (metric) {
+    case "views":
+      return 10000;
+    case "likes":
+      return 800;
+    case "comments":
+      return 50;
+    case "shares":
+      return 25;
+    case "saves":
+      return 100;
+    case "engagement":
+      return 2;
+    case "followers":
+      return 300;
+    case "reach":
+      return 5000;
+    default:
+      return 200;
+  }
+};
+
+export const generateTimeData = (interval: string, metric: MetricType, isComparison = false) => {
+  const baseValue = getBaseMetricValue(metric);
+  const variance = getVariance(metric);
   const now = new Date();
-  const data: ChartData[] = [];
-  
-  const getMetricValue = (base: number) => {
-    const multiplier = isComparison ? 0.8 : 1;
-    switch(metric) {
-      case 'views':
-      case 'reached':
-        return Math.floor((base + Math.random() * 1000) * multiplier);
-      case 'likes':
-      case 'growth':
-        return Math.floor((base * 0.1 + Math.random() * 100) * multiplier);
-      case 'comments':
-      case 'followers':
-        return Math.floor((base * 0.01 + Math.random() * 50) * multiplier);
-      case 'shares':
-      case 'engaged':
-        return Math.floor((base * 0.05 + Math.random() * 20) * multiplier);
-      case 'engagement':
-        return Math.floor((base * 0.15 + Math.random() * 5) * multiplier);
-      default:
-        return 0;
-    }
-  };
+  const data = [];
+
+  // Adjust base value for comparison data
+  const comparisonBaseValue = isComparison ? baseValue * 0.85 : baseValue;
+
+  let points = 30;
+  let addTime;
 
   switch (interval) {
-    case '5min':
-      for (let i = 11; i >= 0; i--) {
-        const time = new Date(now.getTime() - i * 5 * 60000);
-        data.push({
-          date: time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          value: getMetricValue(4000)
-        });
-      }
+    case "5min":
+      points = 12;
+      addTime = addMinutes;
       break;
-
-    case 'hourly':
-      for (let i = 23; i >= 0; i--) {
-        const time = new Date(now.getTime() - i * 60 * 60000);
-        data.push({
-          date: time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }),
-          value: getMetricValue(4000)
-        });
-      }
+    case "hourly":
+      points = 24;
+      addTime = addHours;
       break;
-
-    case 'daily':
-      for (let i = 6; i >= 0; i--) {
-        const time = new Date(now.getTime() - i * 24 * 60 * 60000);
-        data.push({
-          date: time.toLocaleDateString([], { weekday: 'short' }),
-          value: getMetricValue(4000)
-        });
-      }
+    case "daily":
+      points = 30;
+      addTime = addDays;
       break;
-      
-    case 'weekly':
-      for (let i = 7; i >= 0; i--) {
-        const time = new Date(now.getTime() - i * 7 * 24 * 60 * 60000);
-        data.push({
-          date: `Week ${7-i}`,
-          value: getMetricValue(4000)
-        });
-      }
+    case "weekly":
+      points = 12;
+      addTime = (date: Date, amount: number) => addDays(date, amount * 7);
       break;
-
-    case 'monthly':
-      for (let i = 11; i >= 0; i--) {
-        const time = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        data.push({
-          date: time.toLocaleDateString([], { month: 'short' }),
-          value: getMetricValue(4000)
-        });
-      }
+    case "monthly":
+      points = 12;
+      addTime = (date: Date, amount: number) => addDays(date, amount * 30);
       break;
+    default:
+      addTime = addDays;
   }
-  
+
+  for (let i = points - 1; i >= 0; i--) {
+    const date = addTime(now, -i);
+    data.push({
+      date: format(date, "MMM dd"),
+      value: generateRandomValue(comparisonBaseValue, variance)
+    });
+  }
+
   return data;
 };

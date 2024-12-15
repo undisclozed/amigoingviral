@@ -1,88 +1,86 @@
-import { Post } from "./types";
-
-export const posts: Post[] = [
+export const posts = [
   {
-    id: "1",
-    username: "@sarahjcreates",
-    timestamp: "2024-02-15",
-    caption: "Morning routine essentials ✨ #lifestyle #morning",
+    id: 1,
+    thumbnail: "https://images.unsplash.com/photo-1509440159596-0249088772ff",
+    caption: "Finally nailed the perfect croissant lamination! Took 3 days but so worth it 🥐✨ #BakingJourney #Croissants",
     metrics: {
-      views: 150000,
-      likes: 15000,
-      comments: 800,
+      views: 45230,
+      likes: 3200,
+      comments: 182,
+      shares: 95,
+      saves: 420,
+      engagement: 8.6
     },
-    thumbnail: "https://images.unsplash.com/photo-1495001258031-d1b407bc1776",
-    engagementScore: 0.25,
-    url: "https://instagram.com/p/abc123"
+    engagementScore: 92
   },
   {
-    id: "2",
-    username: "@sarahjcreates",
-    timestamp: "2024-02-10",
-    caption: "Weekend vibes 🌟 #weekend #lifestyle",
+    id: 2,
+    thumbnail: "https://images.unsplash.com/photo-1549931319-a545dcf3bc73",
+    caption: "Sunday morning sourdough. Still learning but getting better with each loaf! 🍞 #Sourdough #HomeBaker",
     metrics: {
-      views: 120000,
-      likes: 12000,
-      comments: 600,
+      views: 38750,
+      likes: 2800,
+      comments: 145,
+      shares: 72,
+      saves: 385,
+      engagement: 7.8
     },
-    thumbnail: "https://images.unsplash.com/photo-1542596594-649edbc13630",
-    engagementScore: 0.22,
-    url: "https://instagram.com/p/def456"
+    engagementScore: 85
   },
   {
-    id: "3",
-    username: "@sarahjcreates",
-    timestamp: "2024-02-05",
-    caption: "Coffee time ☕️ #coffee #morning",
+    id: 3,
+    thumbnail: "https://images.unsplash.com/photo-1486427944299-d1955d23e34d",
+    caption: "First try at French macarons! Not perfect but they taste amazing 🤍 #BakingProgress #Macarons",
     metrics: {
-      views: 100000,
-      likes: 10000,
-      comments: 500,
+      views: 42100,
+      likes: 3100,
+      comments: 168,
+      shares: 88,
+      saves: 405,
+      engagement: 8.2
     },
-    thumbnail: "https://images.unsplash.com/photo-1459755486867-b55449bb39ff",
-    engagementScore: 0.20,
-    url: "https://instagram.com/p/ghi789"
+    engagementScore: 89
   },
   {
-    id: "4",
-    username: "@sarahjcreates",
-    timestamp: "2024-01-20",
-    caption: "Quick update #lifestyle",
+    id: 4,
+    thumbnail: "https://images.unsplash.com/photo-1517686469429-8bdb88b9f907",
+    caption: "Testing new pie crust techniques today. The secret? COLD butter! 🥧 #PieBaking #BakingTips",
     metrics: {
-      views: 5000,
-      likes: 200,
-      comments: 10,
+      views: 25400,
+      likes: 1850,
+      comments: 95,
+      shares: 45,
+      saves: 280,
+      engagement: 6.5
     },
-    thumbnail: "https://images.unsplash.com/photo-1542596785-11e711e911e0",
-    engagementScore: 0.05,
-    url: "https://instagram.com/p/jkl012"
+    engagementScore: 71
   },
   {
-    id: "5",
-    username: "@sarahjcreates",
-    timestamp: "2024-01-15",
-    caption: "Testing something new",
+    id: 5,
+    thumbnail: "https://images.unsplash.com/photo-1509440159596-0249088772ff",
+    caption: "Simple pleasures: Fresh bread and coffee for breakfast ☕️ #HomeBaking #MorningRituals",
     metrics: {
-      views: 4000,
-      likes: 150,
-      comments: 8,
+      views: 28900,
+      likes: 2100,
+      comments: 112,
+      shares: 52,
+      saves: 315,
+      engagement: 7.1
     },
-    thumbnail: "https://images.unsplash.com/photo-1542596867-ab5172c27d72",
-    engagementScore: 0.04,
-    url: "https://instagram.com/p/mno345"
+    engagementScore: 76
   },
   {
-    id: "6",
-    username: "@sarahjcreates",
-    timestamp: "2024-01-10",
-    caption: "Behind the scenes",
+    id: 6,
+    thumbnail: "https://images.unsplash.com/photo-1549931319-a545dcf3bc73",
+    caption: "When the crumb structure hits just right 👌 #BreadBaking #Sourdough",
     metrics: {
-      views: 3000,
-      likes: 100,
-      comments: 5,
+      views: 22100,
+      likes: 1650,
+      comments: 85,
+      shares: 38,
+      saves: 245,
+      engagement: 6.2
     },
-    thumbnail: "https://images.unsplash.com/photo-1542596338-649edbc13630",
-    engagementScore: 0.03,
-    url: "https://instagram.com/p/pqr678"
+    engagementScore: 68
   }
 ];
