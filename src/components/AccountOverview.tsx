@@ -5,6 +5,7 @@ import { getMetricsData } from "./metrics/metricsData";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Users, Eye, Percent, Users2 } from "lucide-react";
 import type { AccountMetrics } from "@/types/database";
 
 export const AccountOverview = () => {
@@ -100,7 +101,7 @@ export const AccountOverview = () => {
                 change={metrics.follower_growth}
                 subValue={`${metrics.follower_growth > 0 ? '+' : ''}${metrics.follower_growth}% growth`}
                 period="Last 30 days"
-                icon={defaultMetrics[0].icon}
+                icon={<Users className="h-4 w-4" />}
                 metric="followers"
               />
               <MetricChartDialog
@@ -118,7 +119,7 @@ export const AccountOverview = () => {
                 change={((metrics.accounts_reached - metrics.accounts_engaged) / metrics.accounts_engaged) * 100}
                 subValue={`${formatMetricValue(metrics.accounts_engaged)} engaged`}
                 period="Last 30 days"
-                icon={defaultMetrics[1].icon}
+                icon={<Eye className="h-4 w-4" />}
                 metric="reach"
               />
               <MetricChartDialog
@@ -133,10 +134,10 @@ export const AccountOverview = () => {
               <MetricCard
                 title="Avg. Engagement"
                 value={`${metrics.avg_engagement_rate.toFixed(1)}%`}
-                change={0} // We'll calculate this when we have historical data
+                change={0}
                 subValue={`${formatMetricValue(metrics.avg_likes)} avg likes`}
                 period="Last 30 days"
-                icon={defaultMetrics[2].icon}
+                icon={<Percent className="h-4 w-4" />}
                 metric="engagement"
               />
               <MetricChartDialog
@@ -151,10 +152,10 @@ export const AccountOverview = () => {
               <MetricCard
                 title="Growth Score"
                 value={metrics.growth_score.toString()}
-                change={0} // We'll calculate this when we have historical data
+                change={0}
                 subValue="Based on overall performance"
                 period="Last 30 days"
-                icon={defaultMetrics[3].icon}
+                icon={<Users2 className="h-4 w-4" />}
                 metric="growth"
               />
               <MetricChartDialog
