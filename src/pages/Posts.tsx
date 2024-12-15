@@ -17,11 +17,25 @@ const accountMetrics = {
   followers: 10500,
 };
 
+// Array of realistic tech/social media related images
+const postImages = [
+  "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b",
+  "https://images.unsplash.com/photo-1461749280684-dccba630e2f6",
+  "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d",
+  "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158",
+  "https://images.unsplash.com/photo-1485827404703-89b55fcc595e",
+  "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5",
+  "https://images.unsplash.com/photo-1531297484001-80022131f5a1",
+  "https://images.unsplash.com/photo-1487058792275-0ad4aaf24ca7",
+  "https://images.unsplash.com/photo-1649972904349-6e44c42644a7",
+  "https://images.unsplash.com/photo-1518770660439-4636190af475",
+];
+
 // Generate 34 mock posts
 const generateMockPosts = () => {
   return Array.from({ length: 34 }, (_, index) => ({
     id: index + 1,
-    thumbnail: "/placeholder.svg",
+    thumbnail: postImages[index % postImages.length], // Cycle through available images
     caption: `Post ${index + 1}: ${[
       "Check out this amazing new feature! #tech #innovation",
       "Behind the scenes look at our process #behindthescenes",
