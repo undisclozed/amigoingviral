@@ -7,6 +7,7 @@ import { PostsList } from "@/components/posts/PostsList";
 import { CompetitorSearch } from "@/components/competitor-analytics/CompetitorSearch";
 import { PostAnalytics } from "@/components/posts/PostAnalytics";
 import { toast } from "sonner";
+import { Post } from "@/components/dashboard/types";
 
 const postImages = [
   "https://images.unsplash.com/photo-1509440159596-0249088772ff",
@@ -36,7 +37,7 @@ const generateMockPosts = () => {
 };
 
 const Posts = () => {
-  const [posts, setPosts] = useState(generateMockPosts());
+  const [posts, setPosts] = useState<Post[]>(generateMockPosts());
   const [searchQuery, setSearchQuery] = useState("");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [competitorHandle, setCompetitorHandle] = useState("");
@@ -60,6 +61,12 @@ const Posts = () => {
         ? `Viewing analytics for ${competitorHandle}`
         : "Start Tracking Now! This creator's data is not yet available."
     );
+  };
+
+  const handlePostSelect = (postId: number | null) => {
+    setSelectedPostId(postId);
+    // Smooth scroll to top of the page
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const selectedPost = selectedPostId ? posts.find(post => post.id === selectedPostId) : null;
@@ -98,7 +105,7 @@ const Posts = () => {
               <Card className="p-6">
                 <PostsList 
                   posts={posts} 
-                  onPostSelect={setSelectedPostId}
+                  onPostSelect={handlePostSelect}
                 />
               </Card>
             </div>
