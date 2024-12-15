@@ -19,23 +19,21 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
   const location = useLocation();
   const isDashboardRoute = location.pathname === '/dashboard';
 
+  // Handle access token in URL
   useEffect(() => {
-    // Handle access token in URL
     const handleHashParams = async () => {
       const hashParams = new URLSearchParams(window.location.hash.substring(1));
       const accessToken = hashParams.get('access_token');
       
       if (accessToken) {
-        console.log('Access token found in URL, establishing session');
-        // Clear the hash from URL
+        console.log('Access token found in URL');
         window.history.replaceState({}, document.title, window.location.pathname);
         
         try {
-          // Get the session
           const { data: { session }, error } = await supabase.auth.getSession();
           
           if (session && !error) {
-            console.log('Session established successfully, navigating to dashboard');
+            console.log('Session established, navigating to dashboard');
             navigate('/dashboard', { replace: true });
           } else {
             console.error('Session error:', error);
@@ -68,8 +66,9 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
     };
   }, [navigate]);
 
+  // Check for user profile
   useEffect(() => {
-    async function getProfile() {
+    const getProfile = async () => {
       if (!user) {
         setLoading(false);
         return;
@@ -77,22 +76,22 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
 
       try {
         console.log('Fetching profile for user:', user.id);
-        const { data, error } = await supabase
+        const { data: profileData, error: profileError } = await supabase
           .from('profiles')
           .select('*')
           .eq('id', user.id)
           .single();
 
-        if (error) {
-          console.error('Error fetching profile:', error);
-          throw error;
+        if (profileError) {
+          console.error('Error fetching profile:', profileError);
+          throw profileError;
         }
-        
-        console.log('Profile data:', data);
-        setProfile(data);
 
-        // Only create initial metrics if profile exists but metrics don't
-        if (data) {
+        console.log('Profile data:', profileData);
+        setProfile(profileData);
+
+        // Only create metrics if profile exists but metrics don't
+        if (profileData) {
           const { data: metricsData, error: metricsError } = await supabase
             .from('account_metrics')
             .select('id')
@@ -100,25 +99,22 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
             .single();
 
           if (metricsError && metricsError.code === 'PGRST116') {
-            // No metrics found, create initial metrics
             const { error: insertError } = await supabase
               .from('account_metrics')
-              .insert([
-                {
-                  user_id: user.id,
-                  follower_count: 0,
-                  follower_growth: 0,
-                  post_count: 0,
-                  posts_last_period: 0,
-                  accounts_reached: 0,
-                  accounts_engaged: 0,
-                  avg_engagement_rate: 0,
-                  avg_likes: 0,
-                  avg_comments: 0,
-                  avg_views: 0,
-                  growth_score: 0
-                }
-              ]);
+              .insert([{
+                user_id: user.id,
+                follower_count: 0,
+                follower_growth: 0,
+                post_count: 0,
+                posts_last_period: 0,
+                accounts_reached: 0,
+                accounts_engaged: 0,
+                avg_engagement_rate: 0,
+                avg_likes: 0,
+                avg_comments: 0,
+                avg_views: 0,
+                growth_score: 0
+              }]);
 
             if (insertError) {
               console.error('Error creating initial metrics:', insertError);
@@ -132,7 +128,7 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
       } finally {
         setLoading(false);
       }
-    }
+    };
 
     getProfile();
   }, [user]);
@@ -147,8 +143,8 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
     return <LoginForm open={true} onOpenChange={setShowLogin} />;
   }
 
-  // Only show profile form if there's no profile at all
-  if (isDashboardRoute && !profile) {
+  // Show profile form only if there's no profile and we're on the dashboard
+  if (isDashboardRoute && !profile?.name) {
     console.log('No profile found, showing profile form');
     return <ProfileForm />;
   }
