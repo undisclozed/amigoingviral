@@ -19,11 +19,6 @@ const items = [
     icon: User,
   },
   {
-    title: "Analytics",
-    path: "/analytics",
-    icon: BarChart2,
-  },
-  {
     title: "Settings",
     path: "/settings",
     icon: Settings,

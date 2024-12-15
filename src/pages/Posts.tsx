@@ -109,7 +109,7 @@ const Posts = () => {
                 value={postMetrics.duration}
                 subValue={`${postMetrics.watchPercentage}% completed`}
                 icon={<Clock className="h-4 w-4" />}
-                metric="duration"
+                metric="watch_time"
               />
             </div>
 
