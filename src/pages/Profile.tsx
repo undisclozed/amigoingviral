@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { CalendarDays } from "lucide-react";
 import { useState, useEffect } from "react";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import SidebarProvider from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/shared/AppSidebar";
 
 const Profile = () => {

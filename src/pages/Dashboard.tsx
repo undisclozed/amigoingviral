@@ -2,7 +2,7 @@ import { AccountOverview } from "@/components/AccountOverview";
 import ChartsSection from "@/components/dashboard/ChartsSection";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import PostSelectionSection from "@/components/dashboard/PostSelectionSection";
-import { SidebarProvider } from "@/components/ui/sidebar";
+import SidebarProvider from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/shared/AppSidebar";
 import { useState } from "react";
 import type { Post } from "@/components/dashboard/types";

@@ -1,15 +1,13 @@
 import { Link, useLocation } from "react-router-dom";
 import { LayoutDashboard, User, BarChart2, Settings } from "lucide-react";
-import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarGroupLabel,
-  SidebarMenu,
-  SidebarMenuItem,
-  SidebarMenuButton,
-} from "@/components/ui/sidebar";
+import Sidebar from "@/components/ui/sidebar";
+import SidebarContent from "@/components/ui/sidebar";
+import SidebarGroup from "@/components/ui/sidebar";
+import SidebarGroupContent from "@/components/ui/sidebar";
+import SidebarGroupLabel from "@/components/ui/sidebar";
+import SidebarMenu from "@/components/ui/sidebar";
+import SidebarMenuItem from "@/components/ui/sidebar";
+import SidebarMenuButton from "@/components/ui/sidebar";
 
 const items = [
   {
