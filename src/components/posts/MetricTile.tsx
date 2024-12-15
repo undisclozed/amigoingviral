@@ -42,7 +42,7 @@ export const MetricTile = ({ title, value, change, icon, metric }: MetricTilePro
           <span className="font-semibold text-sm truncate max-w-[80px]">{value}</span>
           {change !== undefined && (
             <span className={`text-xs ${changeColor}`}>
-              {change >= 0 ? '+' : ''}{change}%
+              {change >= 0 ? '+' : ''}{change.toFixed(1)}%
             </span>
           )}
         </div>

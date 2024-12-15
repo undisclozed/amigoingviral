@@ -29,6 +29,11 @@ const generateMockPosts = (): Post[] => {
       views: Math.floor(Math.random() * 50000) + 10000,
       likes: Math.floor(Math.random() * 5000) + 500,
       comments: Math.floor(Math.random() * 300) + 50,
+      shares: Math.floor(Math.random() * 200) + 20,
+      saves: Math.floor(Math.random() * 400) + 40,
+      engagement: Number((Math.random() * 5 + 2).toFixed(2)),
+      followsFromPost: Math.floor(Math.random() * 100) + 10,
+      averageWatchPercentage: Number((Math.random() * 40 + 60).toFixed(2)),
     }
   }));
 };

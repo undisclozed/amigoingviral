@@ -9,25 +9,11 @@ import {
 import { LineChart } from "../LineChart";
 import { ViralityScore } from "../ViralityScore";
 import { MetricTile } from "./MetricTile";
-import PostSelectionSection from "../dashboard/PostSelectionSection";
-import { useState } from "react";
 import { Post } from "../dashboard/types";
+import { useState } from "react";
 
 interface PostAnalyticsProps {
-  post: {
-    id: number;
-    thumbnail: string;
-    caption: string;
-    timestamp: string;
-    metrics: {
-      views: number;
-      likes: number;
-      comments: number;
-      shares: number;
-      saves: number;
-      engagement: number;
-    };
-  };
+  post: Post;
 }
 
 export const PostAnalytics = ({ post }: PostAnalyticsProps) => {
@@ -49,7 +35,19 @@ export const PostAnalytics = ({ post }: PostAnalyticsProps) => {
     shares: post.metrics.shares * 0.8,
     saves: post.metrics.saves * 0.8,
     engagement: post.metrics.engagement * 0.8,
+    followsFromPost: post.metrics.followsFromPost * 0.8,
+    averageWatchPercentage: post.metrics.averageWatchPercentage * 0.8,
   };
+
+  // Calculate engagement rate
+  const totalEngagements = post.metrics.likes + post.metrics.comments + 
+    post.metrics.saves + post.metrics.shares;
+  const engagementRate = (totalEngagements / post.metrics.views) * 100;
+
+  // Calculate ratios
+  const likesToReachRatio = (post.metrics.likes / post.metrics.views) * 100;
+  const commentsToReachRatio = (post.metrics.comments / post.metrics.views) * 100;
+  const savesToReachRatio = (post.metrics.saves / post.metrics.views) * 100;
 
   return (
     <div className="space-y-4">
@@ -62,22 +60,81 @@ export const PostAnalytics = ({ post }: PostAnalyticsProps) => {
           </div>
         </div>
 
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mb-4">
-          {Object.entries(post.metrics).map(([key, value]) => {
-            const average = averageMetrics[key as keyof typeof averageMetrics];
-            const change = getChangeFromAverage(value, average);
-            
-            return (
-              <MetricTile
-                key={key}
-                title={key.charAt(0).toUpperCase() + key.slice(1)}
-                value={value.toLocaleString()}
-                change={Math.round(change)}
-                icon={<Info className="h-4 w-4" />}
-                metric={key as any}
-              />
-            );
-          })}
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 mb-4">
+          {/* Core Metrics */}
+          <MetricTile
+            title="Views"
+            value={post.metrics.views.toLocaleString()}
+            change={getChangeFromAverage(post.metrics.views, averageMetrics.views)}
+            icon={<Info className="h-4 w-4" />}
+            metric="views"
+          />
+          <MetricTile
+            title="Likes"
+            value={post.metrics.likes.toLocaleString()}
+            change={getChangeFromAverage(post.metrics.likes, averageMetrics.likes)}
+            icon={<Info className="h-4 w-4" />}
+            metric="likes"
+          />
+          <MetricTile
+            title="Comments"
+            value={post.metrics.comments.toLocaleString()}
+            change={getChangeFromAverage(post.metrics.comments, averageMetrics.comments)}
+            icon={<Info className="h-4 w-4" />}
+            metric="comments"
+          />
+          <MetricTile
+            title="Shares"
+            value={post.metrics.shares.toLocaleString()}
+            change={getChangeFromAverage(post.metrics.shares, averageMetrics.shares)}
+            icon={<Info className="h-4 w-4" />}
+            metric="shares"
+          />
+          <MetricTile
+            title="Saves"
+            value={post.metrics.saves.toLocaleString()}
+            change={getChangeFromAverage(post.metrics.saves, averageMetrics.saves)}
+            icon={<Info className="h-4 w-4" />}
+            metric="saves"
+          />
+          <MetricTile
+            title="Engagement Rate"
+            value={`${engagementRate.toFixed(1)}%`}
+            change={getChangeFromAverage(engagementRate, averageMetrics.engagement)}
+            icon={<Info className="h-4 w-4" />}
+            metric="engagement"
+          />
+          <MetricTile
+            title="Follows"
+            value={post.metrics.followsFromPost.toLocaleString()}
+            change={getChangeFromAverage(post.metrics.followsFromPost, averageMetrics.followsFromPost)}
+            icon={<Info className="h-4 w-4" />}
+          />
+          <MetricTile
+            title="Avg Watch %"
+            value={`${post.metrics.averageWatchPercentage}%`}
+            change={getChangeFromAverage(post.metrics.averageWatchPercentage, averageMetrics.averageWatchPercentage)}
+            icon={<Info className="h-4 w-4" />}
+          />
+        </div>
+
+        {/* Ratio Metrics */}
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 mb-4">
+          <MetricTile
+            title="Likes/Reach"
+            value={`${likesToReachRatio.toFixed(1)}%`}
+            icon={<Info className="h-4 w-4" />}
+          />
+          <MetricTile
+            title="Comments/Reach"
+            value={`${commentsToReachRatio.toFixed(1)}%`}
+            icon={<Info className="h-4 w-4" />}
+          />
+          <MetricTile
+            title="Saves/Reach"
+            value={`${savesToReachRatio.toFixed(1)}%`}
+            icon={<Info className="h-4 w-4" />}
+          />
         </div>
 
         <ViralityScore score={viralityScore} avgScore={avgScore} />
@@ -92,12 +149,6 @@ export const PostAnalytics = ({ post }: PostAnalyticsProps) => {
             showComparison={!!selectedComparisonPost}
             currentCreator="Current Post"
             comparisonCreator={selectedComparisonPost?.caption}
-          />
-        </div>
-        <div className="mt-4">
-          <PostSelectionSection
-            selectedPost={selectedComparisonPost}
-            setSelectedPost={setSelectedComparisonPost}
           />
         </div>
       </Card>
