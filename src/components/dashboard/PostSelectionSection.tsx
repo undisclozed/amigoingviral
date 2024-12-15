@@ -25,7 +25,12 @@ const PostSelectionSection = ({ selectedPost, setSelectedPost }: PostSelectionSe
       metrics: {
         views: 17800000,
         likes: 646000,
-        comments: 6100
+        comments: 6100,
+        shares: 2500,
+        saves: 15000,
+        engagement: 8.5,
+        followsFromPost: 1200,
+        averageWatchPercentage: 85.5
       },
       thumbnail: "/placeholder.svg"
     },
@@ -41,7 +46,12 @@ const PostSelectionSection = ({ selectedPost, setSelectedPost }: PostSelectionSe
         metrics: {
           views: Math.floor(Math.random() * 1000000),
           likes: Math.floor(Math.random() * 100000),
-          comments: Math.floor(Math.random() * 1000)
+          comments: Math.floor(Math.random() * 1000),
+          shares: Math.floor(Math.random() * 500),
+          saves: Math.floor(Math.random() * 2000),
+          engagement: Number((Math.random() * 10).toFixed(1)),
+          followsFromPost: Math.floor(Math.random() * 200),
+          averageWatchPercentage: Number((Math.random() * 40 + 60).toFixed(1))
         },
         thumbnail: "/placeholder.svg"
       },

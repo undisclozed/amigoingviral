@@ -28,12 +28,23 @@ export const LineChart = ({
       setComparisonData(generateTimeData(currentInterval, currentMetric, true));
     }
     
-    // Generate average data based on selected period
-    const avgValue = data.reduce((sum, item) => sum + item.value, 0) / data.length;
-    const averagePoints = data.map(item => ({
-      date: item.date,
-      value: avgValue
-    }));
+    // Generate multiple sets of data based on averagePeriod
+    const numDatasets = parseInt(averagePeriod);
+    const datasets = Array.from({ length: numDatasets }, () => 
+      generateTimeData(currentInterval, currentMetric)
+    );
+
+    // Calculate average value for each time point
+    const averagePoints = data.map((item, index) => {
+      const valuesAtTimePoint = datasets.map(dataset => dataset[index]?.value || 0);
+      const avgValue = valuesAtTimePoint.reduce((sum, val) => sum + val, 0) / valuesAtTimePoint.length;
+      
+      return {
+        date: item.date,
+        value: avgValue
+      };
+    });
+
     setAverageData(averagePoints);
   }, [currentInterval, currentMetric, showComparison, averagePeriod]);
 
