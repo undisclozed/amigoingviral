@@ -14,9 +14,10 @@ import { toast } from "sonner";
 
 interface PostAnalyticsProps {
   post: PostAnalyticsData;
+  onRetry?: () => void;
 }
 
-export const PostAnalytics = ({ post }: PostAnalyticsProps) => {
+export const PostAnalytics = ({ post, onRetry }: PostAnalyticsProps) => {
   const [selectedComparisonPost, setSelectedComparisonPost] = useState<PostAnalyticsData | null>(null);
   const [updateInterval, setUpdateInterval] = useState<number>(5);
   const [isLoading, setIsLoading] = useState(false);
@@ -32,8 +33,7 @@ export const PostAnalytics = ({ post }: PostAnalyticsProps) => {
         // Simulated API call - replace with actual API call
         await new Promise(resolve => setTimeout(resolve, 1000));
         
-        // If the fetch fails, throw an error
-        if (Math.random() > 0.9) { // 10% chance of error for demo
+        if (Math.random() > 0.9) {
           throw new Error("Failed to fetch latest metrics");
         }
 
@@ -47,17 +47,17 @@ export const PostAnalytics = ({ post }: PostAnalyticsProps) => {
     };
 
     const timer = setInterval(fetchLatestMetrics, interval * 60 * 1000);
-    fetchLatestMetrics(); // Initial fetch
+    fetchLatestMetrics();
 
     return () => clearInterval(timer);
   }, [post.timestamp]);
 
   if (error) {
-    return <PostAnalyticsError error={error} onRetry={() => window.location.reload()} />;
+    return <PostAnalyticsError error={error} onRetry={onRetry || (() => window.location.reload())} />;
   }
 
   if (isLoading && !post) {
-    return <PostAnalyticsSkeleton />;
+    return <PostAnalyticsSkeleton data-testid="post-analytics-skeleton" />;
   }
 
   const viralityScore = Math.round((post.metrics.engagement * 100) + 
@@ -81,17 +81,21 @@ export const PostAnalytics = ({ post }: PostAnalyticsProps) => {
   };
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" role="region" aria-label="Post Analytics Dashboard">
       <Card className="p-4">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-4">
-            <img src={post.thumbnail} alt="Post thumbnail" className="w-16 h-16 rounded-lg object-cover" />
+            <img 
+              src={post.thumbnail} 
+              alt={`Thumbnail for ${post.caption}`} 
+              className="w-16 h-16 rounded-lg object-cover"
+            />
             <div>
               <h2 className="text-lg font-semibold">Post Performance</h2>
               <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Clock className="h-4 w-4" />
+                <Clock className="h-4 w-4" aria-hidden="true" />
                 <span>Posted {getTimeSincePost(post.timestamp)}</span>
-                <span className="text-gray-400">•</span>
+                <span className="text-gray-400" aria-hidden="true">•</span>
                 <span>Updates every {updateInterval} minutes</span>
               </div>
             </div>
