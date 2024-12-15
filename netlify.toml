@@ -5,4 +5,4 @@
 [build.environment]
   NODE_VERSION = "18"
   NPM_FLAGS = "--legacy-peer-deps"
-  PYTHON_VERSION = "false"  # Correct way to define the PYTHON_VERSION
+  PYTHON_VERSION = "3.8"  # Using a specific Python version instead of "false"
