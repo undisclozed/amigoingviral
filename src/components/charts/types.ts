@@ -1,25 +1,19 @@
 export type MetricType = 
-  | "views"
-  | "likes"
-  | "comments"
-  | "shares"
-  | "saves"
-  | "engagement"
-  | "followers"
-  | "posts"
-  | "reached"
-  | "engaged"
-  | "watch_time";
+  | "views" 
+  | "likes" 
+  | "comments" 
+  | "shares" 
+  | "saves" 
+  | "engagement" 
+  | "watch_time" 
+  | "followers";
+
+export interface ChartData {
+  date: string;
+  value: number;
+}
 
 export type Interval = "5min" | "hourly" | "daily" | "weekly" | "monthly";
-
-export interface LineChartProps {
-  metric?: MetricType;
-  interval?: Interval;
-  showComparison?: boolean;
-  currentCreator?: string;
-  comparisonCreator?: string;
-}
 
 export const metricLabels: Record<MetricType, string> = {
   views: "Views",
@@ -28,23 +22,17 @@ export const metricLabels: Record<MetricType, string> = {
   shares: "Shares",
   saves: "Saves",
   engagement: "Engagement Rate",
-  followers: "Followers",
-  posts: "Posts",
-  reached: "Accounts Reached",
-  engaged: "Accounts Engaged",
-  watch_time: "Watch Time"
+  watch_time: "Watch Time",
+  followers: "Followers"
 };
 
 export const metricTooltips: Record<MetricType, string> = {
-  views: "Total number of times your content has been viewed",
-  likes: "Total number of likes received",
-  comments: "Total number of comments received",
+  views: "Number of times your content has been viewed",
+  likes: "Number of likes received",
+  comments: "Number of comments received",
   shares: "Number of times your content has been shared",
   saves: "Number of times your content has been saved",
   engagement: "Percentage of viewers who engaged with your content",
-  followers: "Total number of account followers",
-  posts: "Total number of posts published",
-  reached: "Number of unique accounts that saw your content",
-  engaged: "Number of unique accounts that engaged with your content",
-  watch_time: "Average duration viewers spent watching your content"
+  watch_time: "Average time viewers spent watching your content",
+  followers: "Total number of followers"
 };

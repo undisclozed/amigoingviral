@@ -1,9 +1,10 @@
-import { AppSidebar } from "@/components/shared/AppSidebar";
 import { useState } from "react";
-import { Card } from "@/components/ui/card";
+import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
-import { Search, BarChart2 } from "lucide-react";
-import { MetricsOverview } from "@/components/shared/MetricsOverview";
+import { Card } from "@/components/ui/card";
+import { AccountHeader } from "@/components/posts/AccountHeader";
+import { MetricTile } from "@/components/posts/MetricTile";
+import { Eye, ThumbsUp, MessageCircle, Share2, Bookmark, Users } from "lucide-react";
 
 // Mock data for the account
 const accountMetrics = {
@@ -46,97 +47,135 @@ const posts = [
       engagement: 0.052,
     }
   },
-  // Add more mock posts as needed
 ];
 
 const Posts = () => {
-  const [isCollapsed, setIsCollapsed] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="min-h-screen flex w-full">
-        <AppSidebar onCollapse={setIsCollapsed} />
-        <div className={`flex-1 ${isCollapsed ? 'pl-24' : 'pl-72'} p-6 transition-all duration-300`}>
-          <div className="max-w-7xl mx-auto space-y-6">
-            {/* Search Bar */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-              <Input
-                type="text"
-                placeholder="Search posts..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="pl-10 w-full"
-              />
-            </div>
+      <div className="max-w-7xl mx-auto p-6 space-y-6">
+        {/* Search Bar */}
+        <div className="relative">
+          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+          <Input
+            type="text"
+            placeholder="Search posts..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="pl-10"
+          />
+        </div>
 
-            {/* Account Overview */}
-            <Card className="p-6">
-              <h2 className="text-xl font-semibold mb-4">Account Overview</h2>
-              <MetricsOverview
-                type="account"
-                metrics={accountMetrics}
-                period="Last 30 days"
+        {/* Account Overview */}
+        <Card className="p-4">
+          <div className="space-y-4">
+            <AccountHeader 
+              accountHandle="@username"
+              profileImage="/placeholder.svg"
+              period="Last 30 days"
+            />
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-2">
+              <MetricTile
+                title="Views"
+                value={accountMetrics.views.toLocaleString()}
+                icon={<Eye className="h-4 w-4" />}
+                metric="views"
               />
-            </Card>
-
-            {/* Posts List */}
-            <div className="space-y-4">
-              <h2 className="text-xl font-semibold">Posts</h2>
-              {posts.map((post) => (
-                <Card key={post.id} className="p-4 hover:shadow-lg transition-shadow cursor-pointer">
-                  <div className="flex gap-4">
-                    <div className="w-32 h-32 rounded-lg overflow-hidden flex-shrink-0">
-                      <img 
-                        src={post.thumbnail} 
-                        alt={post.caption} 
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="flex-grow space-y-4">
-                      <div>
-                        <div className="text-sm text-gray-600">
-                          {new Date(post.timestamp).toLocaleDateString('en-US', {
-                            year: 'numeric',
-                            month: 'long',
-                            day: 'numeric'
-                          })}
-                        </div>
-                        <p className="line-clamp-2 mt-1">{post.caption}</p>
-                      </div>
-                      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4">
-                        <div className="text-center">
-                          <div className="text-sm font-medium text-gray-500">Views</div>
-                          <div className="text-lg font-semibold">{post.metrics.views.toLocaleString()}</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-sm font-medium text-gray-500">Likes</div>
-                          <div className="text-lg font-semibold">{post.metrics.likes.toLocaleString()}</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-sm font-medium text-gray-500">Comments</div>
-                          <div className="text-lg font-semibold">{post.metrics.comments.toLocaleString()}</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-sm font-medium text-gray-500">Shares</div>
-                          <div className="text-lg font-semibold">{post.metrics.shares.toLocaleString()}</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-sm font-medium text-gray-500">Saves</div>
-                          <div className="text-lg font-semibold">{post.metrics.saves.toLocaleString()}</div>
-                        </div>
-                        <div className="text-center">
-                          <div className="text-sm font-medium text-gray-500">Engagement</div>
-                          <div className="text-lg font-semibold">{(post.metrics.engagement * 100).toFixed(1)}%</div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </Card>
-              ))}
+              <MetricTile
+                title="Likes"
+                value={accountMetrics.likes.toLocaleString()}
+                icon={<ThumbsUp className="h-4 w-4" />}
+                metric="likes"
+              />
+              <MetricTile
+                title="Comments"
+                value={accountMetrics.comments.toLocaleString()}
+                icon={<MessageCircle className="h-4 w-4" />}
+                metric="comments"
+              />
+              <MetricTile
+                title="Shares"
+                value={accountMetrics.shares.toLocaleString()}
+                icon={<Share2 className="h-4 w-4" />}
+                metric="shares"
+              />
+              <MetricTile
+                title="Saves"
+                value={accountMetrics.saves.toLocaleString()}
+                icon={<Bookmark className="h-4 w-4" />}
+                metric="saves"
+              />
+              <MetricTile
+                title="Followers"
+                value={accountMetrics.followers.toLocaleString()}
+                icon={<Users className="h-4 w-4" />}
+                metric="followers"
+              />
+              <MetricTile
+                title="Engagement"
+                value={`${accountMetrics.engagement}%`}
+                icon={<Users className="h-4 w-4" />}
+                metric="engagement"
+              />
             </div>
           </div>
+        </Card>
+
+        {/* Posts List */}
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold">Posts</h2>
+          {posts.map((post) => (
+            <Card key={post.id} className="p-4 hover:shadow-lg transition-shadow cursor-pointer">
+              <div className="flex gap-4">
+                <div className="w-32 h-32 rounded-lg overflow-hidden flex-shrink-0">
+                  <img 
+                    src={post.thumbnail} 
+                    alt={post.caption} 
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex-grow space-y-4">
+                  <div>
+                    <div className="text-sm text-gray-600">
+                      {new Date(post.timestamp).toLocaleDateString('en-US', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
+                      })}
+                    </div>
+                    <p className="line-clamp-2 mt-1">{post.caption}</p>
+                  </div>
+                  <div className="grid grid-cols-3 sm:grid-cols-6 gap-4">
+                    <div className="text-center">
+                      <div className="text-sm font-medium text-gray-500">Views</div>
+                      <div className="text-lg font-semibold">{post.metrics.views.toLocaleString()}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-sm font-medium text-gray-500">Likes</div>
+                      <div className="text-lg font-semibold">{post.metrics.likes.toLocaleString()}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-sm font-medium text-gray-500">Comments</div>
+                      <div className="text-lg font-semibold">{post.metrics.comments.toLocaleString()}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-sm font-medium text-gray-500">Shares</div>
+                      <div className="text-lg font-semibold">{post.metrics.shares.toLocaleString()}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-sm font-medium text-gray-500">Saves</div>
+                      <div className="text-lg font-semibold">{post.metrics.saves.toLocaleString()}</div>
+                    </div>
+                    <div className="text-center">
+                      <div className="text-sm font-medium text-gray-500">Engagement</div>
+                      <div className="text-lg font-semibold">{(post.metrics.engagement * 100).toFixed(1)}%</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          ))}
         </div>
       </div>
     </div>
