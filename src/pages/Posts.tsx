@@ -17,37 +17,31 @@ const accountMetrics = {
   followers: 10500,
 };
 
-// Mock data for posts
-const posts = [
-  {
-    id: 1,
+// Generate 34 mock posts
+const generateMockPosts = () => {
+  return Array.from({ length: 34 }, (_, index) => ({
+    id: index + 1,
     thumbnail: "/placeholder.svg",
-    caption: "Check out this amazing new feature! #tech #innovation",
-    timestamp: "2024-03-14T10:00:00Z",
+    caption: `Post ${index + 1}: ${[
+      "Check out this amazing new feature! #tech #innovation",
+      "Behind the scenes look at our process #behindthescenes",
+      "Quick tip for better productivity #productivity",
+      "Exciting announcement coming soon! 🎉",
+      "Thank you for all your support! ❤️",
+    ][index % 5]}`,
+    timestamp: new Date(Date.now() - index * 24 * 60 * 60 * 1000).toISOString(), // Each post 1 day apart
     metrics: {
-      views: 24500,
-      likes: 1240,
-      comments: 86,
-      shares: 45,
-      saves: 120,
-      engagement: 0.048,
+      views: Math.floor(Math.random() * 50000) + 10000,
+      likes: Math.floor(Math.random() * 5000) + 500,
+      comments: Math.floor(Math.random() * 200) + 20,
+      shares: Math.floor(Math.random() * 100) + 10,
+      saves: Math.floor(Math.random() * 300) + 30,
+      engagement: (Math.random() * 0.08) + 0.02,
     }
-  },
-  {
-    id: 2,
-    thumbnail: "/placeholder.svg",
-    caption: "Behind the scenes look at our process #behindthescenes",
-    timestamp: "2024-03-13T15:30:00Z",
-    metrics: {
-      views: 18900,
-      likes: 980,
-      comments: 64,
-      shares: 32,
-      saves: 95,
-      engagement: 0.052,
-    }
-  },
-];
+  }));
+};
+
+const posts = generateMockPosts();
 
 const Posts = () => {
   const [searchQuery, setSearchQuery] = useState("");
