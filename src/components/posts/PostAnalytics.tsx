@@ -36,7 +36,7 @@ export const PostAnalytics = ({ post }: PostAnalyticsProps) => {
   const viralityScore = Math.round((post.metrics.engagement * 100) + 
     (post.metrics.views / 1000) + 
     (post.metrics.likes / 100));
-  const avgScore = Math.round(viralityScore * 0.8); // Simulated average score
+  const avgScore = Math.round(viralityScore * 0.8);
 
   const getChangeFromAverage = (value: number, average: number) => {
     return ((value - average) / average) * 100;
@@ -52,24 +52,22 @@ export const PostAnalytics = ({ post }: PostAnalyticsProps) => {
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <PostSelectionSection
         selectedPost={selectedComparisonPost}
         setSelectedPost={setSelectedComparisonPost}
       />
 
-      <Card className="p-6">
-        <div className="flex items-center justify-between mb-6">
+      <Card className="p-4">
+        <div className="flex items-center gap-4 mb-4">
+          <img src={post.thumbnail} alt="Post thumbnail" className="w-16 h-16 rounded-lg object-cover" />
           <div>
-            <h2 className="text-xl font-semibold">Post Performance</h2>
+            <h2 className="text-lg font-semibold">Post Performance</h2>
             <p className="text-sm text-gray-600">Posted on {new Date(post.timestamp).toLocaleDateString()}</p>
           </div>
-          <img src={post.thumbnail} alt="Post thumbnail" className="w-24 h-24 rounded-lg object-cover" />
         </div>
 
-        <ViralityScore score={viralityScore} avgScore={avgScore} />
-
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 mb-4">
           {Object.entries(post.metrics).map(([key, value]) => {
             const average = averageMetrics[key as keyof typeof averageMetrics];
             const change = getChangeFromAverage(value, average);
@@ -87,33 +85,41 @@ export const PostAnalytics = ({ post }: PostAnalyticsProps) => {
           })}
         </div>
 
-        <div className="mt-6">
-          <h3 className="text-lg font-semibold mb-4">Performance Over Time</h3>
-          <div className="h-[400px]">
-            <LineChart 
-              metric="engagement"
-              interval="hourly"
-              comparisonPostId={selectedComparisonPost?.id}
-            />
-          </div>
+        <ViralityScore score={viralityScore} avgScore={avgScore} />
+      </Card>
+
+      <Card className="p-4">
+        <h3 className="text-lg font-semibold mb-4">Performance Over Time</h3>
+        <div className="h-[400px]">
+          <LineChart 
+            metric="engagement"
+            interval="hourly"
+            showComparison={!!selectedComparisonPost}
+            currentCreator="Current Post"
+            comparisonCreator={selectedComparisonPost?.caption}
+          />
         </div>
       </Card>
 
-      <Card className="p-6">
+      <Card className="p-4">
         <h3 className="text-lg font-semibold mb-4">Engagement Breakdown</h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div className="h-[400px]">
             <LineChart 
               metric="likes"
               interval="hourly"
-              comparisonPostId={selectedComparisonPost?.id}
+              showComparison={!!selectedComparisonPost}
+              currentCreator="Current Post"
+              comparisonCreator={selectedComparisonPost?.caption}
             />
           </div>
           <div className="h-[400px]">
             <LineChart 
               metric="comments"
               interval="hourly"
-              comparisonPostId={selectedComparisonPost?.id}
+              showComparison={!!selectedComparisonPost}
+              currentCreator="Current Post"
+              comparisonCreator={selectedComparisonPost?.caption}
             />
           </div>
         </div>
