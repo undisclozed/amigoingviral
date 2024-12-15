@@ -1,6 +1,7 @@
 import { render, screen, fireEvent } from '@testing-library/react';
 import { PostAnalytics } from '../PostAnalytics';
 import { mockPost } from '../__mocks__/mockData';
+import { describe, it, expect, jest } from '@jest/globals';
 
 describe('PostAnalytics', () => {
   it('renders loading skeleton when isLoading is true', () => {
@@ -9,9 +10,9 @@ describe('PostAnalytics', () => {
   });
 
   it('renders error state when there is an error', () => {
-    const error = new Error('Failed to fetch');
-    render(<PostAnalytics post={mockPost} error={error} />);
-    expect(screen.getByText(/Failed to fetch/i)).toBeInTheDocument();
+    const onRetry = jest.fn();
+    render(<PostAnalytics post={mockPost} onRetry={onRetry} />);
+    expect(screen.getByText(/Failed to update metrics/i)).toBeInTheDocument();
   });
 
   it('renders metrics when data is loaded', () => {

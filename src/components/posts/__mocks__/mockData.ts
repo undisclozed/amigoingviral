@@ -3,18 +3,18 @@ import { PostAnalyticsData } from '../types/analytics';
 export const mockPost: PostAnalyticsData = {
   id: '1',
   username: '@testuser',
-  thumbnail: '/placeholder.svg',
-  caption: 'Test post',
+  thumbnail: 'https://example.com/thumbnail.jpg',
+  caption: 'Test post caption',
   timestamp: new Date().toISOString(),
   metrics: {
-    views: 10000,
-    likes: 1000,
-    comments: 100,
-    shares: 50,
-    saves: 200,
-    engagement: 0.05,
-    followsFromPost: 25,
-    averageWatchPercentage: 75,
+    views: 1000,
+    likes: 100,
+    comments: 50,
+    shares: 25,
+    saves: 75,
+    engagement: 5.5,
+    followsFromPost: 10,
+    averageWatchPercentage: 65,
     duration: 60
   }
 };
