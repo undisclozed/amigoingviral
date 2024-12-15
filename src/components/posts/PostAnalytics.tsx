@@ -1,6 +1,12 @@
-import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
-import { Clock } from "lucide-react";
+import { Info } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useState, useEffect } from "react";
 import { getTimeSincePost, getUpdateInterval } from "@/utils/timeUtils";
 import { ViralityScore } from "../ViralityScore";
 import { PostMetricsTiles } from "./metrics/PostMetricsTiles";
@@ -9,7 +15,7 @@ import { PostPerformanceCharts } from "./charts/PostPerformanceCharts";
 import { LineChart } from "@/components/LineChart";
 import { PostAnalyticsSkeleton } from "./loading/PostAnalyticsSkeleton";
 import { PostAnalyticsError } from "./error/PostAnalyticsError";
-import type { PostAnalyticsData, MetricError } from "./types/analytics";
+import type { PostAnalyticsData } from "./types/analytics";
 import { toast } from "sonner";
 
 interface PostAnalyticsProps {
@@ -18,7 +24,6 @@ interface PostAnalyticsProps {
 }
 
 export const PostAnalytics = ({ post, onRetry }: PostAnalyticsProps) => {
-  const [selectedComparisonPost, setSelectedComparisonPost] = useState<PostAnalyticsData | null>(null);
   const [updateInterval, setUpdateInterval] = useState<number>(5);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<Error | null>(null);
@@ -93,7 +98,7 @@ export const PostAnalytics = ({ post, onRetry }: PostAnalyticsProps) => {
             <div>
               <h2 className="text-lg font-semibold">Post Performance</h2>
               <div className="flex items-center gap-2 text-sm text-gray-600">
-                <Clock className="h-4 w-4" aria-hidden="true" />
+                <Info className="h-4 w-4" aria-hidden="true" />
                 <span>Posted {getTimeSincePost(post.timestamp)}</span>
                 <span className="text-gray-400" aria-hidden="true">•</span>
                 <span>Updates every {updateInterval} minutes</span>
@@ -117,7 +122,6 @@ export const PostAnalytics = ({ post, onRetry }: PostAnalyticsProps) => {
       <Card className="p-4">
         <PostPerformanceCharts 
           selectedPost={post}
-          selectedComparisonPost={selectedComparisonPost}
           isLoading={isLoading}
         />
       </Card>
@@ -129,18 +133,14 @@ export const PostAnalytics = ({ post, onRetry }: PostAnalyticsProps) => {
             <LineChart 
               metric="likes"
               interval="hourly"
-              showComparison={!!selectedComparisonPost}
               currentCreator="Current Post"
-              comparisonCreator={selectedComparisonPost?.caption}
             />
           </div>
           <div className="h-[400px]">
             <LineChart 
               metric="comments"
               interval="hourly"
-              showComparison={!!selectedComparisonPost}
               currentCreator="Current Post"
-              comparisonCreator={selectedComparisonPost?.caption}
             />
           </div>
         </div>
