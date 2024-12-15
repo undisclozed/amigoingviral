@@ -25,16 +25,24 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
       const accessToken = hashParams.get('access_token');
       
       if (accessToken) {
-        console.log('Access token found, establishing session');
+        console.log('Access token found in URL, establishing session');
         // Clear the hash from URL
         window.history.replaceState({}, document.title, window.location.pathname);
         
-        // Get the session
-        const { data: { session }, error } = await supabase.auth.getSession();
-        
-        if (session && !error) {
-          console.log('Session established, navigating to dashboard');
-          navigate('/dashboard');
+        try {
+          // Get the session
+          const { data: { session }, error } = await supabase.auth.getSession();
+          
+          if (session && !error) {
+            console.log('Session established successfully, navigating to dashboard');
+            navigate('/dashboard', { replace: true });
+          } else {
+            console.error('Session error:', error);
+            navigate('/', { replace: true });
+          }
+        } catch (error) {
+          console.error('Auth error:', error);
+          navigate('/', { replace: true });
         }
       }
     };
@@ -42,14 +50,15 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
     handleHashParams();
   }, [navigate]);
 
+  // Listen for auth state changes
   useEffect(() => {
-    // Listen for auth changes
+    console.log('Setting up auth state listener');
     const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
       console.log('Auth state changed:', event, session?.user?.id);
       if (event === 'SIGNED_IN') {
-        navigate('/dashboard');
+        navigate('/dashboard', { replace: true });
       } else if (event === 'SIGNED_OUT') {
-        navigate('/');
+        navigate('/', { replace: true });
       }
     });
 
@@ -137,12 +146,9 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
     return <LoginForm open={true} onOpenChange={setShowLogin} />;
   }
 
-  // Check if profile exists and has required fields
-  const hasRequiredProfileFields = profile && (profile.name || profile.instagram_account);
-  const isDashboardRoute = location.pathname === '/dashboard';
-
-  if (isDashboardRoute && !hasRequiredProfileFields) {
-    console.log('Profile missing required fields, showing profile form');
+  // Only show profile form if there's no profile at all
+  if (isDashboardRoute && !profile) {
+    console.log('No profile found, showing profile form');
     return <ProfileForm />;
   }
 
