@@ -32,10 +32,10 @@ export const LineChart = ({
   };
 
   return (
-    <Card className="p-6 h-[550px] w-full">
-      <div className="flex flex-col h-full space-y-4">
-        <div className="flex flex-col gap-4">
-          <div className="flex justify-between items-center">
+    <Card className="p-6 w-full h-[400px]">
+      <div className="flex flex-col h-full">
+        <div className="mb-4">
+          <div className="flex justify-between items-center mb-4">
             <h3 className="text-lg font-semibold">Performance Metrics</h3>
             <Select defaultValue={currentInterval} onValueChange={handleTimeframeChange}>
               <SelectTrigger className="w-[120px] bg-white border-2">
@@ -56,7 +56,7 @@ export const LineChart = ({
           />
         </div>
         
-        <div className="flex-1 min-h-[300px] w-full">
+        <div className="flex-1">
           <ResponsiveContainer width="100%" height="100%">
             <RechartsLineChart 
               data={data} 
