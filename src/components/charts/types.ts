@@ -6,8 +6,7 @@ export type MetricType =
   | "saves" 
   | "engagement" 
   | "followers" 
-  | "reach"
-  | "growth";
+  | "reach";
 
 export type Interval = "5min" | "hourly" | "daily" | "weekly" | "monthly";
 
@@ -27,8 +26,7 @@ export const metricLabels: Record<MetricType, string> = {
   saves: "Saves",
   engagement: "Engagement Rate",
   followers: "Followers",
-  reach: "Reach",
-  growth: "Growth"
+  reach: "Reach"
 };
 
 export const metricTooltips: Record<MetricType, string> = {
@@ -39,6 +37,5 @@ export const metricTooltips: Record<MetricType, string> = {
   saves: "Number of times your content has been saved",
   engagement: "Percentage of viewers who engaged with your content",
   followers: "Total number of accounts following you",
-  reach: "Number of unique accounts that have seen your content",
-  growth: "Growth rate over time"
+  reach: "Number of unique accounts that have seen your content"
 };
