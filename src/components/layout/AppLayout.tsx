@@ -11,7 +11,7 @@ export const AppLayout = () => {
         <AppSidebar onCollapse={setIsCollapsed} />
         <main className={`flex-1 transition-all duration-300 ${
           isCollapsed ? 'pl-16' : 'pl-64'
-        }`}>
+        } bg-gray-50`}>
           <AppRoutes />
         </main>
       </div>
