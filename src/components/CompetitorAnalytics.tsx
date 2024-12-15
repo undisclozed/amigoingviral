@@ -137,7 +137,7 @@ const CompetitorAnalytics = () => {
         </div>
 
         <div className="space-y-4">
-          <h4 className="font-medium">Competitor Metrics ({selectedCompetitor?.username || competitorData.username})</h4>
+          <h4 className="font-medium">Creator Metrics ({selectedCompetitor?.username || competitorData.username})</h4>
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span className="text-gray-600">Followers</span>
