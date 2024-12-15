@@ -18,9 +18,9 @@ const postImages = [
   "https://images.unsplash.com/photo-1464305795204-6f5bbfc7fb81",
 ];
 
-const generateMockPosts = () => {
+const generateMockPosts = (): Post[] => {
   return Array.from({ length: 34 }, (_, index) => ({
-    id: index + 1,
+    id: String(index + 1),
     username: "@creator",
     thumbnail: postImages[index % postImages.length],
     caption: `Post ${index + 1} - This is a sample caption for testing purposes. #testing #sample`,
@@ -29,9 +29,6 @@ const generateMockPosts = () => {
       views: Math.floor(Math.random() * 50000) + 10000,
       likes: Math.floor(Math.random() * 5000) + 500,
       comments: Math.floor(Math.random() * 300) + 50,
-      shares: Math.floor(Math.random() * 100) + 20,
-      saves: Math.floor(Math.random() * 500) + 100,
-      engagement: Number((Math.random() * 0.1 + 0.05).toFixed(3))
     }
   }));
 };
@@ -41,7 +38,7 @@ const Posts = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [competitorHandle, setCompetitorHandle] = useState("");
-  const [selectedPostId, setSelectedPostId] = useState<number | null>(null);
+  const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
 
   const mockAccountMetrics = {
     views: 150000,
@@ -63,7 +60,7 @@ const Posts = () => {
     );
   };
 
-  const handlePostSelect = (postId: number | null) => {
+  const handlePostSelect = (postId: string | null) => {
     setSelectedPostId(postId);
     // Smooth scroll to top of the page
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -100,7 +97,7 @@ const Posts = () => {
           ) : (
             <div className="space-y-6">
               {selectedPost && (
-                <PostAnalytics post={selectedPost} />
+                <PostAnalytics post={selectedPost as any} />
               )}
               <Card className="p-6">
                 <PostsList 

@@ -53,11 +53,6 @@ export const PostAnalytics = ({ post }: PostAnalyticsProps) => {
 
   return (
     <div className="space-y-4">
-      <PostSelectionSection
-        selectedPost={selectedComparisonPost}
-        setSelectedPost={setSelectedComparisonPost}
-      />
-
       <Card className="p-4">
         <div className="flex items-center gap-4 mb-4">
           <img src={post.thumbnail} alt="Post thumbnail" className="w-16 h-16 rounded-lg object-cover" />
@@ -97,6 +92,12 @@ export const PostAnalytics = ({ post }: PostAnalyticsProps) => {
             showComparison={!!selectedComparisonPost}
             currentCreator="Current Post"
             comparisonCreator={selectedComparisonPost?.caption}
+          />
+        </div>
+        <div className="mt-4">
+          <PostSelectionSection
+            selectedPost={selectedComparisonPost}
+            setSelectedPost={setSelectedComparisonPost}
           />
         </div>
       </Card>
