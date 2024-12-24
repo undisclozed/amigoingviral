@@ -11,12 +11,15 @@ import { useInstagramData } from "@/hooks/useInstagramData";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { useQuery } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import { useNavigate } from "react-router-dom";
 
 const Posts = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [competitorHandle, setCompetitorHandle] = useState("");
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const { user } = useAuth();
+  const navigate = useNavigate();
   
   // Fetch the user's Instagram handle with better error handling
   const { data: profile, isLoading: isProfileLoading, error: profileError } = useQuery({
@@ -132,9 +135,12 @@ const Posts = () => {
       <div className="container mx-auto px-4 py-8">
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">No Instagram Account Connected</h2>
-          <p className="text-gray-600">
+          <p className="text-gray-600 mb-6">
             Please update your profile with your Instagram account to view your posts and analytics.
           </p>
+          <Button onClick={() => navigate('/settings')} className="w-full sm:w-auto">
+            Update Profile
+          </Button>
         </Card>
       </div>
     );
