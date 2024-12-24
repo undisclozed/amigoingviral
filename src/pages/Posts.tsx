@@ -51,26 +51,30 @@ const Posts = () => {
     error: instagramError 
   } = useInstagramData(profile?.instagram_account);
 
-  console.log('Instagram data:', instagramData);
-  console.log('Instagram error:', instagramError);
+  console.log('Raw Instagram data:', instagramData);
 
-  const posts = instagramData?.data?.map((post: any) => ({
-    id: post.id,
-    username: post.username,
-    thumbnail: post.thumbnail || '/placeholder.svg',
-    caption: post.caption || 'No caption',
-    timestamp: post.timestamp,
-    metrics: {
-      views: post.metrics.views || 0,
-      likes: post.metrics.likes || 0,
-      comments: post.metrics.comments || 0,
-      shares: post.metrics.shares || 0,
-      saves: post.metrics.saves || 0,
-      engagement: post.metrics.engagement || 0,
-      followsFromPost: post.metrics.followsFromPost || 0,
-      averageWatchPercentage: post.metrics.averageWatchPercentage || 0,
-    }
-  })) || [];
+  const posts = instagramData?.data?.map((post: any) => {
+    console.log('Processing post:', post);
+    return {
+      id: post.id || `temp-${Math.random().toString(36).substr(2, 9)}`,
+      username: post.username || profile?.instagram_account || 'Unknown',
+      thumbnail: post.thumbnail || '/placeholder.svg',
+      caption: post.caption || 'No caption',
+      timestamp: post.timestamp || new Date().toISOString(),
+      metrics: {
+        views: post.metrics?.views || 0,
+        likes: post.metrics?.likes || 0,
+        comments: post.metrics?.comments || 0,
+        shares: post.metrics?.shares || 0,
+        saves: post.metrics?.saves || 0,
+        engagement: post.metrics?.engagement || 0,
+        followsFromPost: post.metrics?.followsFromPost || 0,
+        averageWatchPercentage: post.metrics?.averageWatchPercentage || 0,
+      }
+    };
+  }) || [];
+
+  console.log('Processed posts:', posts);
 
   const mockAccountMetrics = {
     views: 150000,
