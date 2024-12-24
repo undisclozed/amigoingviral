@@ -23,10 +23,10 @@ serve(async (req) => {
     // Clean up username (remove @ if present)
     const cleanUsername = username.startsWith('@') ? username.slice(1) : username
 
-    const apifyUrl = `https://api.apify.com/v2/acts/apify~instagram-scraper/run-sync?token=${Deno.env.get('APIFY_API_KEY')}`
+    const apifyUrl = `https://api.apify.com/v2/acts/apify~instagram-scraper/runs?token=${Deno.env.get('APIFY_API_KEY')}`
     
-    console.log('Calling Apify API...')
-    const apifyResponse = await fetch(apifyUrl, {
+    console.log('Starting Apify run...')
+    const startRun = await fetch(apifyUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -41,7 +41,7 @@ serve(async (req) => {
               id: post.id,
               caption: post.caption,
               timestamp: post.timestamp,
-              url: post.url,
+              url: post.url || post.displayUrl,
               commentsCount: post.commentsCount,
               likesCount: post.likesCount,
               videoViewCount: post.videoViewCount,
@@ -52,43 +52,76 @@ serve(async (req) => {
       })
     });
 
-    if (!apifyResponse.ok) {
-      const errorText = await apifyResponse.text();
-      console.error('Apify API error response:', errorText);
-      throw new Error(`Apify API returned status ${apifyResponse.status}: ${errorText}`);
+    if (!startRun.ok) {
+      const errorText = await startRun.text();
+      console.error('Apify start run error:', errorText);
+      throw new Error(`Failed to start Apify run: ${startRun.status}`);
     }
 
-    const responseText = await apifyResponse.text();
-    console.log('Raw Apify response:', responseText);
+    const runData = await startRun.json();
+    console.log('Run started with ID:', runData.data.id);
 
-    let data;
-    try {
-      if (!responseText.trim()) {
-        throw new Error('Empty response received from Apify');
+    // Wait for the run to finish (poll every 2 seconds)
+    const maxAttempts = 30; // 1 minute maximum wait
+    let attempts = 0;
+    let dataset = null;
+
+    while (attempts < maxAttempts) {
+      console.log(`Checking run status (attempt ${attempts + 1}/${maxAttempts})...`);
+      
+      const statusCheck = await fetch(
+        `https://api.apify.com/v2/acts/apify~instagram-scraper/runs/${runData.data.id}?token=${Deno.env.get('APIFY_API_KEY')}`
+      );
+      
+      if (!statusCheck.ok) {
+        console.error('Status check failed:', await statusCheck.text());
+        continue;
       }
-      data = JSON.parse(responseText);
-    } catch (error) {
-      console.error('JSON parse error:', error);
-      console.error('Response that failed to parse:', responseText);
-      throw new Error('Failed to parse Apify response as JSON');
+
+      const status = await statusCheck.json();
+      console.log('Run status:', status.data.status);
+
+      if (status.data.status === 'SUCCEEDED') {
+        // Get the dataset items
+        const datasetUrl = `https://api.apify.com/v2/acts/apify~instagram-scraper/runs/${runData.data.id}/dataset/items?token=${Deno.env.get('APIFY_API_KEY')}`;
+        const datasetResponse = await fetch(datasetUrl);
+        
+        if (!datasetResponse.ok) {
+          throw new Error('Failed to fetch dataset');
+        }
+
+        dataset = await datasetResponse.json();
+        break;
+      } else if (status.data.status === 'FAILED') {
+        throw new Error('Apify run failed');
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      attempts++;
     }
+
+    if (!dataset) {
+      throw new Error('Timeout waiting for Apify run to complete');
+    }
+
+    console.log('Successfully retrieved dataset');
 
     // Transform the data to match our expected format
-    const transformedPosts = data.posts.map(post => ({
+    const transformedPosts = dataset[0].posts.map(post => ({
       id: post.id,
       username: cleanUsername,
-      thumbnail: post.url,
+      thumbnail: post.url || post.displayUrl,
       caption: post.caption || '',
       timestamp: post.timestamp,
       metrics: {
         views: post.videoViewCount || 0,
         likes: post.likesCount || 0,
         comments: post.commentsCount || 0,
-        shares: 0, // Not available in basic scraper
-        saves: 0, // Not available in basic scraper
-        engagement: ((post.likesCount + post.commentsCount) / 1000) || 0, // Basic engagement calculation
-        followsFromPost: 0, // Not available in basic scraper
-        averageWatchPercentage: 0 // Not available in basic scraper
+        shares: 0,
+        saves: 0,
+        engagement: ((post.likesCount + post.commentsCount) / 1000) || 0,
+        followsFromPost: 0,
+        averageWatchPercentage: 0
       }
     }));
 
