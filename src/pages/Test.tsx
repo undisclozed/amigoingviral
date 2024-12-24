@@ -5,22 +5,23 @@ import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
+interface InstagramPost {
+  id: string;
+  caption: string;
+  likesCount: number;
+  commentsCount: number;
+  timestamp: string;
+  url: string;
+}
+
 interface InstagramData {
   username: string;
+  biography: string;
   followersCount: number;
   followingCount: number;
   postsCount: number;
-  profileUrl: string;
   profilePicUrl: string;
-  bio: string;
-  posts: Array<{
-    url: string;
-    type: string;
-    caption: string;
-    commentsCount: number;
-    likesCount: number;
-    timestamp: string;
-  }>;
+  latestPosts: InstagramPost[];
 }
 
 export default function Test() {
@@ -54,17 +55,23 @@ export default function Test() {
       }
 
       // Check if the response contains an error
-      if (Array.isArray(result) && result[0]?.error) {
-        throw new Error(result[0].errorDescription || result[0].error);
+      if (result.error) {
+        throw new Error(result.error);
       }
 
-      // If we have valid data, set it
-      if (Array.isArray(result) && result.length > 0) {
-        setData(result[0]);
-        toast.success('Instagram data fetched successfully');
-      } else {
-        throw new Error('Invalid data format received');
-      }
+      // Transform the data to match our interface
+      const transformedData: InstagramData = {
+        username: result.userData.username,
+        biography: result.userData.biography,
+        followersCount: result.userData.followersCount,
+        followingCount: result.userData.followingCount,
+        postsCount: result.userData.postsCount,
+        profilePicUrl: result.userData.profilePicUrl,
+        latestPosts: result.latestPosts || []
+      };
+
+      setData(transformedData);
+      toast.success('Instagram data fetched successfully');
     } catch (error) {
       console.error('Error:', error);
       const errorMessage = error.message || 'Failed to fetch Instagram data';
@@ -108,28 +115,40 @@ export default function Test() {
           <div className="mt-6 space-y-4">
             <h2 className="text-xl font-semibold">Profile Data</h2>
             <div className="grid gap-4">
-              <div>
-                <strong>Username:</strong> {data.username}
+              <div className="flex items-center space-x-4">
+                {data.profilePicUrl && (
+                  <img 
+                    src={data.profilePicUrl} 
+                    alt={`${data.username}'s profile`}
+                    className="w-16 h-16 rounded-full"
+                  />
+                )}
+                <div>
+                  <div className="font-semibold">@{data.username}</div>
+                  <div className="text-sm text-gray-600">{data.biography}</div>
+                </div>
               </div>
-              <div>
-                <strong>Followers:</strong> {data.followersCount}
-              </div>
-              <div>
-                <strong>Following:</strong> {data.followingCount}
-              </div>
-              <div>
-                <strong>Posts:</strong> {data.postsCount}
-              </div>
-              <div>
-                <strong>Bio:</strong> {data.bio}
+              <div className="grid grid-cols-3 gap-4 text-center">
+                <div>
+                  <div className="font-semibold">{data.followersCount.toLocaleString()}</div>
+                  <div className="text-sm text-gray-600">Followers</div>
+                </div>
+                <div>
+                  <div className="font-semibold">{data.followingCount.toLocaleString()}</div>
+                  <div className="text-sm text-gray-600">Following</div>
+                </div>
+                <div>
+                  <div className="font-semibold">{data.postsCount.toLocaleString()}</div>
+                  <div className="text-sm text-gray-600">Posts</div>
+                </div>
               </div>
             </div>
 
-            {data.posts && data.posts.length > 0 && (
+            {data.latestPosts && data.latestPosts.length > 0 && (
               <>
                 <h3 className="text-lg font-semibold mt-4">Recent Posts</h3>
                 <div className="grid gap-4">
-                  {data.posts.slice(0, 5).map((post, index) => (
+                  {data.latestPosts.slice(0, 5).map((post, index) => (
                     <Card key={index} className="p-4">
                       <div className="space-y-2">
                         <div><strong>Caption:</strong> {post.caption}</div>

@@ -25,7 +25,7 @@ serve(async (req) => {
       throw new Error('APIFY_API_KEY is not set')
     }
 
-    // Make a direct call to Apify's synchronous API endpoint
+    // Make request to Apify API
     const response = await fetch(
       `https://api.apify.com/v2/acts/apify~instagram-profile-scraper/run-sync-get-dataset-items?token=${apiKey}`,
       {
@@ -35,8 +35,8 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           "usernames": [username],
-          "resultsLimit": 100,
-          "resultsType": "posts",
+          "resultsLimit": 1,
+          "resultsType": "details",
           "extendOutputFunction": "",
           "proxy": {
             "useApifyProxy": true
@@ -54,26 +54,34 @@ serve(async (req) => {
     const data = await response.json()
     console.log('Raw Apify response:', data)
 
-    // If we get an error in the response, return it directly
-    if (Array.isArray(data) && data[0]?.error) {
-      return new Response(
-        JSON.stringify(data),
-        { 
-          headers: { 
-            ...corsHeaders,
-            'Content-Type': 'application/json'
-          } 
-        }
-      )
-    }
-
-    // Validate the data
     if (!Array.isArray(data) || data.length === 0) {
       throw new Error('No data returned from Apify API')
     }
 
+    const profileData = data[0]
+    
+    // Transform the data into a more usable format
+    const transformedData = {
+      userData: {
+        username: profileData.username,
+        biography: profileData.bio,
+        followersCount: profileData.followersCount,
+        followingCount: profileData.followingCount,
+        postsCount: profileData.postsCount,
+        profilePicUrl: profileData.profilePicUrl,
+      },
+      latestPosts: profileData.latestPosts?.map((post: any) => ({
+        id: post.id,
+        caption: post.caption,
+        likesCount: post.likesCount,
+        commentsCount: post.commentsCount,
+        timestamp: post.timestamp,
+        url: post.url,
+      })) || []
+    }
+
     return new Response(
-      JSON.stringify(data),
+      JSON.stringify(transformedData),
       { 
         headers: { 
           ...corsHeaders,
@@ -86,7 +94,6 @@ serve(async (req) => {
     console.error('Error in fetch-instagram-data function:', error)
     return new Response(
       JSON.stringify({
-        success: false,
         error: error.message,
         details: 'Check the function logs for more information'
       }),
