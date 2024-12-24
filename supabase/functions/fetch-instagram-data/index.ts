@@ -26,6 +26,16 @@ serve(async (req) => {
       throw new Error('APIFY_API_KEY is not configured')
     }
 
+    // Validate API key by making a test request
+    const testResponse = await fetch(
+      'https://api.apify.com/v2/user/me?token=' + APIFY_API_KEY
+    )
+
+    if (!testResponse.ok) {
+      console.error('Invalid APIFY_API_KEY - API test request failed:', await testResponse.text())
+      throw new Error('Invalid APIFY_API_KEY')
+    }
+
     // Clean up username (remove @ if present)
     const cleanUsername = username.startsWith('@') ? username.slice(1) : username
     console.log('Cleaned username:', cleanUsername)
@@ -62,7 +72,7 @@ serve(async (req) => {
 
     // Wait for the run to finish (with timeout)
     let attempts = 0
-    const maxAttempts = 10 // Reduced to 10 attempts (100 seconds total)
+    const maxAttempts = 10
     let dataset = null
 
     while (attempts < maxAttempts) {
@@ -82,7 +92,6 @@ serve(async (req) => {
       console.log('Run status:', status)
 
       if (status === 'SUCCEEDED') {
-        // Fetch the results
         console.log('Run succeeded, fetching results')
         const datasetResponse = await fetch(
           `https://api.apify.com/v2/acts/apify~instagram-profile-scraper/runs/${runId}/dataset/items?token=${APIFY_API_KEY}`
@@ -91,15 +100,23 @@ serve(async (req) => {
         if (!datasetResponse.ok) {
           const errorText = await datasetResponse.text()
           console.error('Failed to fetch dataset:', errorText)
-          throw new Error('Failed to fetch dataset')
+          throw new Error(`Failed to fetch dataset: ${errorText}`)
         }
 
         const responseText = await datasetResponse.text()
-        console.log('Dataset response text:', responseText)
+        console.log('Dataset response text length:', responseText.length)
+        
+        if (!responseText) {
+          throw new Error('Empty dataset response')
+        }
 
         try {
           dataset = JSON.parse(responseText)
-          console.log('Successfully parsed dataset:', dataset)
+          if (!Array.isArray(dataset)) {
+            console.error('Invalid dataset format:', dataset)
+            throw new Error('Invalid dataset format received from Apify')
+          }
+          console.log(`Successfully parsed dataset with ${dataset.length} posts`)
         } catch (error) {
           console.error('Failed to parse dataset JSON:', error)
           throw new Error('Invalid JSON response from dataset')
@@ -110,7 +127,7 @@ serve(async (req) => {
         throw new Error(`Run failed with status: ${status}`)
       }
 
-      await new Promise(resolve => setTimeout(resolve, 10000)) // Wait 10 seconds between checks
+      await new Promise(resolve => setTimeout(resolve, 10000))
       attempts++
     }
 
@@ -118,12 +135,7 @@ serve(async (req) => {
       throw new Error('Timeout waiting for results')
     }
 
-    if (!Array.isArray(dataset)) {
-      console.error('Invalid dataset format:', dataset)
-      throw new Error('Invalid dataset format received from Apify')
-    }
-
-    // Transform the data to match expected format
+    // Transform the data
     const transformedData = dataset.map((post: any) => ({
       id: post.id || `temp-${Math.random().toString(36).substr(2, 9)}`,
       username: post.ownerUsername || cleanUsername,
