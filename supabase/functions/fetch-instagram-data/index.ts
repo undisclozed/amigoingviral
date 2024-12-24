@@ -33,12 +33,12 @@ serve(async (req) => {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          usernames: [username.replace('@', '')],
-          resultsType: "posts",
-          resultsLimit: 30,
-          addUserInfo: false,
-          proxy: {
-            useApifyProxy: true
+          "usernames": [username.replace('@', '')],
+          "resultsType": "posts",
+          "resultsLimit": 30,
+          "addUserInfo": false,
+          "proxy": {
+            "useApifyProxy": true
           }
         })
       }
@@ -76,16 +76,28 @@ serve(async (req) => {
       console.log('Run status:', status.data.status)
 
       if (status.data.status === 'SUCCEEDED') {
+        console.log('Fetching dataset...')
         const datasetResponse = await fetch(
           `https://api.apify.com/v2/acts/apify~instagram-scraper/runs/${runData.data.id}/dataset/items?token=${apiKey}`
         )
         
         if (!datasetResponse.ok) {
+          const errorText = await datasetResponse.text()
+          console.error('Dataset fetch error:', errorText)
           throw new Error('Failed to fetch dataset')
         }
 
-        dataset = await datasetResponse.json()
-        break
+        const datasetText = await datasetResponse.text()
+        console.log('Raw dataset response:', datasetText)
+        
+        try {
+          dataset = JSON.parse(datasetText)
+          console.log('Successfully parsed dataset:', dataset)
+          break
+        } catch (error) {
+          console.error('Failed to parse dataset:', error)
+          throw new Error('Failed to parse dataset')
+        }
       } else if (status.data.status === 'FAILED' || status.data.status === 'ABORTED') {
         throw new Error(`Scraper run ${status.data.status.toLowerCase()}`)
       }
@@ -102,7 +114,7 @@ serve(async (req) => {
 
     // Transform data to match our schema
     const transformedData = dataset
-      .filter(post => post && post.type === 'Video' || post.type === 'Photo')
+      .filter(post => post && (post.type === 'Video' || post.type === 'Photo'))
       .map(post => ({
         id: post.id || `temp-${Date.now()}-${Math.random()}`,
         username: post.ownerUsername || username,
