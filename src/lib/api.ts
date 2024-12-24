@@ -25,3 +25,21 @@ export const fetchAccountMetrics = async (userId?: string) => {
     throw error;
   }
 };
+
+export const fetchInstagramData = async (username: string) => {
+  try {
+    const { data, error } = await supabase.functions.invoke('fetch-instagram-data', {
+      body: { username }
+    });
+
+    if (error) {
+      console.error('Error fetching Instagram data:', error);
+      throw error;
+    }
+
+    return data;
+  } catch (error) {
+    console.error('Error in fetchInstagramData:', error);
+    throw error;
+  }
+};
