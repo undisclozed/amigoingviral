@@ -25,44 +25,69 @@ serve(async (req) => {
       throw new Error('APIFY_API_KEY is not set')
     }
 
-    // Make request to Apify API
-    const response = await fetch(
-      `https://api.apify.com/v2/acts/apify~instagram-profile-scraper/run-sync-get-dataset-items?token=${apiKey}`,
+    // Start the Apify actor run
+    const actorRunResponse = await fetch(
+      'https://api.apify.com/v2/acts/xMc5Ga1oCONPmWJIa/runs?token=' + apiKey,
       {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          "usernames": [username],
-          "resultsLimit": 5,
-          "resultsType": "posts",
-          "extendOutputFunction": "",
-          "proxy": {
-            "useApifyProxy": true
-          }
+          "username": [username],
+          "resultsLimit": 5
         })
       }
     )
 
-    if (!response.ok) {
-      const errorText = await response.text()
-      console.error('Apify API error:', errorText)
-      throw new Error(`Apify API error: ${errorText}`)
+    if (!actorRunResponse.ok) {
+      const errorText = await actorRunResponse.text()
+      console.error('Apify actor run error:', errorText)
+      throw new Error(`Failed to start Apify actor: ${errorText}`)
     }
 
-    const data = await response.json()
-    console.log('Raw Apify response:', data)
+    const runData = await actorRunResponse.json()
+    console.log('Actor run started:', runData)
 
-    if (!Array.isArray(data) || data.length === 0) {
-      throw new Error('No data returned from Apify API')
+    // Wait for the dataset to be ready
+    const maxAttempts = 10
+    let attempt = 0
+    let profileData = null
+
+    while (attempt < maxAttempts) {
+      console.log(`Checking run status (attempt ${attempt + 1}/${maxAttempts})...`)
+      
+      try {
+        const datasetResponse = await fetch(
+          `https://api.apify.com/v2/datasets/${runData.data.defaultDatasetId}/items?token=${apiKey}`
+        )
+        
+        if (!datasetResponse.ok) {
+          throw new Error(`Dataset fetch failed: ${await datasetResponse.text()}`)
+        }
+
+        const items = await datasetResponse.json()
+        console.log('Dataset items:', items)
+
+        if (items && items.length > 0) {
+          profileData = items[0]
+          break
+        }
+      } catch (error) {
+        console.error('Error fetching dataset:', error)
+      }
+
+      attempt++
+      await new Promise(resolve => setTimeout(resolve, 2000))
     }
 
-    const profileData = data[0]
-    
+    if (!profileData) {
+      throw new Error('Failed to fetch Instagram data after maximum attempts')
+    }
+
     // Transform the data into a more usable format
     const transformedData = {
-      username: profileData.username,
+      username: profileData.username || username,
       biography: profileData.bio || '',
       followersCount: profileData.followersCount || 0,
       followingCount: profileData.followingCount || 0,
