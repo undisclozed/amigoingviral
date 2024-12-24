@@ -34,7 +34,9 @@ serve(async (req) => {
     )
 
     if (!profileRunResponse.ok) {
-      throw new Error('Failed to start profile scraper')
+      const errorText = await profileRunResponse.text()
+      console.error('Profile run response error:', errorText)
+      throw new Error(`Failed to start profile scraper: ${errorText}`)
     }
 
     const profileRunData = await profileRunResponse.json()
@@ -68,6 +70,8 @@ serve(async (req) => {
         )
         
         if (!datasetResponse.ok) {
+          const errorText = await datasetResponse.text()
+          console.error('Failed to fetch profile dataset:', errorText)
           throw new Error('Failed to fetch profile dataset')
         }
 
@@ -105,7 +109,9 @@ serve(async (req) => {
     )
 
     if (!postRunResponse.ok) {
-      throw new Error('Failed to start post scraper')
+      const errorText = await postRunResponse.text()
+      console.error('Post run response error:', errorText)
+      throw new Error(`Failed to start post scraper: ${errorText}`)
     }
 
     const postRunData = await postRunResponse.json()
@@ -138,6 +144,8 @@ serve(async (req) => {
         )
         
         if (!datasetResponse.ok) {
+          const errorText = await datasetResponse.text()
+          console.error('Failed to fetch post dataset:', errorText)
           throw new Error('Failed to fetch post dataset')
         }
 
