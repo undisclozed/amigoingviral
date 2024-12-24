@@ -26,28 +26,6 @@ serve(async (req) => {
       throw new Error('APIFY_API_KEY is not configured')
     }
 
-    // First validate the API key with a simple request
-    console.log('Validating Apify API key...')
-    try {
-      const testResponse = await fetch('https://api.apify.com/v2/user/me', {
-        headers: {
-          'Authorization': `Bearer ${APIFY_API_KEY}`,
-        },
-      })
-
-      if (!testResponse.ok) {
-        const errorText = await testResponse.text()
-        console.error('Invalid APIFY_API_KEY - API test request failed:', errorText)
-        throw new Error('Invalid APIFY_API_KEY')
-      }
-
-      const userData = await testResponse.json()
-      console.log('Apify API key validation successful. User data:', JSON.stringify(userData, null, 2))
-    } catch (error) {
-      console.error('Error validating Apify API key:', error)
-      throw new Error('Failed to validate Apify API key')
-    }
-
     // Clean up username (remove @ if present)
     const cleanUsername = username.startsWith('@') ? username.slice(1) : username
     console.log('Cleaned username:', cleanUsername)
@@ -55,10 +33,11 @@ serve(async (req) => {
     // Start the Apify actor run
     console.log('Starting Apify actor run...')
     const startResponse = await fetch(
-      'https://api.apify.com/v2/actor-tasks/~instagram_profile_scraper/runs?token=' + APIFY_API_KEY,
+      'https://api.apify.com/v2/acts/zuzka~instagram-profile-scraper/runs',
       {
         method: 'POST',
         headers: {
+          'Authorization': `Bearer ${APIFY_API_KEY}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
@@ -80,22 +59,48 @@ serve(async (req) => {
       throw new Error(`Failed to start Apify actor: ${errorText}`)
     }
 
-    let responseData
-    try {
-      responseData = await startResponse.json()
-      console.log('Raw Apify response:', JSON.stringify(responseData, null, 2))
-    } catch (error) {
-      console.error('Failed to parse Apify response:', error)
-      throw new Error('Invalid response format from Apify')
+    const runData = await startResponse.json()
+    console.log('Apify run started:', JSON.stringify(runData, null, 2))
+
+    // Wait for the dataset to be ready
+    const datasetId = runData.data.defaultDatasetId
+    const maxAttempts = 30
+    let attempts = 0
+    let dataset = null
+
+    while (attempts < maxAttempts) {
+      console.log(`Checking dataset (attempt ${attempts + 1}/${maxAttempts})...`)
+      const datasetResponse = await fetch(
+        `https://api.apify.com/v2/datasets/${datasetId}/items`,
+        {
+          headers: {
+            'Authorization': `Bearer ${APIFY_API_KEY}`,
+          }
+        }
+      )
+
+      if (!datasetResponse.ok) {
+        console.log('Dataset not ready yet, waiting...')
+        await new Promise(resolve => setTimeout(resolve, 2000))
+        attempts++
+        continue
+      }
+
+      dataset = await datasetResponse.json()
+      if (dataset && dataset.length > 0) {
+        break
+      }
+
+      await new Promise(resolve => setTimeout(resolve, 2000))
+      attempts++
     }
 
-    if (!responseData || !Array.isArray(responseData.posts)) {
-      console.error('Invalid response format:', responseData)
-      throw new Error('Invalid response format from Apify')
+    if (!dataset || dataset.length === 0) {
+      throw new Error('Failed to fetch Instagram data: Dataset empty or timeout')
     }
 
     // Transform the data
-    const transformedData = responseData.posts.map((post: any) => ({
+    const transformedData = dataset.map((post: any) => ({
       id: post.id || `temp-${Math.random().toString(36).substr(2, 9)}`,
       username: post.ownerUsername || cleanUsername,
       thumbnail: post.displayUrl || post.previewUrl || '',
