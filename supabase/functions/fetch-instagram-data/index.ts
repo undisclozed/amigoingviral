@@ -42,7 +42,7 @@ serve(async (req) => {
     }
     console.log('Starting actor with input:', input)
 
-    // Run the actor
+    // Run the actor and wait for completion
     const run = await client.actor("xMc5Ga1oCONPmWJIa").call(input)
     if (!run || !run.id) {
       throw new Error('Actor did not return a valid response')
