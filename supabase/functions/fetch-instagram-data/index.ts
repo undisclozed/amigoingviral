@@ -1,4 +1,4 @@
-import { serve } from 'https://deno.land/std@0.168.0/http/server.ts'
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 import { ApifyClient } from 'https://esm.sh/apify-client@2.7.1'
 
 const corsHeaders = {
@@ -13,8 +13,8 @@ serve(async (req) => {
   }
 
   try {
-    // Parse and validate request body
-    let username;
+    // Parse request body
+    let username
     try {
       const body = await req.json()
       username = body.username?.replace('@', '')
@@ -34,37 +34,32 @@ serve(async (req) => {
     }
     const client = new ApifyClient({ token: apiKey })
 
-    // Prepare input for the actor
-    const input = {
-      "username": [username],
-      "resultsLimit": 30,
-      "scrapePostsUntilDate": new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-    }
-    console.log('Starting actor with input:', input)
+    console.log('Starting Instagram data fetch for:', username)
 
-    // Run the actor and wait for completion
-    const run = await client.actor("xMc5Ga1oCONPmWJIa").call(input)
-    if (!run || !run.id) {
-      throw new Error('Actor did not return a valid response')
+    // Run the actor
+    const run = await client.actor("zqHRdXpWXiHKZVXht").call({
+      username: username,
+      resultsLimit: 30
+    })
+
+    if (!run?.id) {
+      throw new Error('Actor run failed to start')
     }
+
     console.log('Actor run started with ID:', run.id)
 
-    // Wait for and validate run status
-    if (run.status !== 'SUCCEEDED') {
-      throw new Error(`Actor failed with status: ${run.status}`)
-    }
-    console.log('Actor run completed successfully')
-
-    // Fetch dataset
+    // Wait for the dataset
     const { items } = await client.dataset(run.defaultDatasetId).listItems()
+    
     if (!Array.isArray(items)) {
       console.error('Invalid dataset format:', items)
       throw new Error('Invalid dataset format received')
     }
+
     console.log(`Retrieved ${items.length} items from dataset`)
 
     // Transform the data
-    const transformedData = items.slice(0, 30).map((post: any) => {
+    const transformedData = items.map((post: any) => {
       try {
         // Calculate engagement metrics with fallbacks
         const viewsCount = post.viewsCount || 0
