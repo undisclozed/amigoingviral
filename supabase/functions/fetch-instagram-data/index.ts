@@ -47,21 +47,24 @@ serve(async (req) => {
     if (!run || !run.id) {
       throw new Error('Actor did not return a valid response')
     }
+    console.log('Actor run started with ID:', run.id)
+
+    // Wait for and validate run status
     if (run.status !== 'SUCCEEDED') {
       throw new Error(`Actor failed with status: ${run.status}`)
     }
-    console.log('Actor run completed successfully:', run.id)
+    console.log('Actor run completed successfully')
 
     // Fetch dataset
-    const dataset = await client.dataset(run.defaultDatasetId).listItems()
-    if (!Array.isArray(dataset)) {
-      console.error('Invalid dataset format:', dataset)
+    const { items } = await client.dataset(run.defaultDatasetId).listItems()
+    if (!Array.isArray(items)) {
+      console.error('Invalid dataset format:', items)
       throw new Error('Invalid dataset format received')
     }
-    console.log(`Retrieved ${dataset.length} items from dataset`)
+    console.log(`Retrieved ${items.length} items from dataset`)
 
     // Transform the data
-    const transformedData = dataset.slice(0, 30).map((post: any) => {
+    const transformedData = items.slice(0, 30).map((post: any) => {
       try {
         // Calculate engagement metrics with fallbacks
         const viewsCount = post.viewsCount || 0
