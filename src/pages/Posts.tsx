@@ -21,7 +21,7 @@ const Posts = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
   
-  // Fetch the user's Instagram handle with better error handling
+  // Fetch the user's Instagram handle
   const { data: profile, isLoading: isProfileLoading, error: profileError } = useQuery({
     queryKey: ['profile', user?.id],
     queryFn: async () => {
@@ -44,7 +44,7 @@ const Posts = () => {
     retry: 1
   });
 
-  // Fetch Instagram data with the profile
+  // Fetch Instagram data
   const { 
     data: instagramData, 
     isLoading: isInstagramLoading, 
@@ -57,7 +57,7 @@ const Posts = () => {
   const posts = instagramData?.data?.map((post: any) => ({
     id: post.id,
     username: post.username,
-    thumbnail: post.thumbnail,
+    thumbnail: post.thumbnail || '/placeholder.svg',
     caption: post.caption,
     timestamp: post.timestamp,
     metrics: {
@@ -122,9 +122,12 @@ const Posts = () => {
       <div className="container mx-auto px-4 py-8">
         <Card className="p-6">
           <h2 className="text-xl font-semibold mb-4">Error Loading Profile</h2>
-          <p className="text-gray-600">
+          <p className="text-gray-600 mb-4">
             There was an error loading your profile. Please refresh the page or try again later.
           </p>
+          <Button onClick={() => window.location.reload()} variant="outline">
+            Retry
+          </Button>
         </Card>
       </div>
     );
@@ -164,10 +167,10 @@ const Posts = () => {
 
       <AccountMetricsOverview 
         accountMetrics={mockAccountMetrics}
-        postsCount={posts.length}
+        postsCount={posts?.length || 0}
       />
 
-      {posts.length === 0 ? (
+      {!posts || posts.length === 0 ? (
         <EmptyPostsState 
           searchQuery={searchQuery} 
           setSearchQuery={setSearchQuery} 
@@ -175,7 +178,7 @@ const Posts = () => {
       ) : (
         <div className="space-y-6">
           {selectedPost && (
-            <PostAnalytics post={selectedPost as any} />
+            <PostAnalytics post={selectedPost} />
           )}
           <Card className="p-6">
             <PostsList 
