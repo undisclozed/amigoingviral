@@ -23,25 +23,32 @@ serve(async (req) => {
     // Clean up username (remove @ if present)
     const cleanUsername = username.startsWith('@') ? username.slice(1) : username
 
-    // Use the run-sync endpoint for immediate results
-    const apifyUrl = `https://api.apify.com/v2/acts/apify~instagram-reel-scraper/run-sync?token=${Deno.env.get('APIFY_API_KEY')}`
+    const apifyUrl = `https://api.apify.com/v2/acts/apify~instagram-scraper/run-sync?token=${Deno.env.get('APIFY_API_KEY')}`
     
-    console.log('Calling Apify API with run-sync endpoint...')
+    console.log('Calling Apify API...')
     const apifyResponse = await fetch(apifyUrl, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        "username": [cleanUsername],
+        "usernames": [cleanUsername],
         "resultsLimit": 25,
-        "reelsDownload": false,
-        "proxy": {
-          "useApifyProxy": true,
-          "apifyProxyGroups": ["RESIDENTIAL"]
-        },
-        "scrapePostsUntilDate": new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
-        "maxRequestRetries": 3
+        "resultsType": "posts",
+        "extendOutputFunction": `($) => {
+          return {
+            posts: $.posts.map(post => ({
+              id: post.id,
+              caption: post.caption,
+              timestamp: post.timestamp,
+              url: post.url,
+              commentsCount: post.commentsCount,
+              likesCount: post.likesCount,
+              videoViewCount: post.videoViewCount,
+              type: post.type
+            }))
+          }
+        }`
       })
     });
 
@@ -51,45 +58,37 @@ serve(async (req) => {
       throw new Error(`Apify API returned status ${apifyResponse.status}: ${errorText}`);
     }
 
-    // Log the raw response before attempting to parse
     const responseText = await apifyResponse.text();
     console.log('Raw Apify response:', responseText);
 
     let data;
     try {
-      // Only try to parse if we have a non-empty response
-      if (responseText.trim()) {
-        data = JSON.parse(responseText);
-      } else {
+      if (!responseText.trim()) {
         throw new Error('Empty response received from Apify');
       }
+      data = JSON.parse(responseText);
     } catch (error) {
       console.error('JSON parse error:', error);
       console.error('Response that failed to parse:', responseText);
       throw new Error('Failed to parse Apify response as JSON');
     }
 
-    if (!data || !Array.isArray(data)) {
-      console.error('Invalid data format received:', data);
-      throw new Error('Invalid data format received from Apify');
-    }
-
     // Transform the data to match our expected format
-    const transformedPosts = data.map(post => ({
-      id: post.id || `${post.timestamp}-${Math.random()}`,
+    const transformedPosts = data.posts.map(post => ({
+      id: post.id,
       username: cleanUsername,
-      thumbnail: post.previewUrl || post.displayUrl,
+      thumbnail: post.url,
       caption: post.caption || '',
       timestamp: post.timestamp,
       metrics: {
         views: post.videoViewCount || 0,
         likes: post.likesCount || 0,
         comments: post.commentsCount || 0,
-        shares: post.sharesCount || 0,
-        saves: post.savesCount || 0,
-        engagement: ((post.likesCount + post.commentsCount) / (post.videoViewCount || 1)) || 0,
-        followsFromPost: post.followsCount || 0,
-        averageWatchPercentage: post.averageWatchPercentage || 0
+        shares: 0, // Not available in basic scraper
+        saves: 0, // Not available in basic scraper
+        engagement: ((post.likesCount + post.commentsCount) / 1000) || 0, // Basic engagement calculation
+        followsFromPost: 0, // Not available in basic scraper
+        averageWatchPercentage: 0 // Not available in basic scraper
       }
     }));
 
