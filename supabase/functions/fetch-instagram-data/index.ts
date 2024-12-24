@@ -32,28 +32,37 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        "username": [cleanUsername], // Changed to array format
+        "username": [cleanUsername],
         "resultsLimit": 25,
         "reelsDownload": false,
         "proxy": {
           "useApifyProxy": true,
           "apifyProxyGroups": ["RESIDENTIAL"]
         },
-        "scrapePostsUntilDate": new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), // Last 30 days
+        "scrapePostsUntilDate": new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(),
         "maxRequestRetries": 3
       })
     });
 
     if (!apifyResponse.ok) {
       const errorText = await apifyResponse.text();
-      console.error('Apify API error:', errorText);
+      console.error('Apify API error response:', errorText);
       throw new Error(`Apify API returned status ${apifyResponse.status}: ${errorText}`);
     }
 
-    const data = await apifyResponse.json();
-    console.log('Apify data received:', data);
+    const responseText = await apifyResponse.text();
+    console.log('Raw Apify response:', responseText);
 
-    if (!Array.isArray(data)) {
+    let data;
+    try {
+      data = JSON.parse(responseText);
+    } catch (error) {
+      console.error('JSON parse error:', error);
+      console.error('Response that failed to parse:', responseText);
+      throw new Error('Failed to parse Apify response as JSON');
+    }
+
+    if (!data || !Array.isArray(data)) {
       console.error('Invalid data format received:', data);
       throw new Error('Invalid data format received from Apify');
     }
