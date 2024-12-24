@@ -27,6 +27,7 @@ serve(async (req) => {
     }
 
     // Validate API key by making a test request
+    console.log('Validating Apify API key...')
     const testResponse = await fetch(
       'https://api.apify.com/v2/user/me',
       {
@@ -41,6 +42,8 @@ serve(async (req) => {
       console.error('Invalid APIFY_API_KEY - API test request failed:', errorText)
       throw new Error('Invalid APIFY_API_KEY')
     }
+
+    console.log('Apify API key validation successful')
 
     // Clean up username (remove @ if present)
     const cleanUsername = username.startsWith('@') ? username.slice(1) : username
@@ -75,8 +78,14 @@ serve(async (req) => {
       throw new Error(`Failed to start Apify actor: ${errorText}`)
     }
 
-    const responseData = await startResponse.json()
-    console.log('Apify response:', responseData)
+    let responseData
+    try {
+      responseData = await startResponse.json()
+      console.log('Raw Apify response:', JSON.stringify(responseData, null, 2))
+    } catch (error) {
+      console.error('Failed to parse Apify response:', error)
+      throw new Error('Invalid response format from Apify')
+    }
 
     if (!responseData || !Array.isArray(responseData.posts)) {
       console.error('Invalid response format:', responseData)
