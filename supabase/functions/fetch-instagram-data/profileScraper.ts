@@ -68,10 +68,14 @@ export async function fetchProfileData(username: string, apiKey: string) {
       
       try {
         profileData = JSON.parse(datasetText);
+        console.log('Parsed profile data:', profileData);
+        
         if (!Array.isArray(profileData)) {
+          console.error('Profile dataset is not an array:', profileData);
           throw new Error('Profile dataset is not an array');
         }
         if (profileData.length === 0) {
+          console.error('Profile dataset is empty');
           throw new Error('Profile dataset is empty');
         }
         break;
@@ -80,7 +84,11 @@ export async function fetchProfileData(username: string, apiKey: string) {
         throw new Error('Failed to parse profile dataset');
       }
     } else if (status.data.status === 'FAILED' || status.data.status === 'ABORTED') {
+      console.error('Profile scraper run failed with status:', status.data.status);
       throw new Error(`Profile scraper run ${status.data.status.toLowerCase()}`);
+    } else if (status.data.status === 'TIMING-OUT') {
+      console.error('Profile scraper run is timing out');
+      throw new Error('Profile scraper run timed out');
     }
 
     attempts++;
@@ -88,8 +96,10 @@ export async function fetchProfileData(username: string, apiKey: string) {
   }
 
   if (!profileData) {
+    console.error('Failed to fetch profile data after maximum attempts');
     throw new Error('Failed to fetch profile data after maximum attempts');
   }
 
+  console.log('Successfully fetched profile data for:', username);
   return profileData[0];
 }
