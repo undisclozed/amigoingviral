@@ -63,7 +63,7 @@ export default function Test() {
       toast.success('Instagram data fetched successfully');
     } catch (error) {
       console.error('Error:', error);
-      const errorMessage = error.message || 'Failed to fetch Instagram data';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch Instagram data';
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -119,15 +119,15 @@ export default function Test() {
               </div>
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div>
-                  <div className="font-semibold">{data.followersCount.toLocaleString()}</div>
+                  <div className="font-semibold">{data.followersCount?.toLocaleString() || '0'}</div>
                   <div className="text-sm text-gray-600">Followers</div>
                 </div>
                 <div>
-                  <div className="font-semibold">{data.followingCount.toLocaleString()}</div>
+                  <div className="font-semibold">{data.followingCount?.toLocaleString() || '0'}</div>
                   <div className="text-sm text-gray-600">Following</div>
                 </div>
                 <div>
-                  <div className="font-semibold">{data.postsCount.toLocaleString()}</div>
+                  <div className="font-semibold">{data.postsCount?.toLocaleString() || '0'}</div>
                   <div className="text-sm text-gray-600">Posts</div>
                 </div>
               </div>
