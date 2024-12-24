@@ -6,6 +6,7 @@ import { useInstagramData } from "@/hooks/useInstagramData";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { toast } from "sonner";
 
 interface PostsDataWrapperProps {
   children: (props: {
@@ -40,7 +41,11 @@ export const PostsDataWrapper = ({ children }: PostsDataWrapperProps) => {
       return data;
     },
     enabled: !!user?.id,
-    retry: 1
+    retry: 1,
+    onError: (error: Error) => {
+      toast.error('Failed to fetch profile data');
+      console.error('Profile fetch error:', error);
+    }
   });
 
   const { 
@@ -107,6 +112,8 @@ export const PostsDataWrapper = ({ children }: PostsDataWrapperProps) => {
       return null;
     }
   }).filter(Boolean) || [];
+
+  console.log('Transformed posts:', posts);
 
   return <>{children({ 
     posts, 
