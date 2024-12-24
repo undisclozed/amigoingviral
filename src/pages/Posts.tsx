@@ -54,7 +54,7 @@ const Posts = () => {
   console.log('Instagram data:', instagramData);
   console.log('Instagram error:', instagramError);
 
-  const posts = instagramData?.map((post: any) => ({
+  const posts = instagramData?.data?.map((post: any) => ({
     id: post.id,
     username: post.username,
     thumbnail: post.thumbnail,
