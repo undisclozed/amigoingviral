@@ -38,8 +38,10 @@ export const useInstagramData = (username: string | undefined) => {
     meta: {
       errorMessage: 'Failed to fetch Instagram data'
     },
-    onError: (error) => {
-      toast.error(error.message || 'Failed to fetch Instagram data');
+    onSettled: (data, error) => {
+      if (error) {
+        toast.error(error.message || 'Failed to fetch Instagram data');
+      }
     }
   });
 };
