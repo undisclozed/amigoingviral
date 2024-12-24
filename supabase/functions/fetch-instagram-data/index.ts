@@ -36,14 +36,18 @@ serve(async (req) => {
         "resultsLimit": 25,
         "reelsDownload": false,
         "proxy": {
-          "useApifyProxy": true
-        }
+          "useApifyProxy": true,
+          "apifyProxyGroups": ["RESIDENTIAL"]
+        },
+        "scrapePostsUntilDate": new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), // Last 30 days
+        "maxRequestRetries": 3
       })
     });
 
     if (!apifyResponse.ok) {
-      console.error('Apify API error:', await apifyResponse.text());
-      throw new Error(`Apify API returned status ${apifyResponse.status}`);
+      const errorText = await apifyResponse.text();
+      console.error('Apify API error:', errorText);
+      throw new Error(`Apify API returned status ${apifyResponse.status}: ${errorText}`);
     }
 
     const data = await apifyResponse.json();
