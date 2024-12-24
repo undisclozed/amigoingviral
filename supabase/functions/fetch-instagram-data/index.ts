@@ -8,6 +8,7 @@ const corsHeaders = {
 };
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response('ok', { headers: corsHeaders });
   }
@@ -27,8 +28,6 @@ serve(async (req) => {
     }
 
     const actorId = 'apify/instagram-profile-scraper';
-
-    // Prepare API request to Apify REST API
     const apifyUrl = `https://api.apify.com/v2/acts/${actorId}/runs?token=${apiKey}`;
     
     const input = {
@@ -39,6 +38,8 @@ serve(async (req) => {
       scrapeHighlights: true,
     };
 
+    console.log('Sending request to Apify with input:', JSON.stringify(input));
+
     const response = await fetch(apifyUrl, {
       method: 'POST',
       headers: {
@@ -48,14 +49,18 @@ serve(async (req) => {
     });
 
     const runResult = await response.json();
+    console.log('Apify run result:', JSON.stringify(runResult));
 
     if (!runResult.defaultDatasetId) {
       throw new Error('Actor run completed, but no dataset was created.');
     }
 
     // Fetch dataset results from Apify
-    const datasetResponse = await fetch(`https://api.apify.com/v2/datasets/${runResult.defaultDatasetId}/items?token=${apiKey}`);
+    const datasetUrl = `https://api.apify.com/v2/datasets/${runResult.defaultDatasetId}/items?token=${apiKey}`;
+    const datasetResponse = await fetch(datasetUrl);
     const dataset = await datasetResponse.json();
+    
+    console.log('Dataset fetched, number of items:', dataset.length);
 
     // Transform dataset items
     const transformedData = dataset.map((post: any) => ({
