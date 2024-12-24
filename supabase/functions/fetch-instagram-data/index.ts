@@ -87,6 +87,8 @@ serve(async (req) => {
       }
 
       dataset = await datasetResponse.json()
+      console.log('Dataset response:', JSON.stringify(dataset, null, 2))
+      
       if (dataset && dataset.length > 0) {
         break
       }
@@ -96,29 +98,33 @@ serve(async (req) => {
     }
 
     if (!dataset || dataset.length === 0) {
+      console.error('No data returned from Apify')
       throw new Error('Failed to fetch Instagram data: Dataset empty or timeout')
     }
 
     // Transform the data
-    const transformedData = dataset.map((post: any) => ({
-      id: post.id || `temp-${Math.random().toString(36).substr(2, 9)}`,
-      username: post.ownerUsername || cleanUsername,
-      thumbnail: post.displayUrl || post.previewUrl || '',
-      caption: post.caption || '',
-      timestamp: post.timestamp || new Date().toISOString(),
-      metrics: {
-        views: post.videoViewCount || 0,
-        likes: post.likesCount || 0,
-        comments: post.commentsCount || 0,
-        shares: post.sharesCount || 0,
-        saves: post.savesCount || 0,
-        engagement: ((post.likesCount || 0) + (post.commentsCount || 0)) / (post.videoViewCount || 1) * 100,
-        followsFromPost: 0,
-        averageWatchPercentage: 0
+    const transformedData = dataset.map((post: any) => {
+      console.log('Transforming post:', JSON.stringify(post, null, 2))
+      return {
+        id: post.id || `temp-${Math.random().toString(36).substr(2, 9)}`,
+        username: post.ownerUsername || cleanUsername,
+        thumbnail: post.displayUrl || post.previewUrl || '',
+        caption: post.caption || '',
+        timestamp: post.timestamp || new Date().toISOString(),
+        metrics: {
+          views: post.videoViewCount || 0,
+          likes: post.likesCount || 0,
+          comments: post.commentsCount || 0,
+          shares: post.sharesCount || 0,
+          saves: post.savesCount || 0,
+          engagement: ((post.likesCount || 0) + (post.commentsCount || 0)) / (post.videoViewCount || 1) * 100,
+          followsFromPost: 0,
+          averageWatchPercentage: 0
+        }
       }
-    }));
+    });
 
-    console.log('Transformed data sample:', JSON.stringify(transformedData[0], null, 2));
+    console.log('Transformed data:', JSON.stringify(transformedData, null, 2))
 
     return new Response(
       JSON.stringify({ 
