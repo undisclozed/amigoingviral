@@ -22,33 +22,84 @@ serve(async (req) => {
     // Clean up username (remove @ if present)
     const cleanUsername = username.startsWith('@') ? username.slice(1) : username
 
-    // For now, return consistent mock data for testing
-    const mockPosts = Array.from({ length: 5 }).map((_, index) => ({
-      id: `post-${index + 1}`,
+    // Call Apify API to scrape Instagram data
+    const apifyUrl = `https://api.apify.com/v2/acts/apify~instagram-reel-scraper/runs?token=${Deno.env.get('APIFY_API_KEY')}`
+    
+    const apifyResponse = await fetch(apifyUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        "username": cleanUsername,
+        "resultsLimit": 25,
+        "reelsDownload": false,
+        "proxy": {
+          "useApifyProxy": true
+        }
+      })
+    });
+
+    if (!apifyResponse.ok) {
+      console.error('Apify API error:', await apifyResponse.text());
+      throw new Error('Failed to fetch Instagram data from Apify');
+    }
+
+    const runData = await apifyResponse.json();
+    console.log('Apify run started:', runData);
+
+    // Wait for the run to finish and get results
+    const datasetId = runData.data.defaultDatasetId;
+    const maxAttempts = 10;
+    let attempts = 0;
+    let posts = [];
+
+    while (attempts < maxAttempts) {
+      const datasetUrl = `https://api.apify.com/v2/datasets/${datasetId}/items?token=${Deno.env.get('APIFY_API_KEY')}`;
+      const datasetResponse = await fetch(datasetUrl);
+      
+      if (!datasetResponse.ok) {
+        console.error('Dataset fetch error:', await datasetResponse.text());
+        throw new Error('Failed to fetch dataset');
+      }
+
+      posts = await datasetResponse.json();
+      
+      if (posts.length > 0) {
+        break;
+      }
+
+      attempts++;
+      await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds between attempts
+    }
+
+    // Transform the data to match our expected format
+    const transformedPosts = posts.map(post => ({
+      id: post.id,
       username: cleanUsername,
-      thumbnail: `https://picsum.photos/400/400?random=${index + 1}`,
-      caption: `Example post ${index + 1} with some engaging content #instagram #social #creator`,
-      timestamp: new Date(Date.now() - index * 24 * 60 * 60 * 1000).toISOString(),
-      type: 'image',
+      thumbnail: post.previewUrl || post.displayUrl,
+      caption: post.caption || '',
+      timestamp: post.timestamp,
+      type: post.type,
       metrics: {
-        views: Math.floor(Math.random() * 10000) + 1000,
-        likes: Math.floor(Math.random() * 1000) + 100,
-        comments: Math.floor(Math.random() * 100) + 10,
-        shares: Math.floor(Math.random() * 50) + 5,
-        saves: Math.floor(Math.random() * 200) + 20,
-        engagement: (Math.random() * 5 + 1).toFixed(2),
-        followsFromPost: Math.floor(Math.random() * 20) + 1,
-        averageWatchPercentage: Math.floor(Math.random() * 30) + 70
+        views: post.videoViewCount || 0,
+        likes: post.likesCount || 0,
+        comments: post.commentsCount || 0,
+        shares: post.sharesCount || 0,
+        saves: post.savesCount || 0,
+        engagement: ((post.likesCount + post.commentsCount) / (post.videoViewCount || 1) * 100) || 0,
+        followsFromPost: post.followsCount || 0,
+        averageWatchPercentage: post.averageWatchPercentage || 0
       }
     }));
 
-    console.log(`Generated ${mockPosts.length} mock posts for testing`);
+    console.log(`Transformed ${transformedPosts.length} posts for ${cleanUsername}`);
 
     return new Response(
       JSON.stringify({
         success: true,
-        data: mockPosts,
-        message: 'Mock data for testing'
+        data: transformedPosts,
+        message: 'Instagram data fetched successfully'
       }),
       { 
         headers: { 
