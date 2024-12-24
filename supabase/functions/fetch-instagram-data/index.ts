@@ -25,9 +25,11 @@ serve(async (req) => {
       throw new Error('APIFY_API_KEY is not set');
     }
 
+    console.log('APIFY_API_KEY length:', apiKey.length); // Log key length for verification
+
     const actorId = 'apify/instagram-profile-scraper';
     const apifyUrl = `https://api.apify.com/v2/acts/${actorId}/runs?token=${apiKey}`;
-    
+
     const input = {
       usernames: [username],
       resultsLimit: 30,
@@ -36,38 +38,60 @@ serve(async (req) => {
       scrapeHighlights: true,
     };
 
-    console.log('Starting Apify actor run with input:', JSON.stringify(input));
+    console.log('Making request to Apify URL:', apifyUrl);
+    console.log('With input:', JSON.stringify(input));
 
-    // Start the actor run
-    const runResponse = await fetch(apifyUrl, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ input })
-    });
+    // Start the actor run with explicit error handling
+    let runResponse;
+    try {
+      runResponse = await fetch(apifyUrl, {
+        method: 'POST',
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${apiKey}`  // Added Authorization header
+        },
+        body: JSON.stringify({ input })
+      });
+
+      if (!runResponse.ok) {
+        const errorText = await runResponse.text();
+        console.error('Apify API error response:', errorText);
+        throw new Error(`Apify API returned status ${runResponse.status}: ${errorText}`);
+      }
+    } catch (fetchError) {
+      console.error('Fetch error:', fetchError);
+      throw new Error(`Failed to make Apify API request: ${fetchError.message}`);
+    }
 
     const runResult = await runResponse.json();
-    console.log('Actor run started:', JSON.stringify(runResult));
+    console.log('Actor run response:', JSON.stringify(runResult, null, 2));
 
     if (!runResult.id) {
-      throw new Error('Failed to start actor run');
+      console.error('Invalid run result:', runResult);
+      throw new Error('Failed to get valid run ID from Apify');
     }
 
     // Poll for run completion
-    const maxAttempts = 30; // 30 seconds timeout
+    const maxAttempts = 30;
     let attempts = 0;
     let runStatus;
 
     while (attempts < maxAttempts) {
-      const statusResponse = await fetch(
-        `https://api.apify.com/v2/acts/${actorId}/runs/${runResult.id}?token=${apiKey}`
-      );
+      const statusUrl = `https://api.apify.com/v2/acts/${actorId}/runs/${runResult.id}?token=${apiKey}`;
+      console.log(`Checking run status (attempt ${attempts + 1})...`);
+      
+      const statusResponse = await fetch(statusUrl);
+      if (!statusResponse.ok) {
+        throw new Error(`Failed to check run status: ${statusResponse.status}`);
+      }
+      
       runStatus = await statusResponse.json();
-      console.log(`Run status (attempt ${attempts + 1}):`, runStatus.status);
+      console.log(`Run status:`, runStatus.status);
 
       if (runStatus.status === 'SUCCEEDED') {
         break;
       } else if (runStatus.status === 'FAILED' || runStatus.status === 'ABORTED') {
-        throw new Error(`Actor run ${runStatus.status}`);
+        throw new Error(`Actor run ${runStatus.status}: ${runStatus.errorMessage || 'Unknown error'}`);
       }
 
       await new Promise(resolve => setTimeout(resolve, 1000));
@@ -82,10 +106,15 @@ serve(async (req) => {
       throw new Error('Actor run completed, but no dataset was created');
     }
 
-    console.log('Fetching dataset:', runStatus.defaultDatasetId);
-    const datasetResponse = await fetch(
-      `https://api.apify.com/v2/datasets/${runStatus.defaultDatasetId}/items?token=${apiKey}`
-    );
+    // Fetch dataset
+    const datasetUrl = `https://api.apify.com/v2/datasets/${runStatus.defaultDatasetId}/items?token=${apiKey}`;
+    console.log('Fetching dataset from:', datasetUrl);
+    
+    const datasetResponse = await fetch(datasetUrl);
+    if (!datasetResponse.ok) {
+      throw new Error(`Failed to fetch dataset: ${datasetResponse.status}`);
+    }
+    
     const dataset = await datasetResponse.json();
     console.log('Dataset fetched, items count:', dataset.length);
 
