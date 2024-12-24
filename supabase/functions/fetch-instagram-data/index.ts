@@ -26,14 +26,14 @@ serve(async (req) => {
       throw new Error('APIFY_API_KEY is not set')
     }
 
-    // Start the scraper run
+    // Start the scraper run with correct input format (usernames as array)
     const runResponse = await fetch(
       'https://api.apify.com/v2/acts/apify~instagram-post-scraper/runs?token=' + apiKey,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          username: username,
+          usernames: [username.replace('@', '')], // Send as array and remove @ if present
           resultsLimit: 30,
           searchType: "user",
           searchLimit: 1
