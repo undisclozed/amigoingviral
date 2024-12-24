@@ -80,14 +80,15 @@ serve(async (req) => {
       )
 
       if (!datasetResponse.ok) {
-        console.log('Dataset not ready yet, waiting...')
+        const errorText = await datasetResponse.text()
+        console.error('Dataset fetch failed:', errorText)
         await new Promise(resolve => setTimeout(resolve, 2000))
         attempts++
         continue
       }
 
       dataset = await datasetResponse.json()
-      console.log('Dataset response:', JSON.stringify(dataset, null, 2))
+      console.log('Raw dataset response:', JSON.stringify(dataset, null, 2))
       
       if (dataset && dataset.length > 0) {
         break
@@ -104,13 +105,19 @@ serve(async (req) => {
 
     // Transform the data
     const transformedData = dataset.map((post: any) => {
-      console.log('Transforming post:', JSON.stringify(post, null, 2))
+      console.log('Processing post:', JSON.stringify(post, null, 2))
+      
+      // Extract media type and URL
+      const mediaType = post.type || 'image'
+      const mediaUrl = post.displayUrl || post.videoUrl || ''
+      
       return {
         id: post.id || `temp-${Math.random().toString(36).substr(2, 9)}`,
         username: post.ownerUsername || cleanUsername,
-        thumbnail: post.displayUrl || post.previewUrl || '',
+        thumbnail: mediaUrl,
         caption: post.caption || '',
         timestamp: post.timestamp || new Date().toISOString(),
+        type: mediaType,
         metrics: {
           views: post.videoViewCount || 0,
           likes: post.likesCount || 0,
@@ -118,8 +125,8 @@ serve(async (req) => {
           shares: post.sharesCount || 0,
           saves: post.savesCount || 0,
           engagement: ((post.likesCount || 0) + (post.commentsCount || 0)) / (post.videoViewCount || 1) * 100,
-          followsFromPost: 0,
-          averageWatchPercentage: 0
+          followsFromPost: post.followsCount || 0,
+          averageWatchPercentage: post.averageWatchPercentage || 0
         }
       }
     });
