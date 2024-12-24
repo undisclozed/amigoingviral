@@ -14,11 +14,11 @@ serve(async (req) => {
   try {
     const { username } = await req.json()
     
+    console.log('Processing request for username:', username)
+    
     if (!username) {
       throw new Error('Username is required')
     }
-
-    console.log('Processing request for username:', username)
 
     // Initialize API key
     const apiKey = Deno.env.get('APIFY_API_KEY')
@@ -26,14 +26,14 @@ serve(async (req) => {
       throw new Error('APIFY_API_KEY is not set')
     }
 
-    // Start the scraper run with correct input format (usernames as array)
+    // Start the scraper run
     const runResponse = await fetch(
       'https://api.apify.com/v2/acts/apify~instagram-post-scraper/runs?token=' + apiKey,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          usernames: [username.replace('@', '')], // Send as array and remove @ if present
+          username: username.replace('@', ''), // Remove @ if present
           resultsLimit: 30,
           searchType: "user",
           searchLimit: 1
