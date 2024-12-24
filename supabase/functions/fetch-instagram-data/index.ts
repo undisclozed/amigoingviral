@@ -27,7 +27,7 @@ serve(async (req) => {
 
     // Start the Apify actor run
     const actorRunResponse = await fetch(
-      'https://api.apify.com/v2/acts/xMc5Ga1oCONPmWJIa/runs?token=' + apiKey,
+      'https://api.apify.com/v2/acts/xMc5Ga1oCONPmWJIa/run-sync-get-dataset-items?token=' + apiKey,
       {
         method: 'POST',
         headers: {
@@ -46,49 +46,20 @@ serve(async (req) => {
       throw new Error(`Failed to start Apify actor: ${errorText}`)
     }
 
-    const runData = await actorRunResponse.json()
-    console.log('Actor run started:', runData)
+    const data = await actorRunResponse.json()
+    console.log('Raw Apify response:', data)
 
-    // Wait for the dataset to be ready
-    const maxAttempts = 10
-    let attempt = 0
-    let profileData = null
-
-    while (attempt < maxAttempts) {
-      console.log(`Checking run status (attempt ${attempt + 1}/${maxAttempts})...`)
-      
-      try {
-        const datasetResponse = await fetch(
-          `https://api.apify.com/v2/datasets/${runData.data.defaultDatasetId}/items?token=${apiKey}`
-        )
-        
-        if (!datasetResponse.ok) {
-          throw new Error(`Dataset fetch failed: ${await datasetResponse.text()}`)
-        }
-
-        const items = await datasetResponse.json()
-        console.log('Dataset items:', items)
-
-        if (items && items.length > 0) {
-          profileData = items[0]
-          break
-        }
-      } catch (error) {
-        console.error('Error fetching dataset:', error)
-      }
-
-      attempt++
-      await new Promise(resolve => setTimeout(resolve, 2000))
+    if (!Array.isArray(data) || data.length === 0) {
+      throw new Error('No data returned from Apify API')
     }
 
-    if (!profileData) {
-      throw new Error('Failed to fetch Instagram data after maximum attempts')
-    }
+    const profileData = data[0]
+    console.log('Profile data:', profileData)
 
-    // Transform the data into a more usable format
+    // Transform the data into the expected format
     const transformedData = {
       username: profileData.username || username,
-      biography: profileData.bio || '',
+      biography: profileData.biography || '',
       followersCount: profileData.followersCount || 0,
       followingCount: profileData.followingCount || 0,
       postsCount: profileData.postsCount || 0,
