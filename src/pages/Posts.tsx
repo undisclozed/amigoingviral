@@ -22,7 +22,7 @@ const Posts = () => {
   const navigate = useNavigate();
   
   // Fetch the user's Instagram handle
-  const { data: profile, isLoading: isProfileLoading, error: profileError } = useQuery({
+  const { data: profile, isLoading: isProfileLoading } = useQuery({
     queryKey: ['profile', user?.id],
     queryFn: async () => {
       console.log('Fetching profile for user:', user?.id);
@@ -111,24 +111,6 @@ const Posts = () => {
             ))}
           </div>
         </div>
-      </div>
-    );
-  }
-
-  if (profileError) {
-    console.error('Profile error:', profileError);
-    toast.error("Failed to load profile. Please try again later.");
-    return (
-      <div className="container mx-auto px-4 py-8">
-        <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-4">Error Loading Profile</h2>
-          <p className="text-gray-600 mb-4">
-            There was an error loading your profile. Please refresh the page or try again later.
-          </p>
-          <Button onClick={() => window.location.reload()} variant="outline">
-            Retry
-          </Button>
-        </Card>
       </div>
     );
   }
