@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
+import { ApifyClient } from 'npm:apify-client';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -25,66 +26,72 @@ serve(async (req) => {
       throw new Error('APIFY_API_KEY is not set')
     }
 
-    // Start the Apify actor run
-    const actorRunResponse = await fetch(
-      'https://api.apify.com/v2/acts/xMc5Ga1oCONPmWJIa/run-sync-get-dataset-items?token=' + apiKey,
-      {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          "username": [username],
-          "resultsLimit": 5
-        })
+    // Initialize the ApifyClient with API token
+    const client = new ApifyClient({
+      token: apiKey,
+    });
+
+    console.log('Initialized Apify client')
+
+    // Prepare Actor input exactly as in the example
+    const input = {
+      "username": [username],
+      "resultsLimit": 30
+    };
+
+    console.log('Running actor with input:', input)
+
+    try {
+      // Run the Actor and wait for it to finish - using their exact actor ID
+      const run = await client.actor("xMc5Ga1oCONPmWJIa").call(input);
+      console.log('Actor run completed, dataset ID:', run.defaultDatasetId)
+
+      // Fetch results from the dataset
+      console.log('Fetching results from dataset')
+      const { items } = await client.dataset(run.defaultDatasetId).listItems();
+      console.log('Raw dataset items:', items)
+
+      if (!items || items.length === 0) {
+        throw new Error('No data returned from Instagram scraper')
       }
-    )
 
-    if (!actorRunResponse.ok) {
-      const errorText = await actorRunResponse.text()
-      console.error('Apify actor run error:', errorText)
-      throw new Error(`Failed to start Apify actor: ${errorText}`)
-    }
+      const profileData = items[0]
+      console.log('Profile data:', profileData)
 
-    const data = await actorRunResponse.json()
-    console.log('Raw Apify response:', data)
-
-    if (!Array.isArray(data) || data.length === 0) {
-      throw new Error('No data returned from Apify API')
-    }
-
-    const profileData = data[0]
-    console.log('Profile data:', profileData)
-
-    // Transform the data into the expected format
-    const transformedData = {
-      username: profileData.username || username,
-      biography: profileData.biography || '',
-      followersCount: profileData.followersCount || 0,
-      followingCount: profileData.followingCount || 0,
-      postsCount: profileData.postsCount || 0,
-      profilePicUrl: profileData.profilePicUrl || '',
-      latestPosts: (profileData.latestPosts || []).map((post: any) => ({
-        id: post.id || '',
-        caption: post.caption || '',
-        likesCount: post.likesCount || 0,
-        commentsCount: post.commentsCount || 0,
-        timestamp: post.timestamp || '',
-        url: post.url || '',
-      }))
-    }
-
-    console.log('Transformed data:', transformedData)
-
-    return new Response(
-      JSON.stringify(transformedData),
-      { 
-        headers: { 
-          ...corsHeaders,
-          'Content-Type': 'application/json'
-        } 
+      // Transform the data into our expected format
+      const transformedData = {
+        username: profileData.username || username,
+        biography: profileData.biography || '',
+        followersCount: profileData.followersCount || 0,
+        followingCount: profileData.followingCount || 0,
+        postsCount: profileData.postsCount || 0,
+        profilePicUrl: profileData.profilePicUrl || '',
+        latestPosts: (profileData.latestPosts || []).map((post: any) => ({
+          id: post.id || '',
+          caption: post.caption || '',
+          likesCount: post.likesCount || 0,
+          commentsCount: post.commentsCount || 0,
+          timestamp: post.timestamp || '',
+          url: post.url || '',
+        }))
       }
-    )
+
+      console.log('Transformed data:', transformedData)
+
+      return new Response(
+        JSON.stringify(transformedData),
+        { 
+          headers: { 
+            ...corsHeaders,
+            'Content-Type': 'application/json'
+          } 
+        }
+      )
+
+    } catch (error) {
+      console.error('Error in Apify execution:', error)
+      throw new Error(`Failed to fetch Instagram data: ${error.message}`)
+    }
 
   } catch (error) {
     console.error('Error in fetch-instagram-data function:', error)
