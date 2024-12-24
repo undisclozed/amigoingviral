@@ -18,15 +18,16 @@ interface AccountMetrics {
 interface AccountMetricsOverviewProps {
   accountMetrics: AccountMetrics;
   postsCount: number;
+  username: string;
 }
 
-export const AccountMetricsOverview = ({ accountMetrics, postsCount }: AccountMetricsOverviewProps) => {
+export const AccountMetricsOverview = ({ accountMetrics, postsCount, username }: AccountMetricsOverviewProps) => {
   return (
     <Card className="p-4">
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <AccountHeader 
-            accountHandle="@username"
+            accountHandle={`@${username}`}
             profileImage="/placeholder.svg"
             period="Last 30 days"
           />
