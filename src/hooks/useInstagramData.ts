@@ -20,6 +20,11 @@ export const useInstagramData = (username: string | undefined) => {
         throw error;
       }
 
+      if (!data?.data || !Array.isArray(data.data)) {
+        console.error('Invalid data format received:', data);
+        throw new Error('Invalid data format received from server');
+      }
+
       console.log('Instagram data fetched:', data);
       return data;
     },
@@ -30,10 +35,8 @@ export const useInstagramData = (username: string | undefined) => {
     meta: {
       errorMessage: 'Failed to fetch Instagram data'
     },
-    onSettled: (data, error) => {
-      if (error) {
-        toast.error(error.message || 'Failed to fetch Instagram data');
-      }
+    onError: (error: Error) => {
+      toast.error(error.message || 'Failed to fetch Instagram data');
     }
   });
 };

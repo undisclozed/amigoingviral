@@ -41,11 +41,9 @@ export const PostsDataWrapper = ({ children }: PostsDataWrapperProps) => {
     },
     enabled: !!user?.id,
     retry: 1,
-    onSettled: (data, error) => {
-      if (error) {
-        toast.error('Failed to fetch profile data');
-        console.error('Profile fetch error:', error);
-      }
+    onError: (error: Error) => {
+      toast.error('Failed to fetch profile data');
+      console.error('Profile fetch error:', error);
     }
   });
 

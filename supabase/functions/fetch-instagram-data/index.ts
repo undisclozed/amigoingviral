@@ -22,8 +22,8 @@ serve(async (req) => {
     // Clean up username (remove @ if present)
     const cleanUsername = username.startsWith('@') ? username.slice(1) : username
 
-    // Call Apify API to scrape Instagram data
-    const apifyUrl = `https://api.apify.com/v2/acts/apify~instagram-reel-scraper/runs?token=${Deno.env.get('APIFY_API_KEY')}`
+    // Start the Apify actor run
+    const apifyUrl = `https://api.apify.com/v2/acts/apify~instagram-reel-scraper/run-sync?token=${Deno.env.get('APIFY_API_KEY')}`
     
     const apifyResponse = await fetch(apifyUrl, {
       method: 'POST',
@@ -45,36 +45,11 @@ serve(async (req) => {
       throw new Error('Failed to fetch Instagram data from Apify');
     }
 
-    const runData = await apifyResponse.json();
-    console.log('Apify run started:', runData);
-
-    // Wait for the run to finish and get results
-    const datasetId = runData.data.defaultDatasetId;
-    const maxAttempts = 10;
-    let attempts = 0;
-    let posts = [];
-
-    while (attempts < maxAttempts) {
-      const datasetUrl = `https://api.apify.com/v2/datasets/${datasetId}/items?token=${Deno.env.get('APIFY_API_KEY')}`;
-      const datasetResponse = await fetch(datasetUrl);
-      
-      if (!datasetResponse.ok) {
-        console.error('Dataset fetch error:', await datasetResponse.text());
-        throw new Error('Failed to fetch dataset');
-      }
-
-      posts = await datasetResponse.json();
-      
-      if (posts.length > 0) {
-        break;
-      }
-
-      attempts++;
-      await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds between attempts
-    }
+    const data = await apifyResponse.json();
+    console.log('Apify data received:', data);
 
     // Transform the data to match our expected format
-    const transformedPosts = posts.map(post => ({
+    const transformedPosts = data.map(post => ({
       id: post.id,
       username: cleanUsername,
       thumbnail: post.previewUrl || post.displayUrl,
