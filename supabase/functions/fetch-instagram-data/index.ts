@@ -22,6 +22,7 @@ serve(async (req) => {
     }
 
     if (!APIFY_API_KEY) {
+      console.error('APIFY_API_KEY is not configured')
       throw new Error('APIFY_API_KEY is not configured')
     }
 
@@ -30,7 +31,7 @@ serve(async (req) => {
     console.log('Cleaned username:', cleanUsername)
 
     // Start the Apify actor run
-    console.log('Starting Apify actor run...')
+    console.log('Starting Apify actor run with cleaned username:', cleanUsername)
     const startResponse = await fetch(
       'https://api.apify.com/v2/acts/apify~instagram-profile-scraper/runs?token=' + APIFY_API_KEY,
       {
@@ -42,7 +43,8 @@ serve(async (req) => {
           "resultsType": "posts",
           "searchType": "user",
           "proxy": {
-            "useApifyProxy": true
+            "useApifyProxy": true,
+            "apifyProxyGroups": ["RESIDENTIAL"]
           }
         })
       }
@@ -96,6 +98,7 @@ serve(async (req) => {
         console.log(`Successfully fetched ${dataset.length} posts`)
         break
       } else if (status === 'FAILED' || status === 'ABORTED' || status === 'TIMED-OUT') {
+        console.error(`Run failed with status: ${status}`)
         throw new Error(`Run failed with status: ${status}`)
       }
 
@@ -107,11 +110,32 @@ serve(async (req) => {
       throw new Error('Timeout waiting for results')
     }
 
+    // Transform the data to match expected format
+    const transformedData = dataset.map((post: any) => ({
+      id: post.id,
+      username: post.ownerUsername,
+      thumbnail: post.displayUrl || post.previewUrl,
+      caption: post.caption || '',
+      timestamp: post.timestamp,
+      metrics: {
+        views: post.videoViewCount || 0,
+        likes: post.likesCount || 0,
+        comments: post.commentsCount || 0,
+        shares: post.sharesCount || 0,
+        saves: post.savesCount || 0,
+        engagement: ((post.likesCount + post.commentsCount) / (post.videoViewCount || 1)) * 100,
+        followsFromPost: 0, // Not available from scraper
+        averageWatchPercentage: 0 // Not available from scraper
+      }
+    }));
+
+    console.log('Transformed data:', JSON.stringify(transformedData.slice(0, 2)));
+
     return new Response(
       JSON.stringify({ 
         success: true,
-        data: dataset,
-        message: `Successfully fetched ${dataset.length} posts for @${cleanUsername}`
+        data: transformedData,
+        message: `Successfully fetched ${transformedData.length} posts for @${cleanUsername}`
       }),
       { 
         headers: { 
