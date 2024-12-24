@@ -7,6 +7,7 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
+  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -18,45 +19,43 @@ serve(async (req) => {
       throw new Error('Username is required')
     }
 
-    console.log('Processing request for username:', username)
+    console.log('Starting process for username:', username)
 
     const apiKey = Deno.env.get('APIFY_API_KEY')
     if (!apiKey) {
       throw new Error('APIFY_API_KEY is not set')
     }
 
-    console.log('Starting Apify client with username:', username)
-
+    // Initialize the ApifyClient with API token
     const client = new ApifyClient({
       token: apiKey,
     });
 
-    // Exactly match the Apify example input
+    // Prepare Actor input exactly as in the example
     const input = {
       "username": [username],
       "resultsLimit": 30
     };
 
     try {
-      console.log('Starting actor run...')
+      console.log('Starting actor run with input:', JSON.stringify(input))
+      
+      // Run the Actor and wait for it to finish
       const run = await client.actor("xMc5Ga1oCONPmWJIa").call(input);
       console.log('Actor run completed, run ID:', run.id)
 
+      // Fetch Actor results from the run's dataset
       console.log('Fetching dataset items...')
       const { items } = await client.dataset(run.defaultDatasetId).listItems();
-      console.log('Raw items from dataset:', JSON.stringify(items, null, 2))
+      console.log('Raw dataset items:', JSON.stringify(items))
 
       if (!items || items.length === 0) {
         throw new Error('No data returned from Instagram scraper')
       }
 
-      // Get the first item as it contains the profile data
-      const profile = items[0];
-      console.log('Profile data:', JSON.stringify(profile, null, 2))
-
-      // Return the raw profile data for debugging
+      // Return the raw items for debugging
       return new Response(
-        JSON.stringify(profile),
+        JSON.stringify({ data: items }),
         { 
           headers: { 
             ...corsHeaders,

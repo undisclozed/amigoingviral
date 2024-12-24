@@ -5,25 +5,6 @@ import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 
-interface InstagramPost {
-  id: string;
-  caption: string;
-  likesCount: number;
-  commentsCount: number;
-  timestamp: string;
-  url: string;
-}
-
-interface InstagramData {
-  username: string;
-  biography: string;
-  followersCount: number;
-  followingCount: number;
-  postsCount: number;
-  profilePicUrl: string;
-  latestPosts: InstagramPost[];
-}
-
 export default function Test() {
   const [username, setUsername] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -39,8 +20,10 @@ export default function Test() {
     try {
       console.log('Fetching data for username:', username);
       
-      const { data: result, error } = await supabase.functions.invoke('fetch-instagram-data', {
-        body: { username: username.replace('@', '') }
+      const { data: response, error } = await supabase.functions.invoke('fetch-instagram-data', {
+        body: { 
+          username: username.replace('@', '') 
+        }
       });
 
       if (error) {
@@ -48,18 +31,13 @@ export default function Test() {
         throw error;
       }
 
-      console.log('Raw response from edge function:', result);
+      console.log('Raw response from edge function:', response);
 
-      if (!result) {
+      if (!response) {
         throw new Error('No data returned from API');
       }
 
-      // Check if the response contains an error
-      if ('error' in result) {
-        throw new Error(result.error);
-      }
-
-      setData(result);
+      setData(response);
       toast.success('Instagram data fetched successfully');
     } catch (error) {
       console.error('Error:', error);
@@ -72,8 +50,8 @@ export default function Test() {
   };
 
   return (
-    <div className="space-y-6">
-      <h1 className="text-2xl font-bold">Instagram Data Test</h1>
+    <div className="container mx-auto p-4 max-w-4xl">
+      <h1 className="text-2xl font-bold mb-6">Instagram Data Test</h1>
       
       <Card className="p-6">
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -85,7 +63,7 @@ export default function Test() {
               id="username"
               value={username}
               onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter Instagram username"
+              placeholder="Enter Instagram username (without @)"
               required
             />
           </div>
@@ -102,8 +80,8 @@ export default function Test() {
 
         {data && (
           <div className="mt-6 space-y-4">
-            <h2 className="text-xl font-semibold">Raw Profile Data</h2>
-            <pre className="bg-gray-100 p-4 rounded-md overflow-auto">
+            <h2 className="text-xl font-semibold">Raw Response Data</h2>
+            <pre className="bg-gray-100 p-4 rounded-md overflow-auto text-sm">
               {JSON.stringify(data, null, 2)}
             </pre>
           </div>
