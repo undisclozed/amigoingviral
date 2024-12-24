@@ -18,8 +18,8 @@ const Posts = () => {
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
   const { user } = useAuth();
   
-  // Fetch the user's Instagram handle
-  const { data: profile, isLoading: isProfileLoading } = useQuery({
+  // Fetch the user's Instagram handle with better error handling
+  const { data: profile, isLoading: isProfileLoading, error: profileError } = useQuery({
     queryKey: ['profile', user?.id],
     queryFn: async () => {
       console.log('Fetching profile for user:', user?.id);
@@ -27,20 +27,31 @@ const Posts = () => {
         .from('profiles')
         .select('instagram_account')
         .eq('id', user?.id)
-        .single();
+        .maybeSingle();
       
       if (error) {
         console.error('Error fetching profile:', error);
         throw error;
       }
+      
       console.log('Profile data:', data);
+      if (!data) {
+        console.log('No profile found, showing profile form');
+        return null;
+      }
+      
       return data;
     },
-    enabled: !!user?.id
+    enabled: !!user?.id,
+    retry: 1
   });
 
-  // Fetch Instagram data
-  const { data: instagramData, isLoading: isInstagramLoading, error: instagramError } = useInstagramData(profile?.instagram_account);
+  // Fetch Instagram data with the profile
+  const { 
+    data: instagramData, 
+    isLoading: isInstagramLoading, 
+    error: instagramError 
+  } = useInstagramData(profile?.instagram_account);
 
   console.log('Instagram data:', instagramData);
   console.log('Instagram error:', instagramError);
@@ -106,9 +117,19 @@ const Posts = () => {
     );
   }
 
-  if (instagramError) {
-    console.error('Instagram data error:', instagramError);
-    toast.error("Failed to fetch Instagram data. Please try again later.");
+  if (profileError) {
+    console.error('Profile error:', profileError);
+    toast.error("Failed to load profile. Please try again later.");
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Error Loading Profile</h2>
+          <p className="text-gray-600">
+            There was an error loading your profile. Please refresh the page or try again later.
+          </p>
+        </Card>
+      </div>
+    );
   }
 
   if (!profile?.instagram_account) {
@@ -122,6 +143,11 @@ const Posts = () => {
         </Card>
       </div>
     );
+  }
+
+  if (instagramError) {
+    console.error('Instagram data error:', instagramError);
+    toast.error("Failed to fetch Instagram data. Please try again later.");
   }
 
   return (
