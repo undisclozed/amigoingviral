@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import ApifyClient from 'https://esm.sh/apify-client@2.8.4';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -26,39 +25,40 @@ serve(async (req) => {
     if (!apiKey) {
       throw new Error('APIFY_API_KEY is not set');
     }
-    console.log('Apify API Key Loaded');
 
-    // Initialize Apify client (Fixed Initialization)
-    const client = new ApifyClient(apiKey);
+    const actorId = 'apify/instagram-profile-scraper';
 
-    // Input configuration for the scraper
+    // Prepare API request to Apify REST API
+    const apifyUrl = `https://api.apify.com/v2/acts/${actorId}/runs?token=${apiKey}`;
+    
     const input = {
       usernames: [username],
       resultsLimit: 30,
       scrapePosts: true,
       scrapeStories: true,
       scrapeHighlights: true,
-      scrapeFollowers: false,
-      scrapeFollowing: false,
-      proxy: { useApifyProxy: true }
     };
-    console.log('Apify Scraper Input:', JSON.stringify(input, null, 2));
 
-    // Start the Apify actor (Instagram Profile Scraper)
-    const run = await client.actor("apify/instagram-profile-scraper").call(input);
-    console.log('Actor Run Response:', JSON.stringify(run, null, 2));
+    const response = await fetch(apifyUrl, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ input })
+    });
 
-    // Ensure the scraper run produces a dataset
-    if (!run.defaultDatasetId) {
+    const runResult = await response.json();
+
+    if (!runResult.defaultDatasetId) {
       throw new Error('Actor run completed, but no dataset was created.');
     }
 
-    // Retrieve the results from the dataset
-    const dataset = await client.dataset(run.defaultDatasetId).listItems();
-    console.log('Fetched Dataset:', JSON.stringify(dataset, null, 2));
+    // Fetch dataset results from Apify
+    const datasetResponse = await fetch(`https://api.apify.com/v2/datasets/${runResult.defaultDatasetId}/items?token=${apiKey}`);
+    const dataset = await datasetResponse.json();
 
-    // Transform dataset items into a consumable format
-    const transformedData = dataset.items.map((post: any) => ({
+    // Transform dataset items
+    const transformedData = dataset.map((post: any) => ({
       id: post.id || `temp-${Date.now()}`,
       username: post.ownerUsername || username,
       thumbnail: post.displayUrl || '',
