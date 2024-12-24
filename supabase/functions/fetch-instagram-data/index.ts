@@ -21,7 +21,6 @@ serve(async (req) => {
 
     console.log('Fetching Instagram data for:', username);
     
-    // Retrieve API key from Supabase environment variables
     const apiKey = Deno.env.get('APIFY_API_KEY');
     if (!apiKey) {
       throw new Error('APIFY_API_KEY is not set');
@@ -78,8 +77,6 @@ serve(async (req) => {
       }
     }));
 
-    console.log('Successfully transformed data:', transformedData.length, 'posts');
-
     return new Response(
       JSON.stringify({ data: transformedData }),
       {
@@ -90,7 +87,6 @@ serve(async (req) => {
         status: 200,
       }
     );
-
   } catch (error) {
     console.error('Error:', error);
     return new Response(
