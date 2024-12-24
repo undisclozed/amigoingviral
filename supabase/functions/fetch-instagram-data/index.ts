@@ -1,9 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-}
+import { corsHeaders } from './cors.ts'
+import { fetchProfileData } from './profileScraper.ts'
+import { fetchRecentPosts } from './postScraper.ts'
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -20,160 +18,22 @@ serve(async (req) => {
 
     console.log('Fetching data for Instagram username:', username)
 
-    // Start profile scraper run
-    const profileRunResponse = await fetch(
-      'https://api.apify.com/v2/acts/apify~instagram-profile-scraper/runs?token=' + Deno.env.get('APIFY_API_KEY'),
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          "startUrls": [{ "url": `https://www.instagram.com/${username}/` }],
-          "resultsLimit": 1
-        })
-      }
-    )
-
-    if (!profileRunResponse.ok) {
-      const errorText = await profileRunResponse.text()
-      console.error('Profile run response error:', errorText)
-      throw new Error(`Failed to start profile scraper: ${errorText}`)
+    const apiKey = Deno.env.get('APIFY_API_KEY')
+    if (!apiKey) {
+      throw new Error('APIFY_API_KEY is not set')
     }
 
-    const profileRunData = await profileRunResponse.json()
-    console.log('Profile scraper started with run ID:', profileRunData.data.id)
-
-    // Poll for profile data completion
-    let profileData = null
-    const maxAttempts = 24 // 2 minutes maximum wait
-    let attempts = 0
-
-    while (attempts < maxAttempts) {
-      console.log(`Checking profile run status (attempt ${attempts + 1}/${maxAttempts})...`)
-      
-      const statusCheck = await fetch(
-        `https://api.apify.com/v2/acts/apify~instagram-profile-scraper/runs/${profileRunData.data.id}?token=${Deno.env.get('APIFY_API_KEY')}`
-      )
-      
-      if (!statusCheck.ok) {
-        console.error('Profile status check failed:', await statusCheck.text())
-        attempts++
-        await new Promise(resolve => setTimeout(resolve, 5000))
-        continue
-      }
-
-      const status = await statusCheck.json()
-      console.log('Profile run status:', status.data.status)
-
-      if (status.data.status === 'SUCCEEDED') {
-        const datasetResponse = await fetch(
-          `https://api.apify.com/v2/acts/apify~instagram-profile-scraper/runs/${profileRunData.data.id}/dataset/items?token=${Deno.env.get('APIFY_API_KEY')}`
-        )
-        
-        if (!datasetResponse.ok) {
-          const errorText = await datasetResponse.text()
-          console.error('Failed to fetch profile dataset:', errorText)
-          throw new Error('Failed to fetch profile dataset')
-        }
-
-        const datasetText = await datasetResponse.text()
-        try {
-          profileData = JSON.parse(datasetText)
-          break
-        } catch (error) {
-          console.error('Failed to parse profile dataset:', error)
-          throw new Error('Failed to parse profile dataset')
-        }
-      } else if (status.data.status === 'FAILED' || status.data.status === 'ABORTED') {
-        throw new Error(`Profile scraper run ${status.data.status.toLowerCase()}`)
-      }
-
-      attempts++
-      await new Promise(resolve => setTimeout(resolve, 5000))
-    }
-
-    if (!profileData || !Array.isArray(profileData) || profileData.length === 0) {
-      throw new Error('No profile data returned')
-    }
-
-    // Start post scraper for recent posts
-    const postRunResponse = await fetch(
-      'https://api.apify.com/v2/acts/apify~instagram-reel-scraper/runs?token=' + Deno.env.get('APIFY_API_KEY'),
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          "username": username,
-          "maxPosts": 3
-        })
-      }
-    )
-
-    if (!postRunResponse.ok) {
-      const errorText = await postRunResponse.text()
-      console.error('Post run response error:', errorText)
-      throw new Error(`Failed to start post scraper: ${errorText}`)
-    }
-
-    const postRunData = await postRunResponse.json()
-    console.log('Post scraper started with run ID:', postRunData.data.id)
-
-    // Poll for post data completion
-    let postData = null
-    attempts = 0
-
-    while (attempts < maxAttempts) {
-      console.log(`Checking post run status (attempt ${attempts + 1}/${maxAttempts})...`)
-      
-      const statusCheck = await fetch(
-        `https://api.apify.com/v2/acts/apify~instagram-reel-scraper/runs/${postRunData.data.id}?token=${Deno.env.get('APIFY_API_KEY')}`
-      )
-      
-      if (!statusCheck.ok) {
-        console.error('Post status check failed:', await statusCheck.text())
-        attempts++
-        await new Promise(resolve => setTimeout(resolve, 5000))
-        continue
-      }
-
-      const status = await statusCheck.json()
-      console.log('Post run status:', status.data.status)
-
-      if (status.data.status === 'SUCCEEDED') {
-        const datasetResponse = await fetch(
-          `https://api.apify.com/v2/acts/apify~instagram-reel-scraper/runs/${postRunData.data.id}/dataset/items?token=${Deno.env.get('APIFY_API_KEY')}`
-        )
-        
-        if (!datasetResponse.ok) {
-          const errorText = await datasetResponse.text()
-          console.error('Failed to fetch post dataset:', errorText)
-          throw new Error('Failed to fetch post dataset')
-        }
-
-        const datasetText = await datasetResponse.text()
-        try {
-          postData = JSON.parse(datasetText)
-          break
-        } catch (error) {
-          console.error('Failed to parse post dataset:', error)
-          throw new Error('Failed to parse post dataset')
-        }
-      } else if (status.data.status === 'FAILED' || status.data.status === 'ABORTED') {
-        throw new Error(`Post scraper run ${status.data.status.toLowerCase()}`)
-      }
-
-      attempts++
-      await new Promise(resolve => setTimeout(resolve, 5000))
-    }
-
-    if (!postData || !Array.isArray(postData) || postData.length === 0) {
-      throw new Error('No post data returned')
-    }
+    // Fetch profile data
+    const profileData = await fetchProfileData(username, apiKey)
+    
+    // Fetch recent posts
+    const postsData = await fetchRecentPosts(username, apiKey)
 
     return new Response(
       JSON.stringify({
         success: true,
-        profile: profileData[0],
-        posts: postData.slice(0, 3)
+        profile: profileData,
+        posts: postsData
       }),
       { 
         headers: { 
