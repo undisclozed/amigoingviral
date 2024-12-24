@@ -11,7 +11,12 @@ export async function fetchProfileData(username: string, apiKey: string) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         "usernames": [username],
-        "resultsLimit": 1
+        "resultsLimit": 1,
+        "resultsType": "details",
+        "extendOutputFunction": "",
+        "proxy": {
+          "useApifyProxy": true
+        }
       })
     }
   );
@@ -59,8 +64,16 @@ export async function fetchProfileData(username: string, apiKey: string) {
       }
 
       const datasetText = await datasetResponse.text();
+      console.log('Raw profile dataset response:', datasetText);
+      
       try {
         profileData = JSON.parse(datasetText);
+        if (!Array.isArray(profileData)) {
+          throw new Error('Profile dataset is not an array');
+        }
+        if (profileData.length === 0) {
+          throw new Error('Profile dataset is empty');
+        }
         break;
       } catch (error) {
         console.error('Failed to parse profile dataset:', error);
@@ -74,8 +87,8 @@ export async function fetchProfileData(username: string, apiKey: string) {
     await new Promise(resolve => setTimeout(resolve, 5000));
   }
 
-  if (!profileData || !Array.isArray(profileData) || profileData.length === 0) {
-    throw new Error('No profile data returned');
+  if (!profileData) {
+    throw new Error('Failed to fetch profile data after maximum attempts');
   }
 
   return profileData[0];
