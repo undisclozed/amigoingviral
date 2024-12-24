@@ -61,47 +61,71 @@ serve(async (req) => {
     const runData = await startRun.json();
     console.log('Run started with ID:', runData.data.id);
 
-    // Wait for the run to finish (poll every 2 seconds)
-    const maxAttempts = 30; // 1 minute maximum wait
+    // Wait for the run to finish (poll every 5 seconds)
+    const maxAttempts = 24; // 2 minutes maximum wait
     let attempts = 0;
     let dataset = null;
 
     while (attempts < maxAttempts) {
       console.log(`Checking run status (attempt ${attempts + 1}/${maxAttempts})...`);
       
-      const statusCheck = await fetch(
-        `https://api.apify.com/v2/acts/apify~instagram-scraper/runs/${runData.data.id}?token=${Deno.env.get('APIFY_API_KEY')}`
-      );
-      
-      if (!statusCheck.ok) {
-        console.error('Status check failed:', await statusCheck.text());
-        continue;
-      }
-
-      const status = await statusCheck.json();
-      console.log('Run status:', status.data.status);
-
-      if (status.data.status === 'SUCCEEDED') {
-        // Get the dataset items
-        const datasetUrl = `https://api.apify.com/v2/acts/apify~instagram-scraper/runs/${runData.data.id}/dataset/items?token=${Deno.env.get('APIFY_API_KEY')}`;
-        const datasetResponse = await fetch(datasetUrl);
+      try {
+        const statusCheck = await fetch(
+          `https://api.apify.com/v2/acts/apify~instagram-scraper/runs/${runData.data.id}?token=${Deno.env.get('APIFY_API_KEY')}`
+        );
         
-        if (!datasetResponse.ok) {
-          throw new Error('Failed to fetch dataset');
+        if (!statusCheck.ok) {
+          console.error('Status check failed:', await statusCheck.text());
+          attempts++;
+          await new Promise(resolve => setTimeout(resolve, 5000));
+          continue;
         }
 
-        dataset = await datasetResponse.json();
-        break;
-      } else if (status.data.status === 'FAILED') {
-        throw new Error('Apify run failed');
-      }
+        const status = await statusCheck.json();
+        console.log('Run status:', status.data.status);
 
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      attempts++;
+        if (status.data.status === 'SUCCEEDED') {
+          // Get the dataset items
+          const datasetUrl = `https://api.apify.com/v2/acts/apify~instagram-scraper/runs/${runData.data.id}/dataset/items?token=${Deno.env.get('APIFY_API_KEY')}`;
+          console.log('Fetching dataset from:', datasetUrl);
+          
+          const datasetResponse = await fetch(datasetUrl);
+          
+          if (!datasetResponse.ok) {
+            console.error('Dataset fetch failed:', await datasetResponse.text());
+            throw new Error('Failed to fetch dataset');
+          }
+
+          const datasetText = await datasetResponse.text();
+          console.log('Raw dataset response:', datasetText);
+
+          try {
+            dataset = JSON.parse(datasetText);
+            console.log('Dataset parsed successfully');
+            break;
+          } catch (error) {
+            console.error('Failed to parse dataset JSON:', error);
+            throw new Error('Failed to parse dataset response');
+          }
+        } else if (status.data.status === 'FAILED' || status.data.status === 'ABORTED') {
+          throw new Error(`Apify run ${status.data.status.toLowerCase()}`);
+        }
+
+        attempts++;
+        await new Promise(resolve => setTimeout(resolve, 5000));
+      } catch (error) {
+        console.error('Error during status check:', error);
+        attempts++;
+        await new Promise(resolve => setTimeout(resolve, 5000));
+      }
     }
 
     if (!dataset) {
       throw new Error('Timeout waiting for Apify run to complete');
+    }
+
+    if (!Array.isArray(dataset) || dataset.length === 0) {
+      throw new Error('No data returned from Apify');
     }
 
     console.log('Successfully retrieved dataset');
