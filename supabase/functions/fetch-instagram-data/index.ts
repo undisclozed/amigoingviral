@@ -26,24 +26,27 @@ serve(async (req) => {
       throw new Error('APIFY_API_KEY is not configured')
     }
 
-    // Validate API key by making a test request
+    // First validate the API key with a simple request
     console.log('Validating Apify API key...')
-    const testResponse = await fetch(
-      'https://api.apify.com/v2/user/me',
-      {
+    try {
+      const testResponse = await fetch('https://api.apify.com/v2/user/me', {
         headers: {
           'Authorization': `Bearer ${APIFY_API_KEY}`,
         },
+      })
+
+      if (!testResponse.ok) {
+        const errorText = await testResponse.text()
+        console.error('Invalid APIFY_API_KEY - API test request failed:', errorText)
+        throw new Error('Invalid APIFY_API_KEY')
       }
-    )
 
-    if (!testResponse.ok) {
-      const errorText = await testResponse.text()
-      console.error('Invalid APIFY_API_KEY - API test request failed:', errorText)
-      throw new Error('Invalid APIFY_API_KEY')
+      const userData = await testResponse.json()
+      console.log('Apify API key validation successful. User data:', JSON.stringify(userData, null, 2))
+    } catch (error) {
+      console.error('Error validating Apify API key:', error)
+      throw new Error('Failed to validate Apify API key')
     }
-
-    console.log('Apify API key validation successful')
 
     // Clean up username (remove @ if present)
     const cleanUsername = username.startsWith('@') ? username.slice(1) : username
@@ -52,11 +55,10 @@ serve(async (req) => {
     // Start the Apify actor run
     console.log('Starting Apify actor run...')
     const startResponse = await fetch(
-      'https://api.apify.com/v2/actor-tasks/~instagram_profile_scraper/run-sync',
+      'https://api.apify.com/v2/actor-tasks/~instagram_profile_scraper/runs?token=' + APIFY_API_KEY,
       {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${APIFY_API_KEY}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
