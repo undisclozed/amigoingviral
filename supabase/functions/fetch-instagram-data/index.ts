@@ -27,8 +27,9 @@ serve(async (req) => {
 
     console.log('APIFY_API_KEY length:', apiKey.length);
 
+    // Updated URL format for Apify API v2
     const actorId = 'apify/instagram-profile-scraper';
-    const apifyUrl = `https://api.apify.com/v2/acts/${actorId}/runs?token=${apiKey}`;
+    const apifyUrl = `https://api.apify.com/v2/actor-tasks/${actorId}/run-sync-get-dataset-items?token=${apiKey}`;
 
     // Simplified input to only fetch profile data
     const input = {
@@ -42,9 +43,9 @@ serve(async (req) => {
     console.log('Making request to Apify URL:', apifyUrl);
     console.log('With input:', JSON.stringify(input));
 
-    let runResponse;
+    let response;
     try {
-      runResponse = await fetch(apifyUrl, {
+      response = await fetch(apifyUrl, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
@@ -53,69 +54,17 @@ serve(async (req) => {
         body: JSON.stringify({ input })
       });
 
-      if (!runResponse.ok) {
-        const errorText = await runResponse.text();
+      if (!response.ok) {
+        const errorText = await response.text();
         console.error('Apify API error response:', errorText);
-        throw new Error(`Apify API returned status ${runResponse.status}: ${errorText}`);
+        throw new Error(`Apify API returned status ${response.status}: ${errorText}`);
       }
     } catch (fetchError) {
       console.error('Fetch error:', fetchError);
       throw new Error(`Failed to make Apify API request: ${fetchError.message}`);
     }
 
-    const runResult = await runResponse.json();
-    console.log('Actor run response:', JSON.stringify(runResult, null, 2));
-
-    if (!runResult.id) {
-      console.error('Invalid run result:', runResult);
-      throw new Error('Failed to get valid run ID from Apify');
-    }
-
-    // Poll for run completion
-    const maxAttempts = 30;
-    let attempts = 0;
-    let runStatus;
-
-    while (attempts < maxAttempts) {
-      const statusUrl = `https://api.apify.com/v2/acts/${actorId}/runs/${runResult.id}?token=${apiKey}`;
-      console.log(`Checking run status (attempt ${attempts + 1})...`);
-      
-      const statusResponse = await fetch(statusUrl);
-      if (!statusResponse.ok) {
-        throw new Error(`Failed to check run status: ${statusResponse.status}`);
-      }
-      
-      runStatus = await statusResponse.json();
-      console.log(`Run status:`, runStatus.status);
-
-      if (runStatus.status === 'SUCCEEDED') {
-        break;
-      } else if (runStatus.status === 'FAILED' || runStatus.status === 'ABORTED') {
-        throw new Error(`Actor run ${runStatus.status}: ${runStatus.errorMessage || 'Unknown error'}`);
-      }
-
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      attempts++;
-    }
-
-    if (attempts >= maxAttempts) {
-      throw new Error('Actor run timed out');
-    }
-
-    if (!runStatus.defaultDatasetId) {
-      throw new Error('Actor run completed, but no dataset was created');
-    }
-
-    // Fetch dataset
-    const datasetUrl = `https://api.apify.com/v2/datasets/${runStatus.defaultDatasetId}/items?token=${apiKey}`;
-    console.log('Fetching dataset from:', datasetUrl);
-    
-    const datasetResponse = await fetch(datasetUrl);
-    if (!datasetResponse.ok) {
-      throw new Error(`Failed to fetch dataset: ${datasetResponse.status}`);
-    }
-    
-    const dataset = await datasetResponse.json();
+    const dataset = await response.json();
     console.log('Dataset fetched, raw data:', JSON.stringify(dataset, null, 2));
 
     // Return the raw dataset without transformation
