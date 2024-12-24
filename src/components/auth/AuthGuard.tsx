@@ -7,6 +7,7 @@ import { toast } from "sonner";
 export const AuthGuard = ({ children }: { children: React.ReactNode }) => {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLoginOpen, setIsLoginOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -20,6 +21,7 @@ export const AuthGuard = ({ children }: { children: React.ReactNode }) => {
         }
 
         setIsAuthenticated(!!session);
+        setIsLoginOpen(!session);
         console.log("Session check complete:", !!session);
       } catch (err) {
         console.error("Auth error:", err);
@@ -36,9 +38,11 @@ export const AuthGuard = ({ children }: { children: React.ReactNode }) => {
       
       if (event === 'SIGNED_IN') {
         setIsAuthenticated(true);
+        setIsLoginOpen(false);
         navigate('/dashboard');
       } else if (event === 'SIGNED_OUT') {
         setIsAuthenticated(false);
+        setIsLoginOpen(true);
         navigate('/');
       }
     });
@@ -58,7 +62,7 @@ export const AuthGuard = ({ children }: { children: React.ReactNode }) => {
 
   if (!isAuthenticated) {
     console.log("No user, showing login form");
-    return <LoginForm />;
+    return <LoginForm open={isLoginOpen} onOpenChange={setIsLoginOpen} />;
   }
 
   return <>{children}</>;
