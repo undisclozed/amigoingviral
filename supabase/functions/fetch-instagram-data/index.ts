@@ -17,19 +17,27 @@ serve(async (req) => {
     const { username } = await req.json()
     console.log('Starting Instagram data fetch for username:', username)
 
+    if (!username) {
+      throw new Error('Username is required')
+    }
+
+    if (!APIFY_API_KEY) {
+      throw new Error('APIFY_API_KEY is not configured')
+    }
+
     // Clean up username (remove @ if present)
     const cleanUsername = username.startsWith('@') ? username.slice(1) : username
     console.log('Cleaned username:', cleanUsername)
 
     // Start the Apify actor run
+    console.log('Starting Apify actor run...')
     const startResponse = await fetch(
-      'https://api.apify.com/v2/acts/apify~instagram-reel-scraper/runs?token=' + APIFY_API_KEY,
+      'https://api.apify.com/v2/acts/apify~instagram-profile-scraper/runs?token=' + APIFY_API_KEY,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          "username": cleanUsername,
-          "maxPosts": 100,
+          "usernames": [cleanUsername],
           "resultsLimit": 100,
           "resultsType": "posts",
           "searchType": "user",
@@ -58,7 +66,7 @@ serve(async (req) => {
     while (attempts < maxAttempts) {
       console.log(`Checking run status (attempt ${attempts + 1}/${maxAttempts})`)
       const statusResponse = await fetch(
-        `https://api.apify.com/v2/acts/apify~instagram-reel-scraper/runs/${runId}?token=${APIFY_API_KEY}`
+        `https://api.apify.com/v2/acts/apify~instagram-profile-scraper/runs/${runId}?token=${APIFY_API_KEY}`
       )
       
       if (!statusResponse.ok) {
@@ -75,7 +83,7 @@ serve(async (req) => {
         // Fetch the results
         console.log('Run succeeded, fetching results')
         const datasetResponse = await fetch(
-          `https://api.apify.com/v2/acts/apify~instagram-reel-scraper/runs/${runId}/dataset/items?token=${APIFY_API_KEY}`
+          `https://api.apify.com/v2/acts/apify~instagram-profile-scraper/runs/${runId}/dataset/items?token=${APIFY_API_KEY}`
         )
         
         if (!datasetResponse.ok) {
@@ -100,14 +108,24 @@ serve(async (req) => {
     }
 
     return new Response(
-      JSON.stringify({ data: dataset }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+      JSON.stringify({ 
+        success: true,
+        data: dataset,
+        message: `Successfully fetched ${dataset.length} posts for @${cleanUsername}`
+      }),
+      { 
+        headers: { 
+          ...corsHeaders, 
+          'Content-Type': 'application/json' 
+        } 
+      }
     )
 
   } catch (error) {
     console.error('Error in fetch-instagram-data function:', error)
     return new Response(
       JSON.stringify({ 
+        success: false,
         error: error.message,
         details: 'Check the function logs for more information'
       }),
