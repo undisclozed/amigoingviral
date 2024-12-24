@@ -14,29 +14,32 @@ serve(async (req) => {
   try {
     const { username } = await req.json()
     
-    console.log('Processing request for username:', username)
+    console.log('Starting Instagram data fetch for username:', username)
     
     if (!username) {
       throw new Error('Username is required')
     }
 
-    // Initialize API key
     const apiKey = Deno.env.get('APIFY_API_KEY')
     if (!apiKey) {
       throw new Error('APIFY_API_KEY is not set')
     }
 
-    // Start the scraper run
+    // Start the scraper run using the basic Instagram scraper
+    console.log('Starting scraper for username:', username)
     const runResponse = await fetch(
-      'https://api.apify.com/v2/acts/apify~instagram-post-scraper/runs?token=' + apiKey,
+      'https://api.apify.com/v2/acts/apify~instagram-scraper/runs?token=' + apiKey,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          username: username.replace('@', ''), // Remove @ if present
+          usernames: [username.replace('@', '')],
+          resultsType: "posts",
           resultsLimit: 30,
-          searchType: "user",
-          searchLimit: 1
+          addUserInfo: false,
+          proxy: {
+            useApifyProxy: true
+          }
         })
       }
     )
@@ -59,7 +62,7 @@ serve(async (req) => {
       console.log(`Checking run status (attempt ${attempts + 1}/${maxAttempts})...`)
       
       const statusCheck = await fetch(
-        `https://api.apify.com/v2/acts/apify~instagram-post-scraper/runs/${runData.data.id}?token=${apiKey}`
+        `https://api.apify.com/v2/acts/apify~instagram-scraper/runs/${runData.data.id}?token=${apiKey}`
       )
       
       if (!statusCheck.ok) {
@@ -74,7 +77,7 @@ serve(async (req) => {
 
       if (status.data.status === 'SUCCEEDED') {
         const datasetResponse = await fetch(
-          `https://api.apify.com/v2/acts/apify~instagram-post-scraper/runs/${runData.data.id}/dataset/items?token=${apiKey}`
+          `https://api.apify.com/v2/acts/apify~instagram-scraper/runs/${runData.data.id}/dataset/items?token=${apiKey}`
         )
         
         if (!datasetResponse.ok) {
@@ -95,22 +98,26 @@ serve(async (req) => {
       throw new Error('Failed to fetch data after maximum attempts')
     }
 
-    // Transform data
-    const transformedData = dataset.map(post => ({
-      id: post.id || `temp-${Date.now()}-${Math.random()}`,
-      username: post.ownerUsername || username,
-      thumbnail: post.displayUrl || '',
-      caption: post.caption || '',
-      timestamp: post.timestamp || new Date().toISOString(),
-      metrics: {
-        views: post.videoViewCount || 0,
-        likes: post.likesCount || 0,
-        comments: post.commentsCount || 0,
-        engagement: ((post.likesCount || 0) + (post.commentsCount || 0)) / 100,
-        saves: post.savesCount || 0,
-        shares: post.sharesCount || 0
-      }
-    }))
+    console.log('Raw dataset:', dataset)
+
+    // Transform data to match our schema
+    const transformedData = dataset
+      .filter(post => post && post.type === 'Video' || post.type === 'Photo')
+      .map(post => ({
+        id: post.id || `temp-${Date.now()}-${Math.random()}`,
+        username: post.ownerUsername || username,
+        thumbnail: post.displayUrl || '',
+        caption: post.caption || '',
+        timestamp: post.timestamp || new Date().toISOString(),
+        metrics: {
+          views: post.videoViewCount || 0,
+          likes: post.likesCount || 0,
+          comments: post.commentsCount || 0,
+          engagement: ((post.likesCount || 0) + (post.commentsCount || 0)) / 100,
+          saves: 0, // These metrics aren't available in the basic scraper
+          shares: 0,
+        }
+      }))
 
     console.log('Successfully transformed', transformedData.length, 'posts')
 
