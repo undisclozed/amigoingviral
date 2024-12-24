@@ -32,7 +32,7 @@ serve(async (req) => {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        "username": cleanUsername,
+        "username": [cleanUsername], // Changed to array format
         "resultsLimit": 25,
         "reelsDownload": false,
         "proxy": {
