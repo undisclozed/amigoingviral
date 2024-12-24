@@ -20,12 +20,12 @@ export default function Test() {
     setRawResponse(null);
 
     try {
-      console.log('Fetching data for username:', username);
+      console.log('Starting Instagram data fetch for:', username);
       
       const { data: response, error } = await supabase.functions.invoke('fetch-instagram-data', {
         body: { 
           username: username.replace('@', ''),
-          debug: true // Add debug flag to get raw response
+          debug: true 
         }
       });
 
@@ -41,7 +41,7 @@ export default function Test() {
       }
 
       setData(response.data);
-      setRawResponse(JSON.stringify(response.rawApifyResponse || {}, null, 2));
+      setRawResponse(JSON.stringify(response, null, 2));
       toast.success('Instagram data fetched successfully');
     } catch (error) {
       console.error('Error:', error);
@@ -86,7 +86,7 @@ export default function Test() {
 
       {rawResponse && (
         <Card className="p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-2">Raw Apify Response</h2>
+          <h2 className="text-xl font-semibold mb-2">Raw Response</h2>
           <pre className="bg-gray-100 p-4 rounded-md overflow-auto text-sm">
             {rawResponse}
           </pre>

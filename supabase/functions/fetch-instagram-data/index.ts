@@ -25,17 +25,16 @@ serve(async (req) => {
       throw new Error('APIFY_API_KEY is not set')
     }
 
-    // Start the scraper run
-    console.log('Starting scraper for username:', username)
+    // Start the scraper run with full scraping options
+    console.log('Starting scraper with username:', username)
     const input = {
       "usernames": [username],
       "resultsLimit": 30,
       "scrapePosts": true,
-      "scrapeStories": false,
-      "scrapeHighlights": false,
-      "scrapeTaggedPosts": false,
-      "scrapeFollowers": false,
-      "scrapeFollowing": false,
+      "scrapeStories": true,
+      "scrapeHighlights": true,
+      "scrapeFollowers": true,
+      "scrapeFollowing": true,
       "proxy": {
         "useApifyProxy": true
       }
