@@ -13,33 +13,33 @@ serve(async (req) => {
   }
 
   try {
-    // Parse request body
-    let username
-    try {
-      const body = await req.json()
-      username = body.username?.replace('@', '')
-      if (!username) {
-        throw new Error('Username is required')
-      }
-      console.log('Processing request for username:', username)
-    } catch (error) {
-      console.error('Error parsing request:', error)
-      throw new Error('Invalid request format')
+    // Get username from request
+    const body = await req.json()
+    const username = body.username?.replace('@', '')
+    
+    if (!username) {
+      throw new Error('Username is required')
     }
+
+    console.log('Processing request for username:', username)
 
     // Initialize Apify client
     const apiKey = Deno.env.get('APIFY_API_KEY')
     if (!apiKey) {
       throw new Error('APIFY_API_KEY is not set')
     }
-    const client = new ApifyClient({ token: apiKey })
 
-    console.log('Starting Instagram data fetch for:', username)
+    const client = new ApifyClient({
+      token: apiKey,
+    })
 
     // Run the actor
-    const run = await client.actor("zqHRdXpWXiHKZVXht").call({
+    console.log('Starting actor run for:', username)
+    const run = await client.actor("apify/instagram-post-scraper").call({
       username: username,
-      resultsLimit: 30
+      resultsLimit: 30,
+      searchType: "user",
+      searchLimit: 1
     })
 
     if (!run?.id) {
@@ -48,84 +48,38 @@ serve(async (req) => {
 
     console.log('Actor run started with ID:', run.id)
 
-    // Wait for the dataset
+    // Get dataset
     const { items } = await client.dataset(run.defaultDatasetId).listItems()
     
     if (!Array.isArray(items)) {
-      console.error('Invalid dataset format:', items)
       throw new Error('Invalid dataset format received')
     }
 
-    console.log(`Retrieved ${items.length} items from dataset`)
+    console.log('Processing', items.length, 'posts')
 
-    // Transform the data
-    const transformedData = items.map((post: any) => {
-      try {
-        // Calculate engagement metrics with fallbacks
-        const viewsCount = post.viewsCount || 0
-        const likesCount = post.likesCount || 0
-        const commentsCount = post.commentsCount || 0
-        const savesCount = post.savesCount || 0
-        const sharesCount = post.sharesCount || 0
-        
-        const totalEngagements = likesCount + commentsCount + savesCount + sharesCount
-        const engagementRate = viewsCount > 0 ? (totalEngagements / viewsCount) * 100 : 0
-
-        // Calculate ratios
-        const likesReachRatio = viewsCount > 0 ? (likesCount / viewsCount) * 100 : 0
-        const commentsReachRatio = viewsCount > 0 ? (commentsCount / viewsCount) * 100 : 0
-        const savesReachRatio = viewsCount > 0 ? (savesCount / viewsCount) * 100 : 0
-        const followsFromPost = post.followsFromPost || 0
-        const followsReachRatio = viewsCount > 0 ? (followsFromPost / viewsCount) * 100 : 0
-
-        // Calculate virality score
-        const viralityScore = Math.round(
-          (engagementRate * 50) + 
-          (viewsCount / 1000) + 
-          (sharesCount * 2)
-        )
-
-        return {
-          id: post.id || `temp-${Date.now()}-${Math.random()}`,
-          username: post.ownerUsername || username,
-          thumbnail: post.thumbnailUrl || post.displayUrl || '',
-          caption: post.caption || '',
-          timestamp: post.timestamp || new Date().toISOString(),
-          type: post.type || 'unknown',
-          url: post.url || '',
-          metrics: {
-            virality_score: viralityScore,
-            views: viewsCount,
-            likes: likesCount,
-            comments: commentsCount,
-            impressions: viewsCount,
-            reach: viewsCount,
-            saves: savesCount,
-            shares: sharesCount,
-            engagement_rate: engagementRate,
-            likes_reach_ratio: likesReachRatio,
-            comments_reach_ratio: commentsReachRatio,
-            saves_reach_ratio: savesReachRatio,
-            video_duration: post.videoDuration || null,
-            avg_watch_percentage: post.videoPlayCount ? 
-              (post.videoPlayCount / viewsCount) * 100 : null,
-            follows_from_post: followsFromPost,
-            follows_reach_ratio: followsReachRatio
-          },
-          hashtags: Array.isArray(post.hashtags) ? post.hashtags : [],
-          mentions: Array.isArray(post.mentions) ? post.mentions : [],
-          latestComments: Array.isArray(post.latestComments) ? post.latestComments : []
-        }
-      } catch (error) {
-        console.error('Error processing post:', error, post)
-        return null
+    // Transform data
+    const transformedData = items.map(post => ({
+      id: post.id || `temp-${Date.now()}-${Math.random()}`,
+      username: post.ownerUsername || username,
+      thumbnail: post.displayUrl || '',
+      caption: post.caption || '',
+      timestamp: post.timestamp || new Date().toISOString(),
+      metrics: {
+        views: post.videoViewCount || 0,
+        likes: post.likesCount || 0,
+        comments: post.commentsCount || 0,
+        engagement: ((post.likesCount || 0) + (post.commentsCount || 0)) / 100,
+        saves: post.savesCount || 0,
+        shares: post.sharesCount || 0
       }
-    }).filter(Boolean)
+    }))
 
-    console.log('Successfully transformed data')
+    console.log('Successfully transformed', transformedData.length, 'posts')
 
     return new Response(
-      JSON.stringify({ data: transformedData }),
+      JSON.stringify({
+        data: transformedData
+      }),
       {
         headers: {
           ...corsHeaders,
@@ -134,11 +88,12 @@ serve(async (req) => {
         status: 200,
       },
     )
+
   } catch (error) {
     console.error('Error:', error)
     return new Response(
       JSON.stringify({
-        error: error.message || 'An unexpected error occurred',
+        error: error.message,
         details: 'Check the function logs for more information'
       }),
       {
