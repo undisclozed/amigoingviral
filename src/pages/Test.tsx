@@ -27,11 +27,13 @@ export default function Test() {
   const [username, setUsername] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState<InstagramData | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setData(null);
+    setError(null);
 
     try {
       console.log('Fetching data for username:', username);
@@ -47,15 +49,27 @@ export default function Test() {
 
       console.log('Raw response from edge function:', result);
 
-      if (!result || !Array.isArray(result) || result.length === 0) {
+      if (!result) {
         throw new Error('No data returned from API');
       }
 
-      setData(result[0]);
-      toast.success('Instagram data fetched successfully');
+      // Check if the response contains an error
+      if (Array.isArray(result) && result[0]?.error) {
+        throw new Error(result[0].errorDescription || result[0].error);
+      }
+
+      // If we have valid data, set it
+      if (Array.isArray(result) && result.length > 0) {
+        setData(result[0]);
+        toast.success('Instagram data fetched successfully');
+      } else {
+        throw new Error('Invalid data format received');
+      }
     } catch (error) {
       console.error('Error:', error);
-      toast.error(error.message || 'Failed to fetch Instagram data');
+      const errorMessage = error.message || 'Failed to fetch Instagram data';
+      setError(errorMessage);
+      toast.error(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -84,6 +98,12 @@ export default function Test() {
           </Button>
         </form>
 
+        {error && (
+          <div className="mt-4 p-4 bg-red-50 text-red-600 rounded-md">
+            {error}
+          </div>
+        )}
+
         {data && (
           <div className="mt-6 space-y-4">
             <h2 className="text-xl font-semibold">Profile Data</h2>
@@ -105,19 +125,23 @@ export default function Test() {
               </div>
             </div>
 
-            <h3 className="text-lg font-semibold mt-4">Recent Posts</h3>
-            <div className="grid gap-4">
-              {data.posts?.slice(0, 5).map((post, index) => (
-                <Card key={index} className="p-4">
-                  <div className="space-y-2">
-                    <div><strong>Caption:</strong> {post.caption}</div>
-                    <div><strong>Likes:</strong> {post.likesCount}</div>
-                    <div><strong>Comments:</strong> {post.commentsCount}</div>
-                    <div><strong>Posted:</strong> {new Date(post.timestamp).toLocaleString()}</div>
-                  </div>
-                </Card>
-              ))}
-            </div>
+            {data.posts && data.posts.length > 0 && (
+              <>
+                <h3 className="text-lg font-semibold mt-4">Recent Posts</h3>
+                <div className="grid gap-4">
+                  {data.posts.slice(0, 5).map((post, index) => (
+                    <Card key={index} className="p-4">
+                      <div className="space-y-2">
+                        <div><strong>Caption:</strong> {post.caption}</div>
+                        <div><strong>Likes:</strong> {post.likesCount}</div>
+                        <div><strong>Comments:</strong> {post.commentsCount}</div>
+                        <div><strong>Posted:</strong> {new Date(post.timestamp).toLocaleString()}</div>
+                      </div>
+                    </Card>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
         )}
       </Card>

@@ -35,8 +35,8 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           "usernames": [username],
-          "resultsLimit": 1,
-          "resultsType": "details",
+          "resultsLimit": 100,
+          "resultsType": "posts",
           "extendOutputFunction": "",
           "proxy": {
             "useApifyProxy": true
@@ -52,8 +52,22 @@ serve(async (req) => {
     }
 
     const data = await response.json()
-    console.log('Successfully fetched data for:', username)
+    console.log('Raw Apify response:', data)
 
+    // If we get an error in the response, return it directly
+    if (Array.isArray(data) && data[0]?.error) {
+      return new Response(
+        JSON.stringify(data),
+        { 
+          headers: { 
+            ...corsHeaders,
+            'Content-Type': 'application/json'
+          } 
+        }
+      )
+    }
+
+    // Validate the data
     if (!Array.isArray(data) || data.length === 0) {
       throw new Error('No data returned from Apify API')
     }
