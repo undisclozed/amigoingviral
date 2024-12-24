@@ -39,7 +39,7 @@ serve(async (req) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           "usernames": [cleanUsername],
-          "resultsLimit": 100,
+          "resultsLimit": 20,
           "resultsType": "posts",
           "searchType": "user",
           "proxy": {
@@ -62,7 +62,7 @@ serve(async (req) => {
 
     // Wait for the run to finish (with timeout)
     let attempts = 0
-    const maxAttempts = 30 // 5 minutes maximum wait time
+    const maxAttempts = 15 // 2.5 minutes maximum wait time
     let dataset = null
 
     while (attempts < maxAttempts) {
@@ -110,26 +110,31 @@ serve(async (req) => {
       throw new Error('Timeout waiting for results')
     }
 
+    if (!Array.isArray(dataset)) {
+      console.error('Invalid dataset format:', dataset)
+      throw new Error('Invalid dataset format received from Apify')
+    }
+
     // Transform the data to match expected format
     const transformedData = dataset.map((post: any) => ({
-      id: post.id,
-      username: post.ownerUsername,
-      thumbnail: post.displayUrl || post.previewUrl,
+      id: post.id || `temp-${Math.random().toString(36).substr(2, 9)}`,
+      username: post.ownerUsername || cleanUsername,
+      thumbnail: post.displayUrl || post.previewUrl || '',
       caption: post.caption || '',
-      timestamp: post.timestamp,
+      timestamp: post.timestamp || new Date().toISOString(),
       metrics: {
         views: post.videoViewCount || 0,
         likes: post.likesCount || 0,
         comments: post.commentsCount || 0,
         shares: post.sharesCount || 0,
         saves: post.savesCount || 0,
-        engagement: ((post.likesCount + post.commentsCount) / (post.videoViewCount || 1)) * 100,
-        followsFromPost: 0, // Not available from scraper
-        averageWatchPercentage: 0 // Not available from scraper
+        engagement: ((post.likesCount || 0) + (post.commentsCount || 0)) / (post.videoViewCount || 1) * 100,
+        followsFromPost: 0,
+        averageWatchPercentage: 0
       }
     }));
 
-    console.log('Transformed data:', JSON.stringify(transformedData.slice(0, 2)));
+    console.log('Transformed data sample:', JSON.stringify(transformedData[0], null, 2));
 
     return new Response(
       JSON.stringify({ 
