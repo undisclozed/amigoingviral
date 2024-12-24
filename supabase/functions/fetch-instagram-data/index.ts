@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { ApifyClient } from 'https://esm.sh/apify-client@2.7.1'
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,9 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    // Get username from request
-    const body = await req.json()
-    const username = body.username?.replace('@', '')
+    const { username } = await req.json()
     
     if (!username) {
       throw new Error('Username is required')
@@ -23,42 +20,83 @@ serve(async (req) => {
 
     console.log('Processing request for username:', username)
 
-    // Initialize Apify client
+    // Initialize API key
     const apiKey = Deno.env.get('APIFY_API_KEY')
     if (!apiKey) {
       throw new Error('APIFY_API_KEY is not set')
     }
 
-    const client = new ApifyClient({
-      token: apiKey,
-    })
+    // Start the scraper run
+    const runResponse = await fetch(
+      'https://api.apify.com/v2/acts/apify~instagram-post-scraper/runs?token=' + apiKey,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          username: username,
+          resultsLimit: 30,
+          searchType: "user",
+          searchLimit: 1
+        })
+      }
+    )
 
-    // Run the actor
-    console.log('Starting actor run for:', username)
-    const run = await client.actor("apify/instagram-post-scraper").call({
-      username: username,
-      resultsLimit: 30,
-      searchType: "user",
-      searchLimit: 1
-    })
-
-    if (!run?.id) {
-      throw new Error('Actor run failed to start')
+    if (!runResponse.ok) {
+      const errorText = await runResponse.text()
+      console.error('Run response error:', errorText)
+      throw new Error(`Failed to start scraper: ${errorText}`)
     }
 
-    console.log('Actor run started with ID:', run.id)
+    const runData = await runResponse.json()
+    console.log('Scraper started with run ID:', runData.data.id)
 
-    // Get dataset
-    const { items } = await client.dataset(run.defaultDatasetId).listItems()
-    
-    if (!Array.isArray(items)) {
-      throw new Error('Invalid dataset format received')
+    // Poll for completion
+    let attempts = 0
+    const maxAttempts = 24 // 2 minutes maximum wait
+    let dataset = null
+
+    while (attempts < maxAttempts) {
+      console.log(`Checking run status (attempt ${attempts + 1}/${maxAttempts})...`)
+      
+      const statusCheck = await fetch(
+        `https://api.apify.com/v2/acts/apify~instagram-post-scraper/runs/${runData.data.id}?token=${apiKey}`
+      )
+      
+      if (!statusCheck.ok) {
+        console.error('Status check failed:', await statusCheck.text())
+        attempts++
+        await new Promise(resolve => setTimeout(resolve, 5000))
+        continue
+      }
+
+      const status = await statusCheck.json()
+      console.log('Run status:', status.data.status)
+
+      if (status.data.status === 'SUCCEEDED') {
+        const datasetResponse = await fetch(
+          `https://api.apify.com/v2/acts/apify~instagram-post-scraper/runs/${runData.data.id}/dataset/items?token=${apiKey}`
+        )
+        
+        if (!datasetResponse.ok) {
+          throw new Error('Failed to fetch dataset')
+        }
+
+        dataset = await datasetResponse.json()
+        break
+      } else if (status.data.status === 'FAILED' || status.data.status === 'ABORTED') {
+        throw new Error(`Scraper run ${status.data.status.toLowerCase()}`)
+      }
+
+      attempts++
+      await new Promise(resolve => setTimeout(resolve, 5000))
     }
 
-    console.log('Processing', items.length, 'posts')
+    if (!dataset) {
+      throw new Error('Failed to fetch data after maximum attempts')
+    }
 
     // Transform data
-    const transformedData = items.map(post => ({
+    const transformedData = dataset.map(post => ({
       id: post.id || `temp-${Date.now()}-${Math.random()}`,
       username: post.ownerUsername || username,
       thumbnail: post.displayUrl || '',
