@@ -19,23 +19,31 @@ const Posts = () => {
   const { user } = useAuth();
   
   // Fetch the user's Instagram handle
-  const { data: profile } = useQuery({
+  const { data: profile, isLoading: isProfileLoading } = useQuery({
     queryKey: ['profile', user?.id],
     queryFn: async () => {
+      console.log('Fetching profile for user:', user?.id);
       const { data, error } = await supabase
         .from('profiles')
         .select('instagram_account')
         .eq('id', user?.id)
         .single();
       
-      if (error) throw error;
+      if (error) {
+        console.error('Error fetching profile:', error);
+        throw error;
+      }
+      console.log('Profile data:', data);
       return data;
     },
     enabled: !!user?.id
   });
 
   // Fetch Instagram data
-  const { data: instagramData, isLoading } = useInstagramData(profile?.instagram_account);
+  const { data: instagramData, isLoading: isInstagramLoading, error: instagramError } = useInstagramData(profile?.instagram_account);
+
+  console.log('Instagram data:', instagramData);
+  console.log('Instagram error:', instagramError);
 
   const posts = instagramData?.map((post: any) => ({
     id: post.id,
@@ -82,7 +90,7 @@ const Posts = () => {
 
   const selectedPost = selectedPostId ? posts.find(post => post.id === selectedPostId) : null;
 
-  if (isLoading) {
+  if (isProfileLoading || isInstagramLoading) {
     return (
       <div className="container mx-auto px-4 py-8">
         <div className="animate-pulse space-y-4">
@@ -94,6 +102,24 @@ const Posts = () => {
             ))}
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (instagramError) {
+    console.error('Instagram data error:', instagramError);
+    toast.error("Failed to fetch Instagram data. Please try again later.");
+  }
+
+  if (!profile?.instagram_account) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">No Instagram Account Connected</h2>
+          <p className="text-gray-600">
+            Please update your profile with your Instagram account to view your posts and analytics.
+          </p>
+        </Card>
       </div>
     );
   }
