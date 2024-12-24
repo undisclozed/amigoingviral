@@ -14,29 +14,33 @@ serve(async (req) => {
   try {
     const { username } = await req.json()
     
-    console.log('Starting Instagram data fetch for username:', username)
-    
     if (!username) {
       throw new Error('Username is required')
     }
 
+    console.log('Starting Instagram data fetch for username:', username)
+    
     const apiKey = Deno.env.get('APIFY_API_KEY')
     if (!apiKey) {
       throw new Error('APIFY_API_KEY is not set')
     }
 
-    // Start the scraper run using the basic Instagram scraper
+    // Start the scraper run
     console.log('Starting scraper for username:', username)
     const runResponse = await fetch(
-      'https://api.apify.com/v2/acts/apify~instagram-scraper/runs?token=' + apiKey,
+      'https://api.apify.com/v2/acts/apify~instagram-profile-scraper/runs?token=' + apiKey,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           "usernames": [username.replace('@', '')],
-          "resultsType": "posts",
           "resultsLimit": 30,
-          "addUserInfo": false,
+          "scrapePosts": true,
+          "scrapeStories": false,
+          "scrapeHighlights": false,
+          "scrapeTaggedPosts": false,
+          "scrapeFollowers": false,
+          "scrapeFollowing": false,
           "proxy": {
             "useApifyProxy": true
           }
@@ -62,7 +66,7 @@ serve(async (req) => {
       console.log(`Checking run status (attempt ${attempts + 1}/${maxAttempts})...`)
       
       const statusCheck = await fetch(
-        `https://api.apify.com/v2/acts/apify~instagram-scraper/runs/${runData.data.id}?token=${apiKey}`
+        `https://api.apify.com/v2/acts/apify~instagram-profile-scraper/runs/${runData.data.id}?token=${apiKey}`
       )
       
       if (!statusCheck.ok) {
@@ -78,7 +82,7 @@ serve(async (req) => {
       if (status.data.status === 'SUCCEEDED') {
         console.log('Fetching dataset...')
         const datasetResponse = await fetch(
-          `https://api.apify.com/v2/acts/apify~instagram-scraper/runs/${runData.data.id}/dataset/items?token=${apiKey}`
+          `https://api.apify.com/v2/acts/apify~instagram-profile-scraper/runs/${runData.data.id}/dataset/items?token=${apiKey}`
         )
         
         if (!datasetResponse.ok) {
@@ -110,8 +114,6 @@ serve(async (req) => {
       throw new Error('Failed to fetch data after maximum attempts')
     }
 
-    console.log('Raw dataset:', dataset)
-
     // Transform data to match our schema
     const transformedData = dataset
       .filter(post => post && (post.type === 'Video' || post.type === 'Photo'))
@@ -126,7 +128,7 @@ serve(async (req) => {
           likes: post.likesCount || 0,
           comments: post.commentsCount || 0,
           engagement: ((post.likesCount || 0) + (post.commentsCount || 0)) / 100,
-          saves: 0, // These metrics aren't available in the basic scraper
+          saves: 0,
           shares: 0,
         }
       }))
