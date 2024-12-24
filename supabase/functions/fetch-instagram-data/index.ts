@@ -3,7 +3,6 @@ import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
 }
 
 serve(async (req) => {
@@ -14,148 +13,159 @@ serve(async (req) => {
 
   try {
     const { username } = await req.json()
-    console.log('Starting Instagram data fetch for username:', username)
-
+    
     if (!username) {
       throw new Error('Username is required')
     }
 
-    // Clean up username (remove @ if present)
-    const cleanUsername = username.startsWith('@') ? username.slice(1) : username
+    console.log('Fetching data for Instagram username:', username)
 
-    const apifyUrl = `https://api.apify.com/v2/acts/apify~instagram-scraper/runs?token=${Deno.env.get('APIFY_API_KEY')}`
-    
-    console.log('Starting Apify run...')
-    const startRun = await fetch(apifyUrl, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        "usernames": [cleanUsername],
-        "resultsLimit": 25,
-        "resultsType": "posts",
-        "extendOutputFunction": `($) => {
-          return {
-            posts: $.posts.map(post => ({
-              id: post.id,
-              caption: post.caption,
-              timestamp: post.timestamp,
-              url: post.url || post.displayUrl,
-              commentsCount: post.commentsCount,
-              likesCount: post.likesCount,
-              videoViewCount: post.videoViewCount,
-              type: post.type
-            }))
-          }
-        }`
-      })
-    });
+    // Start profile scraper run
+    const profileRunResponse = await fetch(
+      'https://api.apify.com/v2/acts/apify~instagram-profile-scraper/runs?token=' + Deno.env.get('APIFY_API_KEY'),
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          "startUrls": [{ "url": `https://www.instagram.com/${username}/` }],
+          "resultsLimit": 1
+        })
+      }
+    )
 
-    if (!startRun.ok) {
-      const errorText = await startRun.text();
-      console.error('Apify start run error:', errorText);
-      throw new Error(`Failed to start Apify run: ${startRun.status}`);
+    if (!profileRunResponse.ok) {
+      throw new Error('Failed to start profile scraper')
     }
 
-    const runData = await startRun.json();
-    console.log('Run started with ID:', runData.data.id);
+    const profileRunData = await profileRunResponse.json()
+    console.log('Profile scraper started with run ID:', profileRunData.data.id)
 
-    // Wait for the run to finish (poll every 5 seconds)
-    const maxAttempts = 24; // 2 minutes maximum wait
-    let attempts = 0;
-    let dataset = null;
+    // Poll for profile data completion
+    let profileData = null
+    const maxAttempts = 24 // 2 minutes maximum wait
+    let attempts = 0
 
     while (attempts < maxAttempts) {
-      console.log(`Checking run status (attempt ${attempts + 1}/${maxAttempts})...`);
+      console.log(`Checking profile run status (attempt ${attempts + 1}/${maxAttempts})...`)
       
-      try {
-        const statusCheck = await fetch(
-          `https://api.apify.com/v2/acts/apify~instagram-scraper/runs/${runData.data.id}?token=${Deno.env.get('APIFY_API_KEY')}`
-        );
+      const statusCheck = await fetch(
+        `https://api.apify.com/v2/acts/apify~instagram-profile-scraper/runs/${profileRunData.data.id}?token=${Deno.env.get('APIFY_API_KEY')}`
+      )
+      
+      if (!statusCheck.ok) {
+        console.error('Profile status check failed:', await statusCheck.text())
+        attempts++
+        await new Promise(resolve => setTimeout(resolve, 5000))
+        continue
+      }
+
+      const status = await statusCheck.json()
+      console.log('Profile run status:', status.data.status)
+
+      if (status.data.status === 'SUCCEEDED') {
+        const datasetResponse = await fetch(
+          `https://api.apify.com/v2/acts/apify~instagram-profile-scraper/runs/${profileRunData.data.id}/dataset/items?token=${Deno.env.get('APIFY_API_KEY')}`
+        )
         
-        if (!statusCheck.ok) {
-          console.error('Status check failed:', await statusCheck.text());
-          attempts++;
-          await new Promise(resolve => setTimeout(resolve, 5000));
-          continue;
+        if (!datasetResponse.ok) {
+          throw new Error('Failed to fetch profile dataset')
         }
 
-        const status = await statusCheck.json();
-        console.log('Run status:', status.data.status);
+        const datasetText = await datasetResponse.text()
+        try {
+          profileData = JSON.parse(datasetText)
+          break
+        } catch (error) {
+          console.error('Failed to parse profile dataset:', error)
+          throw new Error('Failed to parse profile dataset')
+        }
+      } else if (status.data.status === 'FAILED' || status.data.status === 'ABORTED') {
+        throw new Error(`Profile scraper run ${status.data.status.toLowerCase()}`)
+      }
 
-        if (status.data.status === 'SUCCEEDED') {
-          // Get the dataset items
-          const datasetUrl = `https://api.apify.com/v2/acts/apify~instagram-scraper/runs/${runData.data.id}/dataset/items?token=${Deno.env.get('APIFY_API_KEY')}`;
-          console.log('Fetching dataset from:', datasetUrl);
-          
-          const datasetResponse = await fetch(datasetUrl);
-          
-          if (!datasetResponse.ok) {
-            console.error('Dataset fetch failed:', await datasetResponse.text());
-            throw new Error('Failed to fetch dataset');
-          }
+      attempts++
+      await new Promise(resolve => setTimeout(resolve, 5000))
+    }
 
-          const datasetText = await datasetResponse.text();
-          console.log('Raw dataset response:', datasetText);
+    if (!profileData || !Array.isArray(profileData) || profileData.length === 0) {
+      throw new Error('No profile data returned')
+    }
 
-          try {
-            dataset = JSON.parse(datasetText);
-            console.log('Dataset parsed successfully');
-            break;
-          } catch (error) {
-            console.error('Failed to parse dataset JSON:', error);
-            throw new Error('Failed to parse dataset response');
-          }
-        } else if (status.data.status === 'FAILED' || status.data.status === 'ABORTED') {
-          throw new Error(`Apify run ${status.data.status.toLowerCase()}`);
+    // Start post scraper for recent posts
+    const postRunResponse = await fetch(
+      'https://api.apify.com/v2/acts/apify~instagram-reel-scraper/runs?token=' + Deno.env.get('APIFY_API_KEY'),
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          "username": username,
+          "maxPosts": 3
+        })
+      }
+    )
+
+    if (!postRunResponse.ok) {
+      throw new Error('Failed to start post scraper')
+    }
+
+    const postRunData = await postRunResponse.json()
+    console.log('Post scraper started with run ID:', postRunData.data.id)
+
+    // Poll for post data completion
+    let postData = null
+    attempts = 0
+
+    while (attempts < maxAttempts) {
+      console.log(`Checking post run status (attempt ${attempts + 1}/${maxAttempts})...`)
+      
+      const statusCheck = await fetch(
+        `https://api.apify.com/v2/acts/apify~instagram-reel-scraper/runs/${postRunData.data.id}?token=${Deno.env.get('APIFY_API_KEY')}`
+      )
+      
+      if (!statusCheck.ok) {
+        console.error('Post status check failed:', await statusCheck.text())
+        attempts++
+        await new Promise(resolve => setTimeout(resolve, 5000))
+        continue
+      }
+
+      const status = await statusCheck.json()
+      console.log('Post run status:', status.data.status)
+
+      if (status.data.status === 'SUCCEEDED') {
+        const datasetResponse = await fetch(
+          `https://api.apify.com/v2/acts/apify~instagram-reel-scraper/runs/${postRunData.data.id}/dataset/items?token=${Deno.env.get('APIFY_API_KEY')}`
+        )
+        
+        if (!datasetResponse.ok) {
+          throw new Error('Failed to fetch post dataset')
         }
 
-        attempts++;
-        await new Promise(resolve => setTimeout(resolve, 5000));
-      } catch (error) {
-        console.error('Error during status check:', error);
-        attempts++;
-        await new Promise(resolve => setTimeout(resolve, 5000));
+        const datasetText = await datasetResponse.text()
+        try {
+          postData = JSON.parse(datasetText)
+          break
+        } catch (error) {
+          console.error('Failed to parse post dataset:', error)
+          throw new Error('Failed to parse post dataset')
+        }
+      } else if (status.data.status === 'FAILED' || status.data.status === 'ABORTED') {
+        throw new Error(`Post scraper run ${status.data.status.toLowerCase()}`)
       }
+
+      attempts++
+      await new Promise(resolve => setTimeout(resolve, 5000))
     }
 
-    if (!dataset) {
-      throw new Error('Timeout waiting for Apify run to complete');
+    if (!postData || !Array.isArray(postData) || postData.length === 0) {
+      throw new Error('No post data returned')
     }
-
-    if (!Array.isArray(dataset) || dataset.length === 0) {
-      throw new Error('No data returned from Apify');
-    }
-
-    console.log('Successfully retrieved dataset');
-
-    // Transform the data to match our expected format
-    const transformedPosts = dataset[0].posts.map(post => ({
-      id: post.id,
-      username: cleanUsername,
-      thumbnail: post.url || post.displayUrl,
-      caption: post.caption || '',
-      timestamp: post.timestamp,
-      metrics: {
-        views: post.videoViewCount || 0,
-        likes: post.likesCount || 0,
-        comments: post.commentsCount || 0,
-        shares: 0,
-        saves: 0,
-        engagement: ((post.likesCount + post.commentsCount) / 1000) || 0,
-        followsFromPost: 0,
-        averageWatchPercentage: 0
-      }
-    }));
-
-    console.log(`Successfully transformed ${transformedPosts.length} posts for ${cleanUsername}`);
 
     return new Response(
       JSON.stringify({
         success: true,
-        data: transformedPosts,
-        message: 'Instagram data fetched successfully'
+        profile: profileData[0],
+        posts: postData.slice(0, 3)
       }),
       { 
         headers: { 
@@ -166,7 +176,7 @@ serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('Error in fetch-instagram-data function:', error)
+    console.error('Error:', error)
     return new Response(
       JSON.stringify({
         success: false,
@@ -175,10 +185,10 @@ serve(async (req) => {
       }),
       { 
         status: 500,
-        headers: { 
+        headers: {
           ...corsHeaders,
           'Content-Type': 'application/json'
-        } 
+        }
       }
     )
   }

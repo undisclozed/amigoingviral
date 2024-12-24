@@ -1,5 +1,5 @@
 import { Link, useLocation } from "react-router-dom";
-import { LayoutDashboard, User, BarChart2, Settings, Menu, BarChart } from "lucide-react";
+import { LayoutDashboard, User, BarChart2, Settings, Menu, BarChart, TestTube2 } from "lucide-react";
 import { useState, useEffect } from "react";
 
 const items = [
@@ -12,6 +12,11 @@ const items = [
     title: "Post Analytics",
     path: "/posts",
     icon: BarChart,
+  },
+  {
+    title: "Test",
+    path: "/test",
+    icon: TestTube2,
   },
   {
     title: "Profile",
