@@ -31,16 +31,18 @@ serve(async (req) => {
       token: apiKey,
     });
 
-    // Prepare Actor input
+    // Prepare Actor input for Instagram Reel Scraper
     const input = {
-      "username": [username],
-      "resultsLimit": 30
+      "username": username,
+      "maxPosts": 30,
+      "scrapeComments": true,
+      "scrapeCommentsCount": 50
     };
 
-    console.log('Starting actor run with input:', JSON.stringify(input))
+    console.log('Starting Instagram Reel Scraper actor with input:', JSON.stringify(input))
     
     // Run the Actor and wait for it to finish
-    const run = await client.actor("xMc5Ga1oCONPmWJIa").call(input);
+    const run = await client.actor("apify/instagram-reel-scraper").call(input);
     console.log('Actor run completed, run ID:', run.id)
 
     // Fetch Actor results from the run's dataset
