@@ -22,10 +22,10 @@ serve(async (req) => {
     // Clean up username (remove @ if present)
     const cleanUsername = username.startsWith('@') ? username.slice(1) : username
 
-    // Start the Apify actor run
-    const apifyUrl = `https://api.apify.com/v2/acts/apify~instagram-reel-scraper/runs?token=${Deno.env.get('APIFY_API_KEY')}`
+    // Use the run-sync endpoint for immediate results
+    const apifyUrl = `https://api.apify.com/v2/acts/apify~instagram-reel-scraper/run-sync?token=${Deno.env.get('APIFY_API_KEY')}`
     
-    console.log('Calling Apify API...')
+    console.log('Calling Apify API with run-sync endpoint...')
     const apifyResponse = await fetch(apifyUrl, {
       method: 'POST',
       headers: {
@@ -43,42 +43,20 @@ serve(async (req) => {
 
     if (!apifyResponse.ok) {
       console.error('Apify API error:', await apifyResponse.text());
-      throw new Error('Failed to fetch Instagram data from Apify');
+      throw new Error(`Apify API returned status ${apifyResponse.status}`);
     }
 
-    const runData = await apifyResponse.json();
-    console.log('Apify run started:', runData);
+    const data = await apifyResponse.json();
+    console.log('Apify data received:', data);
 
-    // Wait for the run to finish and get results
-    const datasetId = runData.data.defaultDatasetId;
-    const maxAttempts = 10;
-    let attempts = 0;
-    let posts = [];
-
-    while (attempts < maxAttempts) {
-      console.log(`Attempt ${attempts + 1} to fetch dataset...`);
-      const datasetUrl = `https://api.apify.com/v2/datasets/${datasetId}/items?token=${Deno.env.get('APIFY_API_KEY')}`;
-      const datasetResponse = await fetch(datasetUrl);
-      
-      if (!datasetResponse.ok) {
-        console.error('Dataset fetch error:', await datasetResponse.text());
-        throw new Error('Failed to fetch dataset');
-      }
-
-      posts = await datasetResponse.json();
-      console.log(`Found ${posts.length} posts`);
-      
-      if (posts.length > 0) {
-        break;
-      }
-
-      attempts++;
-      await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds between attempts
+    if (!Array.isArray(data)) {
+      console.error('Invalid data format received:', data);
+      throw new Error('Invalid data format received from Apify');
     }
 
     // Transform the data to match our expected format
-    const transformedPosts = posts.map(post => ({
-      id: post.id,
+    const transformedPosts = data.map(post => ({
+      id: post.id || `${post.timestamp}-${Math.random()}`,
       username: cleanUsername,
       thumbnail: post.previewUrl || post.displayUrl,
       caption: post.caption || '',
@@ -89,13 +67,13 @@ serve(async (req) => {
         comments: post.commentsCount || 0,
         shares: post.sharesCount || 0,
         saves: post.savesCount || 0,
-        engagement: ((post.likesCount + post.commentsCount) / (post.videoViewCount || 1) * 100) || 0,
+        engagement: ((post.likesCount + post.commentsCount) / (post.videoViewCount || 1)) || 0,
         followsFromPost: post.followsCount || 0,
         averageWatchPercentage: post.averageWatchPercentage || 0
       }
     }));
 
-    console.log(`Successfully transformed ${transformedPosts.length} posts`);
+    console.log(`Successfully transformed ${transformedPosts.length} posts for ${cleanUsername}`);
 
     return new Response(
       JSON.stringify({
