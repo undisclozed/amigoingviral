@@ -31,59 +31,65 @@ serve(async (req) => {
 
     const input = {
       "username": [username],
-      "resultsLimit": 30
+      "resultsLimit": 30,
+      "scrapePostsUntilDate": new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString(), // Last 30 days
     }
 
     console.log('Starting Instagram Scraper actor with input:', JSON.stringify(input))
     
+    // Run the actor and handle potential failures
     const run = await client.actor("xMc5Ga1oCONPmWJIa").call(input)
+    if (!run || run.status !== 'SUCCEEDED') {
+      throw new Error(`Actor failed with status: ${run?.status || 'unknown'}`)
+    }
     console.log('Actor run completed, run ID:', run.id)
 
+    // Fetch and validate dataset
     const dataset = await client.dataset(run.defaultDatasetId).listItems()
-    console.log('Raw dataset retrieved:', dataset)
+    if (!Array.isArray(dataset)) {
+      throw new Error('Invalid dataset format received')
+    }
+    console.log('Dataset retrieved, processing items...')
 
-    // Transform the data into our desired format
-    const transformedData = dataset.map((post: any) => {
-      // Calculate engagement rate
+    // Transform the data with proper validation
+    const transformedData = dataset.slice(0, 30).map((post: any) => {
+      // Calculate engagement metrics with fallbacks
       const totalEngagements = (post.likesCount || 0) + 
                              (post.commentsCount || 0) + 
                              (post.savesCount || 0) + 
                              (post.sharesCount || 0)
-      const engagementRate = post.viewsCount ? 
-        (totalEngagements / post.viewsCount) * 100 : 0
+      
+      const viewsCount = post.viewsCount || 0
+      const engagementRate = viewsCount > 0 ? (totalEngagements / viewsCount) * 100 : 0
 
-      // Calculate ratios
-      const likesReachRatio = post.viewsCount ? 
-        (post.likesCount / post.viewsCount) * 100 : 0
-      const commentsReachRatio = post.viewsCount ? 
-        (post.commentsCount / post.viewsCount) * 100 : 0
-      const savesReachRatio = post.viewsCount ? 
-        (post.savesCount / post.viewsCount) * 100 : 0
-      const followsReachRatio = post.viewsCount ? 
-        (post.followsFromPost / post.viewsCount) * 100 : 0
+      // Calculate ratios with safety checks
+      const likesReachRatio = viewsCount > 0 ? ((post.likesCount || 0) / viewsCount) * 100 : 0
+      const commentsReachRatio = viewsCount > 0 ? ((post.commentsCount || 0) / viewsCount) * 100 : 0
+      const savesReachRatio = viewsCount > 0 ? ((post.savesCount || 0) / viewsCount) * 100 : 0
+      const followsReachRatio = viewsCount > 0 ? ((post.followsFromPost || 0) / viewsCount) * 100 : 0
 
-      // Calculate virality score (simplified version)
+      // Calculate virality score with weighted metrics
       const viralityScore = Math.round(
         (engagementRate * 50) + 
-        (post.viewsCount / 1000) + 
+        (viewsCount / 1000) + 
         ((post.sharesCount || 0) * 2)
       )
 
       return {
-        id: post.id,
-        username: post.ownerUsername,
-        thumbnail: post.thumbnailUrl || post.displayUrl,
-        caption: post.caption,
-        timestamp: post.timestamp,
-        type: post.type,
-        url: post.url,
+        id: post.id || `temp-${Date.now()}-${Math.random()}`,
+        username: post.ownerUsername || username,
+        thumbnail: post.thumbnailUrl || post.displayUrl || '',
+        caption: post.caption || '',
+        timestamp: post.timestamp || new Date().toISOString(),
+        type: post.type || 'unknown',
+        url: post.url || '',
         metrics: {
           virality_score: viralityScore,
-          views: post.viewsCount || 0,
+          views: viewsCount,
           likes: post.likesCount || 0,
           comments: post.commentsCount || 0,
-          impressions: post.viewsCount || 0, // Using views as impressions
-          reach: post.viewsCount || 0, // Using views as reach since actual reach isn't available
+          impressions: viewsCount,
+          reach: viewsCount,
           saves: post.savesCount || 0,
           shares: post.sharesCount || 0,
           engagement_rate: engagementRate,
@@ -92,17 +98,17 @@ serve(async (req) => {
           saves_reach_ratio: savesReachRatio,
           video_duration: post.videoDuration || null,
           avg_watch_percentage: post.videoPlayCount ? 
-            (post.videoPlayCount / post.viewsCount) * 100 : null,
+            (post.videoPlayCount / viewsCount) * 100 : null,
           follows_from_post: post.followsFromPost || 0,
           follows_reach_ratio: followsReachRatio
         },
-        hashtags: post.hashtags || [],
-        mentions: post.mentions || [],
-        latestComments: post.latestComments || []
+        hashtags: Array.isArray(post.hashtags) ? post.hashtags : [],
+        mentions: Array.isArray(post.mentions) ? post.mentions : [],
+        latestComments: Array.isArray(post.latestComments) ? post.latestComments : []
       }
     })
 
-    console.log('Transformed data:', JSON.stringify(transformedData, null, 2))
+    console.log('Data transformation completed successfully')
 
     return new Response(
       JSON.stringify({
@@ -120,7 +126,7 @@ serve(async (req) => {
     console.error('Error:', error)
     return new Response(
       JSON.stringify({
-        error: error.message,
+        error: error.message || 'An unexpected error occurred',
         details: 'Check the function logs for more information'
       }),
       {
