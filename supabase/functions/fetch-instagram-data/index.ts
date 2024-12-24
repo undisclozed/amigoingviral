@@ -28,11 +28,17 @@ serve(async (req) => {
 
     // Validate API key by making a test request
     const testResponse = await fetch(
-      'https://api.apify.com/v2/user/me?token=' + APIFY_API_KEY
+      'https://api.apify.com/v2/user/me',
+      {
+        headers: {
+          'Authorization': `Bearer ${APIFY_API_KEY}`,
+        },
+      }
     )
 
     if (!testResponse.ok) {
-      console.error('Invalid APIFY_API_KEY - API test request failed:', await testResponse.text())
+      const errorText = await testResponse.text()
+      console.error('Invalid APIFY_API_KEY - API test request failed:', errorText)
       throw new Error('Invalid APIFY_API_KEY')
     }
 
@@ -43,15 +49,18 @@ serve(async (req) => {
     // Start the Apify actor run
     console.log('Starting Apify actor run...')
     const startResponse = await fetch(
-      'https://api.apify.com/v2/acts/apify~instagram-profile-scraper/runs?token=' + APIFY_API_KEY,
+      'https://api.apify.com/v2/actor-tasks/~instagram_profile_scraper/run-sync',
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Authorization': `Bearer ${APIFY_API_KEY}`,
+          'Content-Type': 'application/json'
+        },
         body: JSON.stringify({
-          "usernames": [cleanUsername],
+          "username": cleanUsername,
           "resultsLimit": 10,
-          "resultsType": "posts",
-          "searchType": "user",
+          "scrapeStories": false,
+          "scrapeHighlights": false,
           "proxy": {
             "useApifyProxy": true,
             "apifyProxyGroups": ["RESIDENTIAL"]
@@ -66,77 +75,16 @@ serve(async (req) => {
       throw new Error(`Failed to start Apify actor: ${errorText}`)
     }
 
-    const startData = await startResponse.json()
-    const runId = startData.data.id
-    console.log('Apify run started with ID:', runId)
+    const responseData = await startResponse.json()
+    console.log('Apify response:', responseData)
 
-    // Wait for the run to finish (with timeout)
-    let attempts = 0
-    const maxAttempts = 10
-    let dataset = null
-
-    while (attempts < maxAttempts) {
-      console.log(`Checking run status (attempt ${attempts + 1}/${maxAttempts})`)
-      const statusResponse = await fetch(
-        `https://api.apify.com/v2/acts/apify~instagram-profile-scraper/runs/${runId}?token=${APIFY_API_KEY}`
-      )
-      
-      if (!statusResponse.ok) {
-        const errorText = await statusResponse.text()
-        console.error('Failed to check run status:', errorText)
-        throw new Error('Failed to check run status')
-      }
-
-      const statusData = await statusResponse.json()
-      const status = statusData.data.status
-      console.log('Run status:', status)
-
-      if (status === 'SUCCEEDED') {
-        console.log('Run succeeded, fetching results')
-        const datasetResponse = await fetch(
-          `https://api.apify.com/v2/acts/apify~instagram-profile-scraper/runs/${runId}/dataset/items?token=${APIFY_API_KEY}`
-        )
-        
-        if (!datasetResponse.ok) {
-          const errorText = await datasetResponse.text()
-          console.error('Failed to fetch dataset:', errorText)
-          throw new Error(`Failed to fetch dataset: ${errorText}`)
-        }
-
-        const responseText = await datasetResponse.text()
-        console.log('Dataset response text length:', responseText.length)
-        
-        if (!responseText) {
-          throw new Error('Empty dataset response')
-        }
-
-        try {
-          dataset = JSON.parse(responseText)
-          if (!Array.isArray(dataset)) {
-            console.error('Invalid dataset format:', dataset)
-            throw new Error('Invalid dataset format received from Apify')
-          }
-          console.log(`Successfully parsed dataset with ${dataset.length} posts`)
-        } catch (error) {
-          console.error('Failed to parse dataset JSON:', error)
-          throw new Error('Invalid JSON response from dataset')
-        }
-        break
-      } else if (status === 'FAILED' || status === 'ABORTED' || status === 'TIMED-OUT') {
-        console.error(`Run failed with status: ${status}`)
-        throw new Error(`Run failed with status: ${status}`)
-      }
-
-      await new Promise(resolve => setTimeout(resolve, 10000))
-      attempts++
-    }
-
-    if (!dataset) {
-      throw new Error('Timeout waiting for results')
+    if (!responseData || !Array.isArray(responseData.posts)) {
+      console.error('Invalid response format:', responseData)
+      throw new Error('Invalid response format from Apify')
     }
 
     // Transform the data
-    const transformedData = dataset.map((post: any) => ({
+    const transformedData = responseData.posts.map((post: any) => ({
       id: post.id || `temp-${Math.random().toString(36).substr(2, 9)}`,
       username: post.ownerUsername || cleanUsername,
       thumbnail: post.displayUrl || post.previewUrl || '',
