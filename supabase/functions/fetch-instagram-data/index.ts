@@ -25,30 +25,30 @@ serve(async (req) => {
       throw new Error('APIFY_API_KEY is not set');
     }
 
-    console.log('APIFY_API_KEY length:', apiKey.length); // Log key length for verification
+    console.log('APIFY_API_KEY length:', apiKey.length);
 
     const actorId = 'apify/instagram-profile-scraper';
     const apifyUrl = `https://api.apify.com/v2/acts/${actorId}/runs?token=${apiKey}`;
 
+    // Simplified input to only fetch profile data
     const input = {
       usernames: [username],
-      resultsLimit: 30,
-      scrapePosts: true,
-      scrapeStories: true,
-      scrapeHighlights: true,
+      resultsLimit: 1,
+      scrapePosts: false,
+      scrapeStories: false,
+      scrapeHighlights: false,
     };
 
     console.log('Making request to Apify URL:', apifyUrl);
     console.log('With input:', JSON.stringify(input));
 
-    // Start the actor run with explicit error handling
     let runResponse;
     try {
       runResponse = await fetch(apifyUrl, {
         method: 'POST',
         headers: { 
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${apiKey}`  // Added Authorization header
+          'Authorization': `Bearer ${apiKey}`
         },
         body: JSON.stringify({ input })
       });
@@ -116,27 +116,11 @@ serve(async (req) => {
     }
     
     const dataset = await datasetResponse.json();
-    console.log('Dataset fetched, items count:', dataset.length);
+    console.log('Dataset fetched, raw data:', JSON.stringify(dataset, null, 2));
 
-    const transformedData = dataset.map((post: any) => ({
-      id: post.id || `temp-${Date.now()}`,
-      username: post.ownerUsername || username,
-      thumbnail: post.displayUrl || '',
-      caption: post.caption || '',
-      timestamp: post.timestamp || new Date().toISOString(),
-      metrics: {
-        views: post.videoViewCount || 0,
-        likes: post.likesCount || 0,
-        comments: post.commentsCount || 0,
-        saves: post.savesCount || 0,
-        shares: post.sharesCount || 0,
-      }
-    }));
-
-    console.log('Successfully transformed data:', transformedData.length, 'posts');
-
+    // Return the raw dataset without transformation
     return new Response(
-      JSON.stringify({ data: transformedData }),
+      JSON.stringify({ data: dataset }),
       {
         headers: {
           ...corsHeaders,
