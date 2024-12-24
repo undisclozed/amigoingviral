@@ -55,22 +55,11 @@ export default function Test() {
       }
 
       // Check if the response contains an error
-      if (result.error) {
+      if ('error' in result) {
         throw new Error(result.error);
       }
 
-      // Transform the data to match our interface
-      const transformedData: InstagramData = {
-        username: result.userData.username,
-        biography: result.userData.biography,
-        followersCount: result.userData.followersCount,
-        followingCount: result.userData.followingCount,
-        postsCount: result.userData.postsCount,
-        profilePicUrl: result.userData.profilePicUrl,
-        latestPosts: result.latestPosts || []
-      };
-
-      setData(transformedData);
+      setData(result as InstagramData);
       toast.success('Instagram data fetched successfully');
     } catch (error) {
       console.error('Error:', error);
@@ -148,7 +137,7 @@ export default function Test() {
               <>
                 <h3 className="text-lg font-semibold mt-4">Recent Posts</h3>
                 <div className="grid gap-4">
-                  {data.latestPosts.slice(0, 5).map((post, index) => (
+                  {data.latestPosts.map((post, index) => (
                     <Card key={index} className="p-4">
                       <div className="space-y-2">
                         <div><strong>Caption:</strong> {post.caption}</div>

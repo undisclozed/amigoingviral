@@ -35,8 +35,8 @@ serve(async (req) => {
         },
         body: JSON.stringify({
           "usernames": [username],
-          "resultsLimit": 1,
-          "resultsType": "details",
+          "resultsLimit": 5,
+          "resultsType": "posts",
           "extendOutputFunction": "",
           "proxy": {
             "useApifyProxy": true
@@ -62,23 +62,23 @@ serve(async (req) => {
     
     // Transform the data into a more usable format
     const transformedData = {
-      userData: {
-        username: profileData.username,
-        biography: profileData.bio,
-        followersCount: profileData.followersCount,
-        followingCount: profileData.followingCount,
-        postsCount: profileData.postsCount,
-        profilePicUrl: profileData.profilePicUrl,
-      },
-      latestPosts: profileData.latestPosts?.map((post: any) => ({
-        id: post.id,
-        caption: post.caption,
-        likesCount: post.likesCount,
-        commentsCount: post.commentsCount,
-        timestamp: post.timestamp,
-        url: post.url,
-      })) || []
+      username: profileData.username,
+      biography: profileData.bio || '',
+      followersCount: profileData.followersCount || 0,
+      followingCount: profileData.followingCount || 0,
+      postsCount: profileData.postsCount || 0,
+      profilePicUrl: profileData.profilePicUrl || '',
+      latestPosts: (profileData.latestPosts || []).map((post: any) => ({
+        id: post.id || '',
+        caption: post.caption || '',
+        likesCount: post.likesCount || 0,
+        commentsCount: post.commentsCount || 0,
+        timestamp: post.timestamp || '',
+        url: post.url || '',
+      }))
     }
+
+    console.log('Transformed data:', transformedData)
 
     return new Response(
       JSON.stringify(transformedData),
