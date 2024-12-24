@@ -41,7 +41,7 @@ serve(async (req) => {
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({
-          "username": cleanUsername,
+          "usernames": [cleanUsername],
           "resultsLimit": 10,
           "scrapeStories": false,
           "scrapeHighlights": false,
