@@ -35,11 +35,6 @@ const Posts = () => {
       }
       
       console.log('Profile data:', data);
-      if (!data) {
-        console.log('No profile found, showing profile form');
-        return null;
-      }
-      
       return data;
     },
     enabled: !!user?.id,

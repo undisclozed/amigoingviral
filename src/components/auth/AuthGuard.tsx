@@ -80,7 +80,7 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
           .from('profiles')
           .select('*')
           .eq('id', user.id)
-          .single();
+          .maybeSingle();
 
         if (profileError) {
           console.error('Error fetching profile:', profileError);
@@ -96,9 +96,9 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
             .from('account_metrics')
             .select('id')
             .eq('user_id', user.id)
-            .single();
+            .maybeSingle();
 
-          if (metricsError && metricsError.code === 'PGRST116') {
+          if (!metricsData && !metricsError) {
             const { error: insertError } = await supabase
               .from('account_metrics')
               .insert([{
