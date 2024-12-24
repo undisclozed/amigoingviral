@@ -28,8 +28,8 @@ serve(async (req) => {
     }
     console.log('Apify API Key Loaded');
 
-    // Initialize Apify client
-    const client = new ApifyClient({ token: apiKey });
+    // Initialize Apify client (Fixed Initialization)
+    const client = new ApifyClient(apiKey);
 
     // Input configuration for the scraper
     const input = {
