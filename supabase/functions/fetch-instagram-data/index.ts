@@ -31,7 +31,12 @@ serve(async (req) => {
     console.log('Cleaned username:', cleanUsername)
 
     // Start the Apify actor run
-    console.log('Starting Apify actor run...')
+    console.log('Starting Apify actor run with configuration:', {
+      usernames: [cleanUsername],
+      resultsLimit: 10,
+      useApifyProxy: true
+    })
+
     const startResponse = await fetch(
       'https://api.apify.com/v2/acts/zuzka~instagram-profile-scraper/runs',
       {
@@ -60,10 +65,12 @@ serve(async (req) => {
     }
 
     const runData = await startResponse.json()
-    console.log('Apify run started:', JSON.stringify(runData, null, 2))
+    console.log('Apify run started successfully. Run ID:', runData.data.id)
 
     // Wait for the dataset to be ready
     const datasetId = runData.data.defaultDatasetId
+    console.log('Waiting for dataset:', datasetId)
+    
     const maxAttempts = 30
     let attempts = 0
     let dataset = null
@@ -88,30 +95,33 @@ serve(async (req) => {
       }
 
       dataset = await datasetResponse.json()
-      console.log('Raw dataset response:', JSON.stringify(dataset, null, 2))
+      console.log('Dataset response received. Number of items:', dataset.length)
       
       if (dataset && dataset.length > 0) {
+        console.log('Valid dataset received')
         break
       }
 
+      console.log('Empty dataset, waiting before next attempt...')
       await new Promise(resolve => setTimeout(resolve, 2000))
       attempts++
     }
 
     if (!dataset || dataset.length === 0) {
-      console.error('No data returned from Apify')
+      console.error('No data returned from Apify after all attempts')
       throw new Error('Failed to fetch Instagram data: Dataset empty or timeout')
     }
 
     // Transform the data
+    console.log('Starting data transformation for', dataset.length, 'posts')
     const transformedData = dataset.map((post: any) => {
-      console.log('Processing post:', JSON.stringify(post, null, 2))
+      console.log('Processing post ID:', post.id)
       
       // Extract media type and URL
       const mediaType = post.type || 'image'
       const mediaUrl = post.displayUrl || post.videoUrl || ''
       
-      return {
+      const transformedPost = {
         id: post.id || `temp-${Math.random().toString(36).substr(2, 9)}`,
         username: post.ownerUsername || cleanUsername,
         thumbnail: mediaUrl,
@@ -129,9 +139,12 @@ serve(async (req) => {
           averageWatchPercentage: post.averageWatchPercentage || 0
         }
       }
+      
+      console.log('Transformed post:', JSON.stringify(transformedPost, null, 2))
+      return transformedPost
     });
 
-    console.log('Transformed data:', JSON.stringify(transformedData, null, 2))
+    console.log('Data transformation complete. Returning', transformedData.length, 'posts')
 
     return new Response(
       JSON.stringify({ 
