@@ -51,12 +51,18 @@ serve(async (req) => {
       throw new Error(`Apify API returned status ${apifyResponse.status}: ${errorText}`);
     }
 
+    // Log the raw response before attempting to parse
     const responseText = await apifyResponse.text();
     console.log('Raw Apify response:', responseText);
 
     let data;
     try {
-      data = JSON.parse(responseText);
+      // Only try to parse if we have a non-empty response
+      if (responseText.trim()) {
+        data = JSON.parse(responseText);
+      } else {
+        throw new Error('Empty response received from Apify');
+      }
     } catch (error) {
       console.error('JSON parse error:', error);
       console.error('Response that failed to parse:', responseText);
