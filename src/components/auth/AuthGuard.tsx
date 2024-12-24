@@ -11,7 +11,7 @@ interface AuthGuardProps {
 }
 
 export const AuthGuard = ({ children }: AuthGuardProps) => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const [profile, setProfile] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [showLogin, setShowLogin] = useState(false);
@@ -19,52 +19,52 @@ export const AuthGuard = ({ children }: AuthGuardProps) => {
   const location = useLocation();
   const isDashboardRoute = location.pathname === '/dashboard';
 
-  // Handle access token in URL
+  // Handle session initialization and refresh
   useEffect(() => {
-    const handleHashParams = async () => {
-      const hashParams = new URLSearchParams(window.location.hash.substring(1));
-      const accessToken = hashParams.get('access_token');
-      
-      if (accessToken) {
-        console.log('Access token found in URL');
-        window.history.replaceState({}, document.title, window.location.pathname);
-        
-        try {
-          const { data: { session }, error } = await supabase.auth.getSession();
-          
-          if (session && !error) {
-            console.log('Session established, navigating to dashboard');
-            navigate('/dashboard', { replace: true });
-          } else {
-            console.error('Session error:', error);
-            navigate('/', { replace: true });
-          }
-        } catch (error) {
-          console.error('Auth error:', error);
+    const initSession = async () => {
+      try {
+        const { data: { session }, error } = await supabase.auth.getSession();
+        if (error) {
+          console.error('Session error:', error);
+          await signOut();
           navigate('/', { replace: true });
+          return;
         }
-      }
-    };
 
-    handleHashParams();
-  }, [navigate]);
+        if (!session) {
+          setLoading(false);
+          return;
+        }
 
-  // Listen for auth state changes
-  useEffect(() => {
-    console.log('Setting up auth state listener');
-    const { data: { subscription } } = supabase.auth.onAuthStateChange((event, session) => {
-      console.log('Auth state changed:', event, session?.user?.id);
-      if (event === 'SIGNED_IN') {
-        navigate('/dashboard', { replace: true });
-      } else if (event === 'SIGNED_OUT') {
+        // Set up session refresh
+        const {
+          data: { subscription },
+        } = supabase.auth.onAuthStateChange(async (event, session) => {
+          console.log('Auth state changed:', event);
+          if (event === 'SIGNED_OUT' || event === 'USER_DELETED') {
+            navigate('/', { replace: true });
+          } else if (event === 'SIGNED_IN' && session) {
+            navigate('/dashboard', { replace: true });
+          } else if (event === 'TOKEN_REFRESHED') {
+            console.log('Token refreshed successfully');
+          }
+        });
+
+        return () => {
+          subscription.unsubscribe();
+        };
+      } catch (error) {
+        console.error('Auth initialization error:', error);
+        toast.error('Authentication error. Please sign in again.');
+        await signOut();
         navigate('/', { replace: true });
+      } finally {
+        setLoading(false);
       }
-    });
-
-    return () => {
-      subscription.unsubscribe();
     };
-  }, [navigate]);
+
+    initSession();
+  }, [navigate, signOut]);
 
   // Check for user profile
   useEffect(() => {

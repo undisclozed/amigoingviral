@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState } from 'react';
 import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
+import { toast } from 'sonner';
 
 interface AuthContextType {
   session: Session | null;
@@ -17,21 +18,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
 
   useEffect(() => {
-    // Get initial session
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-    });
+    // Get initial session and set up refresh
+    const initAuth = async () => {
+      try {
+        const { data: { session: initialSession }, error: sessionError } = await supabase.auth.getSession();
+        if (sessionError) throw sessionError;
+        
+        setSession(initialSession);
+        setUser(initialSession?.user ?? null);
 
-    // Listen for auth changes
-    const {
-      data: { subscription },
-    } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-    });
+        // Listen for auth changes
+        const {
+          data: { subscription },
+        } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+          console.log('Auth state change:', event);
+          setSession(currentSession);
+          setUser(currentSession?.user ?? null);
 
-    return () => subscription.unsubscribe();
+          if (event === 'TOKEN_REFRESHED') {
+            console.log('Token refreshed successfully');
+          } else if (event === 'SIGNED_OUT') {
+            console.log('User signed out');
+          }
+        });
+
+        return () => {
+          subscription.unsubscribe();
+        };
+      } catch (error) {
+        console.error('Auth initialization error:', error);
+        toast.error('Authentication error occurred');
+      }
+    };
+
+    initAuth();
   }, []);
 
   const signIn = async (email: string, password: string) => {
