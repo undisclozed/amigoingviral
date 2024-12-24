@@ -10,19 +10,22 @@ export default function Test() {
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
+  const [rawResponse, setRawResponse] = useState<string | null>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     setData(null);
     setError(null);
+    setRawResponse(null);
 
     try {
       console.log('Fetching data for username:', username);
       
       const { data: response, error } = await supabase.functions.invoke('fetch-instagram-data', {
         body: { 
-          username: username.replace('@', '') 
+          username: username.replace('@', ''),
+          debug: true // Add debug flag to get raw response
         }
       });
 
@@ -32,12 +35,13 @@ export default function Test() {
       }
 
       console.log('Raw response from edge function:', response);
-
+      
       if (!response) {
         throw new Error('No data returned from API');
       }
 
-      setData(response);
+      setData(response.data);
+      setRawResponse(JSON.stringify(response.rawApifyResponse || {}, null, 2));
       toast.success('Instagram data fetched successfully');
     } catch (error) {
       console.error('Error:', error);
@@ -53,7 +57,7 @@ export default function Test() {
     <div className="container mx-auto p-4 max-w-4xl">
       <h1 className="text-2xl font-bold mb-6">Instagram Data Test</h1>
       
-      <Card className="p-6">
+      <Card className="p-6 mb-6">
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
             <label htmlFor="username" className="block text-sm font-medium mb-2">
@@ -71,22 +75,32 @@ export default function Test() {
             {isLoading ? "Loading..." : "Fetch Data"}
           </Button>
         </form>
-
-        {error && (
-          <div className="mt-4 p-4 bg-red-50 text-red-600 rounded-md">
-            {error}
-          </div>
-        )}
-
-        {data && (
-          <div className="mt-6 space-y-4">
-            <h2 className="text-xl font-semibold">Raw Response Data</h2>
-            <pre className="bg-gray-100 p-4 rounded-md overflow-auto text-sm">
-              {JSON.stringify(data, null, 2)}
-            </pre>
-          </div>
-        )}
       </Card>
+
+      {error && (
+        <Card className="p-6 mb-6 border-red-200 bg-red-50">
+          <h2 className="text-xl font-semibold text-red-700 mb-2">Error</h2>
+          <pre className="text-red-600 whitespace-pre-wrap">{error}</pre>
+        </Card>
+      )}
+
+      {rawResponse && (
+        <Card className="p-6 mb-6">
+          <h2 className="text-xl font-semibold mb-2">Raw Apify Response</h2>
+          <pre className="bg-gray-100 p-4 rounded-md overflow-auto text-sm">
+            {rawResponse}
+          </pre>
+        </Card>
+      )}
+
+      {data && (
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-2">Transformed Data</h2>
+          <pre className="bg-gray-100 p-4 rounded-md overflow-auto text-sm">
+            {JSON.stringify(data, null, 2)}
+          </pre>
+        </Card>
+      )}
     </div>
   );
 }

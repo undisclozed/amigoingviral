@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { username } = await req.json()
+    const { username, debug } = await req.json()
     
     if (!username) {
       throw new Error('Username is required')
@@ -27,24 +27,27 @@ serve(async (req) => {
 
     // Start the scraper run
     console.log('Starting scraper for username:', username)
+    const input = {
+      "usernames": [username],
+      "resultsLimit": 30,
+      "scrapePosts": true,
+      "scrapeStories": false,
+      "scrapeHighlights": false,
+      "scrapeTaggedPosts": false,
+      "scrapeFollowers": false,
+      "scrapeFollowing": false,
+      "proxy": {
+        "useApifyProxy": true
+      }
+    }
+    console.log('Apify input:', JSON.stringify(input, null, 2))
+
     const runResponse = await fetch(
       'https://api.apify.com/v2/acts/apify~instagram-profile-scraper/runs?token=' + apiKey,
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          "usernames": [username.replace('@', '')],
-          "resultsLimit": 30,
-          "scrapePosts": true,
-          "scrapeStories": false,
-          "scrapeHighlights": false,
-          "scrapeTaggedPosts": false,
-          "scrapeFollowers": false,
-          "scrapeFollowing": false,
-          "proxy": {
-            "useApifyProxy": true
-          }
-        })
+        body: JSON.stringify(input)
       }
     )
 
@@ -61,6 +64,7 @@ serve(async (req) => {
     let attempts = 0
     const maxAttempts = 24 // 2 minutes maximum wait
     let dataset = null
+    let rawApifyResponse = null
 
     while (attempts < maxAttempts) {
       console.log(`Checking run status (attempt ${attempts + 1}/${maxAttempts})...`)
@@ -95,8 +99,25 @@ serve(async (req) => {
         console.log('Raw dataset response:', datasetText)
         
         try {
-          dataset = JSON.parse(datasetText)
-          console.log('Successfully parsed dataset:', dataset)
+          rawApifyResponse = JSON.parse(datasetText)
+          dataset = rawApifyResponse
+            .filter((post: any) => post && (post.type === 'Video' || post.type === 'Photo'))
+            .map((post: any) => ({
+              id: post.id || `temp-${Date.now()}-${Math.random()}`,
+              username: post.ownerUsername || username,
+              thumbnail: post.displayUrl || '',
+              caption: post.caption || '',
+              timestamp: post.timestamp || new Date().toISOString(),
+              metrics: {
+                views: post.videoViewCount || 0,
+                likes: post.likesCount || 0,
+                comments: post.commentsCount || 0,
+                engagement: ((post.likesCount || 0) + (post.commentsCount || 0)) / 100,
+                saves: 0,
+                shares: 0,
+              }
+            }))
+          console.log('Successfully transformed', dataset.length, 'posts')
           break
         } catch (error) {
           console.error('Failed to parse dataset:', error)
@@ -114,30 +135,10 @@ serve(async (req) => {
       throw new Error('Failed to fetch data after maximum attempts')
     }
 
-    // Transform data to match our schema
-    const transformedData = dataset
-      .filter(post => post && (post.type === 'Video' || post.type === 'Photo'))
-      .map(post => ({
-        id: post.id || `temp-${Date.now()}-${Math.random()}`,
-        username: post.ownerUsername || username,
-        thumbnail: post.displayUrl || '',
-        caption: post.caption || '',
-        timestamp: post.timestamp || new Date().toISOString(),
-        metrics: {
-          views: post.videoViewCount || 0,
-          likes: post.likesCount || 0,
-          comments: post.commentsCount || 0,
-          engagement: ((post.likesCount || 0) + (post.commentsCount || 0)) / 100,
-          saves: 0,
-          shares: 0,
-        }
-      }))
-
-    console.log('Successfully transformed', transformedData.length, 'posts')
-
     return new Response(
       JSON.stringify({
-        data: transformedData
+        data: dataset,
+        ...(debug ? { rawApifyResponse } : {})
       }),
       {
         headers: {
