@@ -31,7 +31,7 @@ serve(async (req) => {
     console.log('Cleaned username:', cleanUsername)
 
     // Start the Apify actor run
-    console.log('Starting Apify actor run with cleaned username:', cleanUsername)
+    console.log('Starting Apify actor run...')
     const startResponse = await fetch(
       'https://api.apify.com/v2/acts/apify~instagram-profile-scraper/runs?token=' + APIFY_API_KEY,
       {
@@ -39,7 +39,7 @@ serve(async (req) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           "usernames": [cleanUsername],
-          "resultsLimit": 20,
+          "resultsLimit": 10,
           "resultsType": "posts",
           "searchType": "user",
           "proxy": {
@@ -62,7 +62,7 @@ serve(async (req) => {
 
     // Wait for the run to finish (with timeout)
     let attempts = 0
-    const maxAttempts = 15 // 2.5 minutes maximum wait time
+    const maxAttempts = 10 // Reduced to 10 attempts (100 seconds total)
     let dataset = null
 
     while (attempts < maxAttempts) {
@@ -94,15 +94,23 @@ serve(async (req) => {
           throw new Error('Failed to fetch dataset')
         }
 
-        dataset = await datasetResponse.json()
-        console.log(`Successfully fetched ${dataset.length} posts`)
+        const responseText = await datasetResponse.text()
+        console.log('Dataset response text:', responseText)
+
+        try {
+          dataset = JSON.parse(responseText)
+          console.log('Successfully parsed dataset:', dataset)
+        } catch (error) {
+          console.error('Failed to parse dataset JSON:', error)
+          throw new Error('Invalid JSON response from dataset')
+        }
         break
       } else if (status === 'FAILED' || status === 'ABORTED' || status === 'TIMED-OUT') {
         console.error(`Run failed with status: ${status}`)
         throw new Error(`Run failed with status: ${status}`)
       }
 
-      await new Promise(resolve => setTimeout(resolve, 10000)) // Wait 10 seconds before next check
+      await new Promise(resolve => setTimeout(resolve, 10000)) // Wait 10 seconds between checks
       attempts++
     }
 
