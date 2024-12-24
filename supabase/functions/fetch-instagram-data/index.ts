@@ -7,7 +7,6 @@ const corsHeaders = {
 }
 
 serve(async (req) => {
-  // Handle CORS preflight requests
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders })
   }
@@ -26,60 +25,38 @@ serve(async (req) => {
       throw new Error('APIFY_API_KEY is not set')
     }
 
-    // Initialize the ApifyClient with API token
+    console.log('Starting Apify client with username:', username)
+
     const client = new ApifyClient({
       token: apiKey,
     });
 
-    console.log('Initialized Apify client')
-
-    // Prepare Actor input exactly as in the example
+    // Exactly match the Apify example input
     const input = {
       "username": [username],
       "resultsLimit": 30
     };
 
-    console.log('Running actor with input:', input)
-
     try {
-      // Run the Actor and wait for it to finish - using their exact actor ID
+      console.log('Starting actor run...')
       const run = await client.actor("xMc5Ga1oCONPmWJIa").call(input);
-      console.log('Actor run completed, dataset ID:', run.defaultDatasetId)
+      console.log('Actor run completed, run ID:', run.id)
 
-      // Fetch results from the dataset
-      console.log('Fetching results from dataset')
+      console.log('Fetching dataset items...')
       const { items } = await client.dataset(run.defaultDatasetId).listItems();
-      console.log('Raw dataset items:', items)
+      console.log('Raw items from dataset:', JSON.stringify(items, null, 2))
 
       if (!items || items.length === 0) {
         throw new Error('No data returned from Instagram scraper')
       }
 
-      const profileData = items[0]
-      console.log('Profile data:', profileData)
+      // Get the first item as it contains the profile data
+      const profile = items[0];
+      console.log('Profile data:', JSON.stringify(profile, null, 2))
 
-      // Transform the data into our expected format
-      const transformedData = {
-        username: profileData.username || username,
-        biography: profileData.biography || '',
-        followersCount: profileData.followersCount || 0,
-        followingCount: profileData.followingCount || 0,
-        postsCount: profileData.postsCount || 0,
-        profilePicUrl: profileData.profilePicUrl || '',
-        latestPosts: (profileData.latestPosts || []).map((post: any) => ({
-          id: post.id || '',
-          caption: post.caption || '',
-          likesCount: post.likesCount || 0,
-          commentsCount: post.commentsCount || 0,
-          timestamp: post.timestamp || '',
-          url: post.url || '',
-        }))
-      }
-
-      console.log('Transformed data:', transformedData)
-
+      // Return the raw profile data for debugging
       return new Response(
-        JSON.stringify(transformedData),
+        JSON.stringify(profile),
         { 
           headers: { 
             ...corsHeaders,
@@ -90,7 +67,7 @@ serve(async (req) => {
 
     } catch (error) {
       console.error('Error in Apify execution:', error)
-      throw new Error(`Failed to fetch Instagram data: ${error.message}`)
+      throw error
     }
 
   } catch (error) {
