@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
 
 interface InstagramData {
   username: string;
@@ -33,29 +34,16 @@ export default function Test() {
     setData(null);
 
     try {
-      const response = await fetch(
-        'https://api.apify.com/v2/acts/apify~instagram-profile-scraper/run-sync-get-dataset-items?token=' + 
-        import.meta.env.VITE_APIFY_API_KEY,
-        {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            usernames: [username.replace('@', '')],
-            resultsLimit: 5
-          })
-        }
-      );
+      const { data: result, error } = await supabase.functions.invoke('fetch-instagram-data', {
+        body: { username: username.replace('@', '') }
+      });
 
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('API Error Response:', errorText);
-        throw new Error('Failed to fetch Instagram data');
+      if (error) {
+        console.error('Edge Function Error:', error);
+        throw error;
       }
 
-      const result = await response.json();
-      console.log('Raw API Response:', result);
-
-      if (!Array.isArray(result) || result.length === 0) {
+      if (!result || !Array.isArray(result) || result.length === 0) {
         throw new Error('No data returned from API');
       }
 
