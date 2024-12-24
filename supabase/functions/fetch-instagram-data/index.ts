@@ -31,21 +31,16 @@ serve(async (req) => {
       token: apiKey,
     });
 
-    console.log('Using Apify Instagram Scraper actor')
+    // Prepare Actor input
+    const input = {
+      "username": [username],
+      "resultsLimit": 30
+    };
+
+    console.log('Starting actor run with input:', JSON.stringify(input))
     
     // Run the Actor and wait for it to finish
-    // Using the more comprehensive Instagram scraper
-    const run = await client.actor("apify/instagram-scraper").call({
-      "directUrls": [`https://www.instagram.com/${username}/`],
-      "resultsType": "details",
-      "searchType": "user",
-      "maxPosts": 30,
-      "expandOwners": false,
-      "proxy": {
-        "useApifyProxy": true
-      }
-    });
-
+    const run = await client.actor("xMc5Ga1oCONPmWJIa").call(input);
     console.log('Actor run completed, run ID:', run.id)
 
     // Fetch Actor results from the run's dataset
