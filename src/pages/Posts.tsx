@@ -7,41 +7,52 @@ import { CompetitorSearch } from "@/components/competitor-analytics/CompetitorSe
 import { PostAnalytics } from "@/components/posts/PostAnalytics";
 import { toast } from "sonner";
 import { Post } from "@/components/dashboard/types";
-
-const postImages = [
-  "https://images.unsplash.com/photo-1509440159596-0249088772ff",
-  "https://images.unsplash.com/photo-1549931319-a545dcf3bc73",
-  "https://images.unsplash.com/photo-1486427944299-d1955d23e34d",
-  "https://images.unsplash.com/photo-1517686469429-8bdb88b9f907",
-  "https://images.unsplash.com/photo-1495147466023-ac5c588e2e94",
-  "https://images.unsplash.com/photo-1464305795204-6f5bbfc7fb81",
-];
-
-const generateMockPosts = (): Post[] => {
-  return Array.from({ length: 34 }, (_, index) => ({
-    id: String(index + 1),
-    username: "@creator",
-    thumbnail: postImages[index % postImages.length],
-    caption: `Post ${index + 1} - This is a sample caption for testing purposes. #testing #sample`,
-    timestamp: new Date(Date.now() - index * 24 * 60 * 60 * 1000).toISOString(),
-    metrics: {
-      views: Math.floor(Math.random() * 50000) + 10000,
-      likes: Math.floor(Math.random() * 5000) + 500,
-      comments: Math.floor(Math.random() * 300) + 50,
-      shares: Math.floor(Math.random() * 200) + 20,
-      saves: Math.floor(Math.random() * 400) + 40,
-      engagement: Number((Math.random() * 5 + 2).toFixed(2)),
-      followsFromPost: Math.floor(Math.random() * 100) + 10,
-      averageWatchPercentage: Number((Math.random() * 40 + 60).toFixed(2)),
-    }
-  }));
-};
+import { useInstagramData } from "@/hooks/useInstagramData";
+import { useAuth } from "@/lib/auth/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const Posts = () => {
-  const [posts, setPosts] = useState<Post[]>(generateMockPosts());
   const [searchQuery, setSearchQuery] = useState("");
   const [competitorHandle, setCompetitorHandle] = useState("");
   const [selectedPostId, setSelectedPostId] = useState<string | null>(null);
+  const { user } = useAuth();
+  
+  // Fetch the user's Instagram handle
+  const { data: profile } = useQuery({
+    queryKey: ['profile', user?.id],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('profiles')
+        .select('instagram_account')
+        .eq('id', user?.id)
+        .single();
+      
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!user?.id
+  });
+
+  // Fetch Instagram data
+  const { data: instagramData, isLoading } = useInstagramData(profile?.instagram_account);
+
+  const posts = instagramData?.map((post: any) => ({
+    id: post.id,
+    username: post.username,
+    thumbnail: post.thumbnail,
+    caption: post.caption,
+    timestamp: post.timestamp,
+    metrics: {
+      views: post.metrics.views || 0,
+      likes: post.metrics.likes || 0,
+      comments: post.metrics.comments || 0,
+      shares: post.metrics.shares || 0,
+      saves: post.metrics.saves || 0,
+      engagement: post.metrics.engagement || 0,
+      followsFromPost: post.metrics.followsFromPost || 0,
+      averageWatchPercentage: post.metrics.averageWatchPercentage || 0,
+    }
+  })) || [];
 
   const mockAccountMetrics = {
     views: 150000,
@@ -69,6 +80,22 @@ const Posts = () => {
   };
 
   const selectedPost = selectedPostId ? posts.find(post => post.id === selectedPostId) : null;
+
+  if (isLoading) {
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <div className="animate-pulse space-y-4">
+          <div className="h-8 bg-gray-200 rounded w-1/4"></div>
+          <div className="h-32 bg-gray-200 rounded"></div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="h-64 bg-gray-200 rounded"></div>
+            ))}
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-6">
