@@ -49,10 +49,9 @@ const Posts = () => {
             <Card className="p-6">
               <PostsList 
                 posts={posts} 
-                isLoading={isLoading}
-                error={error}
                 onPostSelect={setSelectedPostId}
                 onRefresh={handleRefresh}
+                error={error}
               />
             </Card>
           </>

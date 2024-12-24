@@ -6,9 +6,11 @@ import { Eye, ThumbsUp, MessageCircle } from "lucide-react";
 interface PostsListProps {
   posts: Post[];
   onPostSelect?: (postId: string | null) => void;
+  onRefresh?: () => void;
+  error?: Error | null;
 }
 
-export const PostsList = ({ posts, onPostSelect }: PostsListProps) => {
+export const PostsList = ({ posts, onPostSelect, onRefresh, error }: PostsListProps) => {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
       {posts.map((post) => (

@@ -21,7 +21,6 @@ export const PostsDataWrapper = ({ children }: PostsDataWrapperProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
 
-  // Fetch the user's Instagram handle
   const { data: profile, isLoading: isProfileLoading } = useQuery({
     queryKey: ['profile', user?.id],
     queryFn: async () => {
@@ -42,9 +41,11 @@ export const PostsDataWrapper = ({ children }: PostsDataWrapperProps) => {
     },
     enabled: !!user?.id,
     retry: 1,
-    onError: (error: Error) => {
-      toast.error('Failed to fetch profile data');
-      console.error('Profile fetch error:', error);
+    onSettled: (data, error) => {
+      if (error) {
+        toast.error('Failed to fetch profile data');
+        console.error('Profile fetch error:', error);
+      }
     }
   });
 
