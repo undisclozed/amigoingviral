@@ -58,7 +58,7 @@ const Posts = () => {
     id: post.id,
     username: post.username,
     thumbnail: post.thumbnail || '/placeholder.svg',
-    caption: post.caption,
+    caption: post.caption || 'No caption',
     timestamp: post.timestamp,
     metrics: {
       views: post.metrics.views || 0,
