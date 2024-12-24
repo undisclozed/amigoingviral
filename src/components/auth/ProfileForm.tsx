@@ -19,7 +19,8 @@ export function ProfileForm() {
     
     setIsLoading(true);
     try {
-      const { error } = await supabase
+      // Update profile
+      const { error: profileError } = await supabase
         .from('profiles')
         .update({
           name,
@@ -28,16 +29,26 @@ export function ProfileForm() {
         })
         .eq('id', user.id);
 
-      if (error) throw error;
+      if (profileError) throw profileError;
+
+      // Trigger initial Instagram data fetch
+      const { error: fetchError } = await supabase.functions.invoke('fetch-instagram-data', {
+        body: { username: instagramAccount }
+      });
+
+      if (fetchError) {
+        console.error('Error fetching initial Instagram data:', fetchError);
+        // Don't throw here - we still want to complete profile setup
+      }
 
       toast({
         title: "Profile updated",
-        description: "Your profile has been successfully updated.",
+        description: "Your profile has been successfully updated and we've started fetching your Instagram data.",
       });
       
       // Refresh the page to show the main app
       window.location.reload();
-    } catch (error) {
+    } catch (error: any) {
       toast({
         title: "Error",
         description: "Failed to update profile. Please try again.",

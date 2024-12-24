@@ -10,6 +10,7 @@ import { Post } from "@/components/dashboard/types";
 import { useInstagramData } from "@/hooks/useInstagramData";
 import { useAuth } from "@/lib/auth/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
+import { useQuery } from "@tanstack/react-query";
 
 const Posts = () => {
   const [searchQuery, setSearchQuery] = useState("");
