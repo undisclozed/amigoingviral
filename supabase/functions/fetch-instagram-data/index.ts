@@ -1,7 +1,9 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts"
-import { corsHeaders } from './cors.ts'
-import { fetchProfileData } from './profileScraper.ts'
-import { fetchRecentPosts } from './postScraper.ts'
+
+const corsHeaders = {
+  'Access-Control-Allow-Origin': '*',
+  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
+}
 
 serve(async (req) => {
   // Handle CORS preflight requests
@@ -16,25 +18,48 @@ serve(async (req) => {
       throw new Error('Username is required')
     }
 
-    console.log('Fetching data for Instagram username:', username)
+    console.log('Processing request for username:', username)
 
     const apiKey = Deno.env.get('APIFY_API_KEY')
     if (!apiKey) {
       throw new Error('APIFY_API_KEY is not set')
     }
 
-    // Fetch profile data
-    const profileData = await fetchProfileData(username, apiKey)
-    
-    // Fetch recent posts
-    const postsData = await fetchRecentPosts(username, apiKey)
+    // Make a direct call to Apify's synchronous API endpoint
+    const response = await fetch(
+      `https://api.apify.com/v2/acts/apify~instagram-profile-scraper/run-sync-get-dataset-items?token=${apiKey}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          "usernames": [username],
+          "resultsLimit": 1,
+          "resultsType": "details",
+          "extendOutputFunction": "",
+          "proxy": {
+            "useApifyProxy": true
+          }
+        })
+      }
+    )
+
+    if (!response.ok) {
+      const errorText = await response.text()
+      console.error('Apify API error:', errorText)
+      throw new Error(`Apify API error: ${errorText}`)
+    }
+
+    const data = await response.json()
+    console.log('Successfully fetched data for:', username)
+
+    if (!Array.isArray(data) || data.length === 0) {
+      throw new Error('No data returned from Apify API')
+    }
 
     return new Response(
-      JSON.stringify({
-        success: true,
-        profile: profileData,
-        posts: postsData
-      }),
+      JSON.stringify(data),
       { 
         headers: { 
           ...corsHeaders,
@@ -44,7 +69,7 @@ serve(async (req) => {
     )
 
   } catch (error) {
-    console.error('Error:', error)
+    console.error('Error in fetch-instagram-data function:', error)
     return new Response(
       JSON.stringify({
         success: false,
