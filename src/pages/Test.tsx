@@ -34,6 +34,8 @@ export default function Test() {
     setData(null);
 
     try {
+      console.log('Fetching data for username:', username);
+      
       const { data: result, error } = await supabase.functions.invoke('fetch-instagram-data', {
         body: { username: username.replace('@', '') }
       });
@@ -42,6 +44,8 @@ export default function Test() {
         console.error('Edge Function Error:', error);
         throw error;
       }
+
+      console.log('Raw response from edge function:', result);
 
       if (!result || !Array.isArray(result) || result.length === 0) {
         throw new Error('No data returned from API');
