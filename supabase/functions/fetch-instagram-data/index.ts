@@ -31,43 +31,41 @@ serve(async (req) => {
       token: apiKey,
     });
 
-    // Prepare Actor input exactly as in the example
-    const input = {
-      "username": [username],
-      "resultsLimit": 30
-    };
-
-    try {
-      console.log('Starting actor run with input:', JSON.stringify(input))
-      
-      // Run the Actor and wait for it to finish
-      const run = await client.actor("xMc5Ga1oCONPmWJIa").call(input);
-      console.log('Actor run completed, run ID:', run.id)
-
-      // Fetch Actor results from the run's dataset
-      console.log('Fetching dataset items...')
-      const { items } = await client.dataset(run.defaultDatasetId).listItems();
-      console.log('Raw dataset items:', JSON.stringify(items))
-
-      if (!items || items.length === 0) {
-        throw new Error('No data returned from Instagram scraper')
+    console.log('Using Apify Instagram Scraper actor')
+    
+    // Run the Actor and wait for it to finish
+    // Using the more comprehensive Instagram scraper
+    const run = await client.actor("apify/instagram-scraper").call({
+      "directUrls": [`https://www.instagram.com/${username}/`],
+      "resultsType": "details",
+      "searchType": "user",
+      "maxPosts": 30,
+      "expandOwners": false,
+      "proxy": {
+        "useApifyProxy": true
       }
+    });
 
-      // Return the raw items for debugging
-      return new Response(
-        JSON.stringify({ data: items }),
-        { 
-          headers: { 
-            ...corsHeaders,
-            'Content-Type': 'application/json'
-          } 
-        }
-      )
+    console.log('Actor run completed, run ID:', run.id)
 
-    } catch (error) {
-      console.error('Error in Apify execution:', error)
-      throw error
+    // Fetch Actor results from the run's dataset
+    console.log('Fetching dataset items...')
+    const { items } = await client.dataset(run.defaultDatasetId).listItems();
+    console.log('Raw dataset items:', JSON.stringify(items))
+
+    if (!items || items.length === 0) {
+      throw new Error('No data returned from Instagram scraper')
     }
+
+    return new Response(
+      JSON.stringify({ data: items }),
+      { 
+        headers: { 
+          ...corsHeaders,
+          'Content-Type': 'application/json'
+        } 
+      }
+    )
 
   } catch (error) {
     console.error('Error in fetch-instagram-data function:', error)
