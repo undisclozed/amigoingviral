@@ -23,8 +23,9 @@ serve(async (req) => {
     const cleanUsername = username.startsWith('@') ? username.slice(1) : username
 
     // Start the Apify actor run
-    const apifyUrl = `https://api.apify.com/v2/acts/apify~instagram-reel-scraper/run-sync?token=${Deno.env.get('APIFY_API_KEY')}`
+    const apifyUrl = `https://api.apify.com/v2/acts/apify~instagram-reel-scraper/runs?token=${Deno.env.get('APIFY_API_KEY')}`
     
+    console.log('Calling Apify API...')
     const apifyResponse = await fetch(apifyUrl, {
       method: 'POST',
       headers: {
@@ -45,17 +46,43 @@ serve(async (req) => {
       throw new Error('Failed to fetch Instagram data from Apify');
     }
 
-    const data = await apifyResponse.json();
-    console.log('Apify data received:', data);
+    const runData = await apifyResponse.json();
+    console.log('Apify run started:', runData);
+
+    // Wait for the run to finish and get results
+    const datasetId = runData.data.defaultDatasetId;
+    const maxAttempts = 10;
+    let attempts = 0;
+    let posts = [];
+
+    while (attempts < maxAttempts) {
+      console.log(`Attempt ${attempts + 1} to fetch dataset...`);
+      const datasetUrl = `https://api.apify.com/v2/datasets/${datasetId}/items?token=${Deno.env.get('APIFY_API_KEY')}`;
+      const datasetResponse = await fetch(datasetUrl);
+      
+      if (!datasetResponse.ok) {
+        console.error('Dataset fetch error:', await datasetResponse.text());
+        throw new Error('Failed to fetch dataset');
+      }
+
+      posts = await datasetResponse.json();
+      console.log(`Found ${posts.length} posts`);
+      
+      if (posts.length > 0) {
+        break;
+      }
+
+      attempts++;
+      await new Promise(resolve => setTimeout(resolve, 5000)); // Wait 5 seconds between attempts
+    }
 
     // Transform the data to match our expected format
-    const transformedPosts = data.map(post => ({
+    const transformedPosts = posts.map(post => ({
       id: post.id,
       username: cleanUsername,
       thumbnail: post.previewUrl || post.displayUrl,
       caption: post.caption || '',
       timestamp: post.timestamp,
-      type: post.type,
       metrics: {
         views: post.videoViewCount || 0,
         likes: post.likesCount || 0,
@@ -68,7 +95,7 @@ serve(async (req) => {
       }
     }));
 
-    console.log(`Transformed ${transformedPosts.length} posts for ${cleanUsername}`);
+    console.log(`Successfully transformed ${transformedPosts.length} posts`);
 
     return new Response(
       JSON.stringify({
@@ -97,7 +124,7 @@ serve(async (req) => {
         headers: { 
           ...corsHeaders,
           'Content-Type': 'application/json'
-        }
+        } 
       }
     )
   }

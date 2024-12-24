@@ -33,10 +33,10 @@ export const useInstagramData = (username: string | undefined) => {
     refetchInterval: 1000 * 60 * 5, // Refetch every 5 minutes
     retry: 2,
     meta: {
-      errorMessage: 'Failed to fetch Instagram data'
-    },
-    onError: (error: Error) => {
-      toast.error(error.message || 'Failed to fetch Instagram data');
+      errorMessage: 'Failed to fetch Instagram data',
+      onError: (error: Error) => {
+        toast.error(error.message || 'Failed to fetch Instagram data');
+      }
     }
   });
 };
