@@ -44,35 +44,41 @@ const Posts = () => {
     retry: 1
   });
 
-  // Fetch Instagram data
+  // Fetch Instagram data with enhanced error handling
   const { 
     data: instagramData, 
     isLoading: isInstagramLoading, 
-    error: instagramError 
+    error: instagramError,
+    refetch: refetchInstagramData
   } = useInstagramData(profile?.instagram_account);
 
   console.log('Raw Instagram data:', instagramData);
 
   const posts = instagramData?.data?.map((post: any) => {
     console.log('Processing post:', post);
-    return {
-      id: post.id || `temp-${Math.random().toString(36).substr(2, 9)}`,
-      username: post.username || profile?.instagram_account || 'Unknown',
-      thumbnail: post.thumbnail || '/placeholder.svg',
-      caption: post.caption || 'No caption',
-      timestamp: post.timestamp || new Date().toISOString(),
-      metrics: {
-        views: post.metrics?.views || 0,
-        likes: post.metrics?.likes || 0,
-        comments: post.metrics?.comments || 0,
-        shares: post.metrics?.shares || 0,
-        saves: post.metrics?.saves || 0,
-        engagement: post.metrics?.engagement || 0,
-        followsFromPost: post.metrics?.followsFromPost || 0,
-        averageWatchPercentage: post.metrics?.averageWatchPercentage || 0,
-      }
-    };
-  }) || [];
+    try {
+      return {
+        id: post.id || `temp-${Math.random().toString(36).substr(2, 9)}`,
+        username: post.username || profile?.instagram_account || 'Unknown',
+        thumbnail: post.thumbnail || '/placeholder.svg',
+        caption: post.caption || 'No caption',
+        timestamp: post.timestamp || new Date().toISOString(),
+        metrics: {
+          views: post.metrics?.views || 0,
+          likes: post.metrics?.likes || 0,
+          comments: post.metrics?.comments || 0,
+          shares: post.metrics?.shares || 0,
+          saves: post.metrics?.saves || 0,
+          engagement: post.metrics?.engagement || 0,
+          followsFromPost: post.metrics?.followsFromPost || 0,
+          averageWatchPercentage: post.metrics?.averageWatchPercentage || 0,
+        }
+      };
+    } catch (error) {
+      console.error('Error processing post:', error, post);
+      return null;
+    }
+  }).filter(Boolean) || [];
 
   console.log('Processed posts:', posts);
 
@@ -99,6 +105,11 @@ const Posts = () => {
   const handlePostSelect = (postId: string | null) => {
     setSelectedPostId(postId);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleRefresh = () => {
+    toast.info("Refreshing Instagram data...");
+    refetchInstagramData();
   };
 
   const selectedPost = selectedPostId ? posts.find(post => post.id === selectedPostId) : null;
@@ -137,18 +148,35 @@ const Posts = () => {
 
   if (instagramError) {
     console.error('Instagram data error:', instagramError);
-    toast.error("Failed to fetch Instagram data. Please try again later.");
+    return (
+      <div className="container mx-auto px-4 py-8">
+        <Card className="p-6">
+          <h2 className="text-xl font-semibold mb-4">Error Fetching Instagram Data</h2>
+          <p className="text-gray-600 mb-6">
+            {instagramError.message || "Failed to fetch Instagram data. Please try again."}
+          </p>
+          <Button onClick={handleRefresh} className="w-full sm:w-auto">
+            Retry
+          </Button>
+        </Card>
+      </div>
+    );
   }
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-6">
       <div className="flex justify-between items-center">
         <h1 className="text-2xl font-bold">Creator Analytics</h1>
-        <CompetitorSearch
-          competitorHandle={competitorHandle}
-          onHandleChange={setCompetitorHandle}
-          onSearch={handleSearch}
-        />
+        <div className="flex gap-4">
+          <Button onClick={handleRefresh} variant="outline">
+            Refresh Data
+          </Button>
+          <CompetitorSearch
+            competitorHandle={competitorHandle}
+            onHandleChange={setCompetitorHandle}
+            onSearch={handleSearch}
+          />
+        </div>
       </div>
 
       <AccountMetricsOverview 
