@@ -1,37 +1,33 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
-const corsHeaders = {
-  'Access-Control-Allow-Origin': '*',
-  'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
-  'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  'Access-Control-Max-Age': '86400',
-};
-
 serve(async (req) => {
-  if (req.method === 'OPTIONS') {
-    return new Response('ok', { headers: corsHeaders });
-  }
+  const { username } = await req.json();
 
-  try {
-    const { username } = await req.json();
-    if (!username) {
-      throw new Error('Username is required');
+  const apiKey = Deno.env.get('APIFY_API_KEY');
+  const actorId = 'apify/instagram-reel-scraper';
+  const apifyUrl = `https://api.apify.com/v2/acts/${actorId}/runs?token=${apiKey}`;
+
+  const input = {
+    username: [username],
+    resultsLimit: 20
+  };
+
+  const response = await fetch(apifyUrl, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ input })
+  });
+
+  const runResult = await response.json();
+  const datasetResponse = await fetch(
+    `https://api.apify.com/v2/datasets/${runResult.defaultDatasetId}/items?token=${apiKey}`
+  );
+
+  const dataset = await datasetResponse.json();
+
+  return new Response(JSON.stringify(dataset), {
+    headers: {
+      'Content-Type': 'application/json',
     }
-
-    console.log('Fetching Instagram Reels for:', username);
-    
-    // Get Apify API Key from environment
-    const apiKey = Deno.env.get('APIFY_API_KEY');
-    if (!apiKey) {
-      throw new Error('APIFY_API_KEY is not set');
-    }
-
-    // Instagram Reel Scraper actor ID
-    const actorId = 'apify/instagram-reel-scraper';
-    const apifyUrl = `https://api.apify.com/v2/acts/${actorId}/runs?token=${apiKey}`;
-
-    // Payload with username as an array
-    const input = {
-      username: [username],  // Pass username as an array
-      resultsLimit: 20,
-      proxy: 
+  });
+});
