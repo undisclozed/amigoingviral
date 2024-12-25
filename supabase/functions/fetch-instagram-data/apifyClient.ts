@@ -25,9 +25,18 @@ export class ApifyClient {
             // Log the raw item data for debugging
             console.log('Raw item data:', JSON.stringify(item, null, 2));
             
-            // Capture video duration and play count from the root item
-            data.videoDuration = item.videoDuration;
-            data.videoPlayCount = item.videoPlayCount;
+            // Capture video duration and play count from all possible locations
+            data.videoDuration = item.videoDuration || 
+                                item.video_duration || 
+                                mediaData.video_duration || 
+                                (item.video_versions && item.video_versions[0] && item.video_versions[0].duration) || 
+                                null;
+            
+            data.videoPlayCount = item.videoPlayCount || 
+                                 item.video_play_count || 
+                                 mediaData.video_play_count || 
+                                 item.viewsCount || 
+                                 0;
             
             // Try multiple possible paths for other metrics
             data.shares_count = mediaData.share_count || mediaData.reshares_count || 0;
@@ -78,7 +87,10 @@ export class ApifyClient {
       const transformedData = rawData.map(item => {
         return {
           ...item,
-          video_duration: item.videoDuration || null,
+          video_duration: item.videoDuration || 
+                         item.video_duration || 
+                         (item.video_versions && item.video_versions[0] && item.video_versions[0].duration) || 
+                         null,
           shares_count: item.shares_count || 0,
           saves_count: item.saves_count || 0,
           views_count: item.videoPlayCount || item.viewsCount || 0
