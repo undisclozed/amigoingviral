@@ -48,10 +48,20 @@ export const ReelsTable = ({ data }: ReelsTableProps) => {
         {data.map((reel: any) => (
           <TableRow key={reel.reel_id}>
             <TableCell>
-              {reel.thumbnail_url && (
+              {reel.thumbnail_url ? (
                 <img 
                   src={reel.thumbnail_url} 
                   alt="Reel thumbnail" 
+                  className="w-24 h-24 object-cover rounded-lg"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = '/placeholder.svg';
+                  }}
+                />
+              ) : (
+                <img 
+                  src="/placeholder.svg" 
+                  alt="Placeholder thumbnail" 
                   className="w-24 h-24 object-cover rounded-lg"
                 />
               )}
