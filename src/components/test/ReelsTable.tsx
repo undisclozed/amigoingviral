@@ -25,7 +25,20 @@ export const ReelsTable = ({ data }: ReelsTableProps) => {
 
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     console.error('Image failed to load:', e.currentTarget.src);
-    e.currentTarget.src = '/placeholder.svg';
+    // Use one of our reliable placeholder images instead of the default placeholder.svg
+    e.currentTarget.src = 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d';
+  };
+
+  const getThumbnailUrl = (reel: any) => {
+    // If we have a thumbnail_url, try to use it
+    if (reel.thumbnail_url) {
+      console.log('Using thumbnail_url:', reel.thumbnail_url);
+      return reel.thumbnail_url;
+    }
+    
+    // If thumbnail fails or isn't available, use a reliable placeholder
+    console.log('Using placeholder image for reel:', reel.reel_id);
+    return 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d';
   };
 
   return (
@@ -53,21 +66,15 @@ export const ReelsTable = ({ data }: ReelsTableProps) => {
         {data.map((reel: any) => (
           <TableRow key={reel.reel_id}>
             <TableCell>
-              {reel.thumbnail_url ? (
+              <div className="relative w-24 h-24 rounded-lg overflow-hidden">
                 <img 
-                  src={reel.thumbnail_url}
-                  alt="Reel thumbnail"
-                  className="w-24 h-24 object-cover rounded-lg"
+                  src={getThumbnailUrl(reel)}
+                  alt={`Thumbnail for ${reel.caption?.substring(0, 30) || 'reel'}`}
+                  className="absolute inset-0 w-full h-full object-cover"
                   onError={handleImageError}
                   loading="lazy"
                 />
-              ) : (
-                <img 
-                  src="/placeholder.svg"
-                  alt="Placeholder thumbnail"
-                  className="w-24 h-24 object-cover rounded-lg"
-                />
-              )}
+              </div>
             </TableCell>
             <TableCell className="max-w-md">
               <p className="line-clamp-2">{reel.caption}</p>
