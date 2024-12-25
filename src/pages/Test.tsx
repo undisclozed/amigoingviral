@@ -4,6 +4,14 @@ import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 export default function Test() {
   const [username, setUsername] = useState("");
@@ -56,7 +64,7 @@ export default function Test() {
   };
 
   return (
-    <div className="container mx-auto p-4 max-w-4xl">
+    <div className="container mx-auto p-4 max-w-6xl">
       <h1 className="text-2xl font-bold mb-6">Instagram Reels Scraper Test</h1>
       
       <Card className="p-6 mb-6">
@@ -101,20 +109,60 @@ export default function Test() {
         </Card>
       )}
 
-      {rawResponse && (
-        <Card className="p-6 mb-6">
-          <h2 className="text-xl font-semibold mb-2">Raw Response</h2>
-          <pre className="bg-gray-100 p-4 rounded-md overflow-auto text-sm">
-            {rawResponse}
-          </pre>
+      {data && data.length > 0 && (
+        <Card className="p-6 mb-6 overflow-x-auto">
+          <h2 className="text-xl font-semibold mb-4">Reels Data</h2>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Thumbnail</TableHead>
+                <TableHead>Caption</TableHead>
+                <TableHead>Link</TableHead>
+                <TableHead className="text-right">Comments</TableHead>
+                <TableHead className="text-right">Likes</TableHead>
+                <TableHead className="text-right">Views</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {data.map((reel: any) => (
+                <TableRow key={reel.id}>
+                  <TableCell>
+                    {reel.thumbnail && (
+                      <img 
+                        src={reel.thumbnail} 
+                        alt="Reel thumbnail" 
+                        className="w-24 h-24 object-cover rounded-lg"
+                      />
+                    )}
+                  </TableCell>
+                  <TableCell className="max-w-md">
+                    <p className="line-clamp-2">{reel.caption}</p>
+                  </TableCell>
+                  <TableCell>
+                    <a 
+                      href={reel.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="text-blue-600 hover:underline"
+                    >
+                      View Post
+                    </a>
+                  </TableCell>
+                  <TableCell className="text-right">{reel.commentsCount?.toLocaleString()}</TableCell>
+                  <TableCell className="text-right">{reel.likesCount?.toLocaleString()}</TableCell>
+                  <TableCell className="text-right">{reel.viewsCount?.toLocaleString()}</TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </Card>
       )}
 
-      {data && (
+      {rawResponse && (
         <Card className="p-6">
-          <h2 className="text-xl font-semibold mb-2">Transformed Data</h2>
+          <h2 className="text-xl font-semibold mb-2">Raw Response</h2>
           <pre className="bg-gray-100 p-4 rounded-md overflow-auto text-sm">
-            {JSON.stringify(data, null, 2)}
+            {rawResponse}
           </pre>
         </Card>
       )}
