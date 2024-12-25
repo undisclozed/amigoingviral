@@ -17,6 +17,17 @@ export class ApifyClient {
       body: JSON.stringify({
         "username": [username],
         "resultsLimit": maxPosts,
+        "extendOutputFunction": `async ({ data, item, page, customData }) => {
+          // Get additional metrics
+          const videoViewCount = await page.evaluate(() => {
+            const viewElement = document.querySelector('span[class*="video-view-count"]');
+            return viewElement ? parseInt(viewElement.textContent.replace(/[^0-9]/g, '')) : null;
+          });
+          
+          // Add to the data object
+          data.videoViewCount = videoViewCount;
+          return data;
+        }`
       }),
     });
 

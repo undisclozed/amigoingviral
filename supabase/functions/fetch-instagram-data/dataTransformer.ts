@@ -23,7 +23,7 @@ export class DataTransformer {
         video_duration: reel.videoDuration,
         comments_count: reel.commentsCount || 0,
         likes_count: reel.likesCount || 0,
-        views_count: reel.playsCount || reel.videoPlayCount || 0,
+        views_count: reel.videoViewCount || reel.playsCount || 0, // Try videoViewCount first, fallback to playsCount
         is_sponsored: reel.isSponsored || false,
         shares_count: reel.sharesCount || 0,
         saves_count: reel.savesCount || 0,
@@ -33,7 +33,7 @@ export class DataTransformer {
         location_info: reel.locationInfo || null
       };
 
-      console.log('Inserting reel data:', reelData);
+      console.log('Transformed reel data:', reelData);
 
       // First, update the instagram_reels table
       const { error: upsertError } = await this.supabase

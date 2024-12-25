@@ -68,11 +68,17 @@ export type Database = {
           caption: string | null
           comments_count: number | null
           created_at: string
+          hashtags: string[] | null
           id: string
           instagram_account: string
           is_sponsored: boolean | null
           likes_count: number | null
+          location_info: Json | null
+          mentions: string[] | null
+          music_info: Json | null
           reel_id: string
+          saves_count: number | null
+          shares_count: number | null
           thumbnail_url: string | null
           timestamp: string
           updated_at: string
@@ -85,11 +91,17 @@ export type Database = {
           caption?: string | null
           comments_count?: number | null
           created_at?: string
+          hashtags?: string[] | null
           id?: string
           instagram_account: string
           is_sponsored?: boolean | null
           likes_count?: number | null
+          location_info?: Json | null
+          mentions?: string[] | null
+          music_info?: Json | null
           reel_id: string
+          saves_count?: number | null
+          shares_count?: number | null
           thumbnail_url?: string | null
           timestamp: string
           updated_at?: string
@@ -102,11 +114,17 @@ export type Database = {
           caption?: string | null
           comments_count?: number | null
           created_at?: string
+          hashtags?: string[] | null
           id?: string
           instagram_account?: string
           is_sponsored?: boolean | null
           likes_count?: number | null
+          location_info?: Json | null
+          mentions?: string[] | null
+          music_info?: Json | null
           reel_id?: string
+          saves_count?: number | null
+          shares_count?: number | null
           thumbnail_url?: string | null
           timestamp?: string
           updated_at?: string
@@ -231,6 +249,8 @@ export type Database = {
           id: string
           likes_count: number | null
           reel_id: string
+          saves_count: number | null
+          shares_count: number | null
           timestamp: string | null
           user_id: string
           views_count: number | null
@@ -241,6 +261,8 @@ export type Database = {
           id?: string
           likes_count?: number | null
           reel_id: string
+          saves_count?: number | null
+          shares_count?: number | null
           timestamp?: string | null
           user_id: string
           views_count?: number | null
@@ -251,6 +273,8 @@ export type Database = {
           id?: string
           likes_count?: number | null
           reel_id?: string
+          saves_count?: number | null
+          shares_count?: number | null
           timestamp?: string | null
           user_id?: string
           views_count?: number | null
