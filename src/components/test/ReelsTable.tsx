@@ -29,38 +29,11 @@ export const ReelsTable = ({ data }: ReelsTableProps) => {
     e.currentTarget.src = '/placeholder.svg';
   };
 
-  const getThumbnailUrl = (reel: any) => {
-    // Log the entire reel object for debugging
-    console.log('Processing reel:', reel);
-
-    // Check for direct thumbnail URLs first
-    if (reel.thumbnail_url) {
-      console.log('Found thumbnail_url:', reel.thumbnail_url);
-      return reel.thumbnail_url;
-    }
-
-    // Then check display_url
-    if (reel.display_url) {
-      console.log('Found display_url:', reel.display_url);
-      return reel.display_url;
-    }
-
-    // Check for mediaUrl
-    if (reel.mediaUrl) {
-      console.log('Found mediaUrl:', reel.mediaUrl);
-      return reel.mediaUrl;
-    }
-
-    // If no valid URL is found, use placeholder
-    console.log('No valid thumbnail URL found for reel:', reel.reel_id);
-    return '/placeholder.svg';
-  };
-
   return (
     <Table>
       <TableHeader>
         <TableRow>
-          <TableHead>Thumbnail</TableHead>
+          <TableHead>Thumbnails (Testing)</TableHead>
           <TableHead>Caption</TableHead>
           <TableHead>Link</TableHead>
           <TableHead>Posted</TableHead>
@@ -81,18 +54,57 @@ export const ReelsTable = ({ data }: ReelsTableProps) => {
         {data.map((reel: any) => (
           <TableRow key={reel.reel_id}>
             <TableCell>
-              <div className="relative w-24 h-24 rounded-lg overflow-hidden">
-                <img 
-                  src={getThumbnailUrl(reel)}
-                  alt={`Thumbnail for ${reel.caption?.substring(0, 30) || 'reel'}`}
-                  className="absolute inset-0 w-full h-full object-cover"
-                  onError={handleImageError}
-                  loading="lazy"
-                  crossOrigin="anonymous"
-                  referrerPolicy="no-referrer"
+              <div className="grid grid-cols-2 gap-2">
+                {/* Approach 1: Direct thumbnail_url with img tag */}
+                <div className="relative w-24 h-24 rounded-lg overflow-hidden">
+                  <img 
+                    src={reel.thumbnail_url || '/placeholder.svg'}
+                    alt="Approach 1: Direct thumbnail"
+                    className="absolute inset-0 w-full h-full object-cover"
+                    onError={handleImageError}
+                    loading="lazy"
+                  />
+                </div>
+
+                {/* Approach 2: Using display_url with crossOrigin and referrerPolicy */}
+                <div className="relative w-24 h-24 rounded-lg overflow-hidden">
+                  <img 
+                    src={reel.display_url || '/placeholder.svg'}
+                    alt="Approach 2: Display URL"
+                    className="absolute inset-0 w-full h-full object-cover"
+                    onError={handleImageError}
+                    loading="lazy"
+                    crossOrigin="anonymous"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
+
+                {/* Approach 3: Using background-image CSS */}
+                <div 
+                  className="w-24 h-24 rounded-lg overflow-hidden bg-cover bg-center bg-no-repeat"
+                  style={{ 
+                    backgroundImage: `url(${reel.thumbnail_url || '/placeholder.svg'})`,
+                    backgroundColor: '#f3f4f6' 
+                  }}
                 />
+
+                {/* Approach 4: Using picture element with multiple sources */}
+                <div className="relative w-24 h-24 rounded-lg overflow-hidden">
+                  <picture>
+                    <source srcSet={reel.display_url} type="image/jpeg" />
+                    <source srcSet={reel.thumbnail_url} type="image/jpeg" />
+                    <img 
+                      src={'/placeholder.svg'}
+                      alt="Approach 4: Picture element"
+                      className="absolute inset-0 w-full h-full object-cover"
+                      onError={handleImageError}
+                      loading="lazy"
+                    />
+                  </picture>
+                </div>
               </div>
             </TableCell>
+
             <TableCell className="max-w-md">
               <p className="line-clamp-2">{reel.caption}</p>
             </TableCell>
