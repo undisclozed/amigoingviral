@@ -14,6 +14,9 @@ export class ApifyClient {
         "resultsLimit": maxPosts,
         "shouldDownloadVideos": false,
         "shouldDownloadCovers": false,
+        "scrapePostsUntilDate": "2020-01-01",  // Ensure we get enough historical data
+        "scrapePostsFromDate": "2023-01-01",   // Recent posts only
+        "maxRequestRetries": 5,
         "proxy": {
           "useApifyProxy": true,
           "apifyProxyGroups": ["RESIDENTIAL"]
@@ -48,7 +51,18 @@ export class ApifyClient {
         throw new Error('Invalid response format from Apify');
       }
 
-      return rawData;
+      // Transform the data to ensure we have all required fields
+      const transformedData = rawData.map(item => ({
+        ...item,
+        sharesCount: item.sharesCount || 0,
+        savesCount: item.savesCount || 0,
+        videoViewCount: item.videoViewCount || item.viewsCount || 0
+      }));
+
+      console.log('Transformed data (first item):', 
+        transformedData[0] ? JSON.stringify(transformedData[0], null, 2) : 'No data');
+
+      return transformedData;
     } catch (error) {
       console.error('Error in fetchReelsData:', error);
       throw error;
