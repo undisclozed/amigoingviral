@@ -31,7 +31,7 @@ serve(async (req) => {
     const apifyUrl = `https://api.apify.com/v2/acts/apify~instagram-reel-scraper/run-sync?token=${apiKey}`;
 
     const input = {
-      usernames: [username], // Changed from username to usernames array
+      usernames: [username], // Expects an array of usernames
       maxPosts: 1,
     };
 
