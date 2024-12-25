@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 export default function Test() {
   const [username, setUsername] = useState("");
+  const [maxPosts, setMaxPosts] = useState("10");
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
@@ -20,11 +21,12 @@ export default function Test() {
     setRawResponse(null);
 
     try {
-      console.log('Starting Instagram data fetch for:', username);
+      console.log('Starting Instagram reels fetch for:', username, 'max posts:', maxPosts);
       
       const { data: response, error } = await supabase.functions.invoke('fetch-instagram-data', {
         body: { 
           username: username.replace('@', ''),
+          maxPosts: parseInt(maxPosts),
           debug: true 
         }
       });
@@ -42,10 +44,10 @@ export default function Test() {
 
       setData(response.data);
       setRawResponse(JSON.stringify(response, null, 2));
-      toast.success('Instagram data fetched successfully');
+      toast.success('Instagram reels fetched successfully');
     } catch (error) {
       console.error('Error:', error);
-      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch Instagram data';
+      const errorMessage = error instanceof Error ? error.message : 'Failed to fetch Instagram reels';
       setError(errorMessage);
       toast.error(errorMessage);
     } finally {
@@ -55,7 +57,7 @@ export default function Test() {
 
   return (
     <div className="container mx-auto p-4 max-w-4xl">
-      <h1 className="text-2xl font-bold mb-6">Instagram Data Test</h1>
+      <h1 className="text-2xl font-bold mb-6">Instagram Reels Scraper Test</h1>
       
       <Card className="p-6 mb-6">
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -71,8 +73,23 @@ export default function Test() {
               required
             />
           </div>
+          <div>
+            <label htmlFor="maxPosts" className="block text-sm font-medium mb-2">
+              Number of Reels
+            </label>
+            <Input
+              id="maxPosts"
+              type="number"
+              min="1"
+              max="100"
+              value={maxPosts}
+              onChange={(e) => setMaxPosts(e.target.value)}
+              placeholder="Enter number of reels to fetch"
+              required
+            />
+          </div>
           <Button type="submit" disabled={isLoading}>
-            {isLoading ? "Loading..." : "Fetch Data"}
+            {isLoading ? "Loading..." : "Fetch Reels"}
           </Button>
         </form>
       </Card>
