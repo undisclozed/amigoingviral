@@ -25,16 +25,25 @@ export const ReelsTable = ({ data }: ReelsTableProps) => {
 
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     console.error('Image failed to load:', e.currentTarget.src);
-    // Use the first Unsplash placeholder as fallback
-    e.currentTarget.src = 'https://images.unsplash.com/photo-1649972904349-6e44c42644a7';
+    e.currentTarget.src = '/placeholder.svg';
   };
 
   const getThumbnailUrl = (reel: any) => {
+    // Log the available URL fields for debugging
+    console.log('Thumbnail URL fields:', {
+      thumbnail_url: reel.thumbnail_url,
+      display_url: reel.display_url,
+      displayUrl: reel.displayUrl
+    });
+
     // Try all possible thumbnail URL fields in order of preference
-    return reel.thumbnail_url || 
-           reel.display_url || 
-           reel.displayUrl || 
-           'https://images.unsplash.com/photo-1649972904349-6e44c42644a7';
+    const url = reel.thumbnail_url || 
+                reel.display_url || 
+                reel.displayUrl || 
+                '/placeholder.svg';
+    
+    console.log('Selected thumbnail URL:', url);
+    return url;
   };
 
   return (
