@@ -24,8 +24,8 @@ export const ReelsTable = ({ data }: ReelsTableProps) => {
   };
 
   const getProxiedImageUrl = (originalUrl: string) => {
-    // Use a more reliable proxy service
-    return `https://corsproxy.io/?${encodeURIComponent(originalUrl)}`;
+    // Try using a different proxy service with higher rate limits
+    return `https://api.allorigins.win/raw?url=${encodeURIComponent(originalUrl)}`;
   };
 
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
@@ -71,6 +71,7 @@ export const ReelsTable = ({ data }: ReelsTableProps) => {
                     alt="Reel thumbnail"
                     className="w-24 h-24 object-cover rounded-lg"
                     onError={handleImageError}
+                    crossOrigin="anonymous"
                     referrerPolicy="no-referrer"
                     loading="lazy"
                   />
