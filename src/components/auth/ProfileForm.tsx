@@ -31,9 +31,12 @@ export function ProfileForm() {
 
       if (profileError) throw profileError;
 
-      // Trigger initial Instagram data fetch
+      // Trigger initial Instagram data fetch with userId
       const { error: fetchError } = await supabase.functions.invoke('fetch-instagram-data', {
-        body: { username: instagramAccount }
+        body: { 
+          username: instagramAccount,
+          userId: user.id 
+        }
       });
 
       if (fetchError) {

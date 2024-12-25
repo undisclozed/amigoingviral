@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { username, maxPosts } = await req.json();
+    const { username, maxPosts, userId } = await req.json();
     const APIFY_API_KEY = Deno.env.get('APIFY_API_KEY');
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -29,17 +29,28 @@ serve(async (req) => {
       SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    // First, get the user_id for this Instagram account
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('id')
-      .eq('instagram_account', username)
-      .single();
+    // Get the user_id either from the request or find it in profiles
+    let profileId = userId;
+    if (!profileId) {
+      const { data: profile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id')
+        .eq('instagram_account', username)
+        .single();
 
-    if (profileError || !profile) {
-      console.error('Error fetching profile:', profileError);
-      throw new Error('Profile not found for Instagram account');
+      if (profileError) {
+        console.error('Error fetching profile:', profileError);
+        throw new Error('Failed to find profile');
+      }
+      
+      if (!profile) {
+        throw new Error('Profile not found. Please ensure your profile is set up with your Instagram account.');
+      }
+
+      profileId = profile.id;
     }
+
+    console.log('Found profile ID:', profileId);
 
     const response = await fetch('https://api.apify.com/v2/acts/apify~instagram-reel-scraper/run-sync-get-dataset-items', {
       method: 'POST',
@@ -65,7 +76,7 @@ serve(async (req) => {
     // Transform and save each reel
     const transformedData = await Promise.all(rawData.map(async (reel: any) => {
       const reelData = {
-        user_id: profile.id,
+        user_id: profileId,
         instagram_account: username,
         reel_id: reel.id,
         caption: reel.caption || '',
