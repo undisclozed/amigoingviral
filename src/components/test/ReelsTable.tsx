@@ -30,24 +30,28 @@ export const ReelsTable = ({ data }: ReelsTableProps) => {
   };
 
   const getThumbnailUrl = (reel: any) => {
-    // Log all possible URL fields for debugging
-    console.log('Reel data for thumbnails:', {
-      thumbnail_url: reel.thumbnail_url,
-      display_url: reel.display_url,
-      mediaUrl: reel.mediaUrl,
-      url: reel.url
-    });
+    // Log the entire reel object for debugging
+    console.log('Processing reel:', reel);
 
-    // Try different URL fields in order of preference
+    // Check for direct thumbnail URLs first
     if (reel.thumbnail_url) {
-      console.log('Using thumbnail_url:', reel.thumbnail_url);
+      console.log('Found thumbnail_url:', reel.thumbnail_url);
       return reel.thumbnail_url;
     }
+
+    // Then check display_url
     if (reel.display_url) {
-      console.log('Using display_url:', reel.display_url);
+      console.log('Found display_url:', reel.display_url);
       return reel.display_url;
     }
 
+    // Check for mediaUrl
+    if (reel.mediaUrl) {
+      console.log('Found mediaUrl:', reel.mediaUrl);
+      return reel.mediaUrl;
+    }
+
+    // If no valid URL is found, use placeholder
     console.log('No valid thumbnail URL found for reel:', reel.reel_id);
     return '/placeholder.svg';
   };
@@ -84,6 +88,8 @@ export const ReelsTable = ({ data }: ReelsTableProps) => {
                   className="absolute inset-0 w-full h-full object-cover"
                   onError={handleImageError}
                   loading="lazy"
+                  crossOrigin="anonymous"
+                  referrerPolicy="no-referrer"
                 />
               </div>
             </TableCell>
