@@ -25,7 +25,16 @@ export const ReelsTable = ({ data }: ReelsTableProps) => {
 
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     console.error('Image failed to load:', e.currentTarget.src);
-    e.currentTarget.src = '/placeholder.svg';
+    // Use the first Unsplash placeholder as fallback
+    e.currentTarget.src = 'https://images.unsplash.com/photo-1649972904349-6e44c42644a7';
+  };
+
+  const getThumbnailUrl = (reel: any) => {
+    // Try all possible thumbnail URL fields in order of preference
+    return reel.thumbnail_url || 
+           reel.display_url || 
+           reel.displayUrl || 
+           'https://images.unsplash.com/photo-1649972904349-6e44c42644a7';
   };
 
   return (
@@ -53,21 +62,15 @@ export const ReelsTable = ({ data }: ReelsTableProps) => {
         {data.map((reel: any) => (
           <TableRow key={reel.reel_id}>
             <TableCell>
-              {reel.thumbnail_url ? (
+              <div className="relative w-24 h-24 rounded-lg overflow-hidden">
                 <img 
-                  src={reel.thumbnail_url}
+                  src={getThumbnailUrl(reel)}
                   alt="Reel thumbnail"
-                  className="w-24 h-24 object-cover rounded-lg"
+                  className="absolute inset-0 w-full h-full object-cover"
                   onError={handleImageError}
                   loading="lazy"
                 />
-              ) : (
-                <img 
-                  src="/placeholder.svg"
-                  alt="Placeholder thumbnail"
-                  className="w-24 h-24 object-cover rounded-lg"
-                />
-              )}
+              </div>
             </TableCell>
             <TableCell className="max-w-md">
               <p className="line-clamp-2">{reel.caption}</p>
