@@ -12,7 +12,7 @@ serve(async (req) => {
   }
 
   try {
-    const { username, maxPosts, userId } = await req.json();
+    const { username, userId } = await req.json();
     const APIFY_API_KEY = Deno.env.get('APIFY_API_KEY');
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -21,7 +21,7 @@ serve(async (req) => {
       throw new Error('Username is required');
     }
 
-    console.log('Fetching reels for:', username, 'max posts:', maxPosts);
+    console.log('Fetching reels for:', username, 'userId:', userId);
 
     // Create Supabase client with service role key for database operations
     const supabase = createClient(
@@ -32,6 +32,7 @@ serve(async (req) => {
     // Get the user_id either from the request or find it in profiles
     let profileId = userId;
     if (!profileId) {
+      console.log('No userId provided, looking up profile by Instagram account');
       const { data: profile, error: profileError } = await supabase
         .from('profiles')
         .select('id')
@@ -44,13 +45,14 @@ serve(async (req) => {
       }
       
       if (!profile) {
-        throw new Error('Profile not found. Please ensure your profile is set up with your Instagram account.');
+        console.error('Profile not found for Instagram account:', username);
+        throw new Error('Profile not found');
       }
 
       profileId = profile.id;
     }
 
-    console.log('Found profile ID:', profileId);
+    console.log('Using profile ID:', profileId);
 
     const response = await fetch('https://api.apify.com/v2/acts/apify~instagram-reel-scraper/run-sync-get-dataset-items', {
       method: 'POST',
@@ -60,7 +62,7 @@ serve(async (req) => {
       },
       body: JSON.stringify({
         "username": [username],
-        "resultsLimit": maxPosts || 10,
+        "resultsLimit": 10,
       }),
     });
 
