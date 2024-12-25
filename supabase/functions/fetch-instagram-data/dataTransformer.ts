@@ -8,7 +8,11 @@ export class DataTransformer {
   }
 
   async transformAndSaveReels(rawData: any[], profile: any, username: string): Promise<any[]> {
+    console.log('Raw data received:', rawData);
+    
     return await Promise.all(rawData.map(async (reel: any) => {
+      console.log('Processing reel:', reel);
+      
       const uniqueReelId = `${profile.id}_${reel.id}`;
       
       // Ensure we have a valid timestamp, fallback to current time if not provided
@@ -20,13 +24,13 @@ export class DataTransformer {
         instagram_account: username,
         reel_id: uniqueReelId,
         caption: reel.caption || '',
-        url: reel.url,
-        thumbnail_url: reel.previewImageUrl || reel.displayUrl,
+        url: reel.url || '',
+        thumbnail_url: reel.previewImageUrl || reel.displayUrl || '',
         timestamp: timestamp.toISOString(), // Ensure we're storing as ISO string
-        video_duration: reel.videoDuration,
+        video_duration: reel.videoDuration || null,
         comments_count: reel.commentsCount || 0,
         likes_count: reel.likesCount || 0,
-        views_count: reel.videoViewCount || reel.playsCount || 0, // Try videoViewCount first, fallback to playsCount
+        views_count: reel.videoViewCount || reel.playsCount || 0,
         is_sponsored: reel.isSponsored || false,
         shares_count: reel.sharesCount || 0,
         saves_count: reel.savesCount || 0,

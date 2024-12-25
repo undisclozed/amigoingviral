@@ -24,8 +24,20 @@ export class ApifyClient {
             return viewElement ? parseInt(viewElement.textContent.replace(/[^0-9]/g, '')) : null;
           });
           
+          // Get shares and saves counts
+          const metrics = await page.evaluate(() => {
+            const sharesElement = document.querySelector('span[class*="shares-count"]');
+            const savesElement = document.querySelector('span[class*="saves-count"]');
+            return {
+              sharesCount: sharesElement ? parseInt(sharesElement.textContent.replace(/[^0-9]/g, '')) : 0,
+              savesCount: savesElement ? parseInt(savesElement.textContent.replace(/[^0-9]/g, '')) : 0
+            };
+          });
+          
           // Add to the data object
           data.videoViewCount = videoViewCount;
+          data.sharesCount = metrics.sharesCount;
+          data.savesCount = metrics.savesCount;
           return data;
         }`
       }),
