@@ -34,60 +34,64 @@ serve(async (req) => {
 
     // First try to find an existing profile by instagram account
     console.log('Checking for existing profile with instagram account:', username);
-    const { data: existingProfile, error: existingProfileError } = await supabase
-      .from('profiles')
-      .select('id, instagram_account')
-      .eq('instagram_account', username)
-      .maybeSingle();
-
-    if (existingProfileError) {
-      console.error('Error checking existing profile:', existingProfileError);
-      throw new Error('Failed to check existing profile');
-    }
-
     let profile;
-    if (existingProfile) {
-      console.log('Found existing profile:', existingProfile);
-      profile = existingProfile;
-    } else if (userId) {
-      console.log('Updating profile for userId:', userId);
-      const { data: updatedProfile, error: updateError } = await supabase
+    
+    try {
+      const { data: existingProfile, error: profileError } = await supabase
         .from('profiles')
-        .update({ instagram_account: username })
-        .eq('id', userId)
-        .select()
-        .single();
+        .select('id, instagram_account')
+        .eq('instagram_account', username)
+        .maybeSingle();
 
-      if (updateError) {
-        console.error('Error updating profile:', updateError);
-        throw new Error('Failed to update profile');
+      if (profileError) {
+        console.error('Error checking existing profile:', profileError);
+        throw profileError;
       }
 
-      console.log('Updated profile:', updatedProfile);
-      profile = updatedProfile;
-    } else {
-      console.log('Creating new profile for instagram account:', username);
-      const { data: newProfile, error: createError } = await supabase
-        .from('profiles')
-        .insert([{ instagram_account: username }])
-        .select()
-        .single();
+      if (existingProfile) {
+        console.log('Found existing profile:', existingProfile);
+        profile = existingProfile;
+      } else if (userId) {
+        console.log('Updating profile for userId:', userId);
+        const { data: updatedProfile, error: updateError } = await supabase
+          .from('profiles')
+          .update({ instagram_account: username })
+          .eq('id', userId)
+          .select()
+          .single();
 
-      if (createError) {
-        console.error('Error creating profile:', createError);
-        throw new Error('Failed to create profile');
+        if (updateError) {
+          console.error('Error updating profile:', updateError);
+          throw updateError;
+        }
+
+        console.log('Updated profile:', updatedProfile);
+        profile = updatedProfile;
+      } else {
+        console.log('Creating new profile for instagram account:', username);
+        const { data: newProfile, error: createError } = await supabase
+          .from('profiles')
+          .insert([{ instagram_account: username }])
+          .select()
+          .single();
+
+        if (createError) {
+          console.error('Error creating profile:', createError);
+          throw createError;
+        }
+
+        console.log('Created new profile:', newProfile);
+        profile = newProfile;
       }
-
-      console.log('Created new profile:', newProfile);
-      profile = newProfile;
+    } catch (error) {
+      console.error('Error in profile management:', error);
+      throw new Error(`Failed to check existing profile: ${error.message}`);
     }
 
     if (!profile) {
-      console.error('No profile found or created for:', { userId, username });
       throw new Error('Profile not found and could not be created');
     }
 
-    console.log('Using profile:', profile);
     console.log('Making request to Apify API...');
 
     const response = await fetch('https://api.apify.com/v2/acts/apify~instagram-reel-scraper/run-sync-get-dataset-items', {
@@ -136,7 +140,6 @@ serve(async (req) => {
 
       console.log('Inserting reel data:', reelData);
 
-      // Upsert the reel data
       const { error: upsertError } = await supabase
         .from('instagram_reels')
         .upsert(reelData, {
@@ -149,7 +152,6 @@ serve(async (req) => {
         throw upsertError;
       }
 
-      // Insert historical metrics
       const historicalMetrics = {
         reel_id: uniqueReelId,
         user_id: profile.id,
