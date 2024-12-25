@@ -6,7 +6,7 @@ export class ApifyClient {
   }
 
   async fetchReelsData(username: string, maxPosts: number = 10): Promise<any[]> {
-    console.log('Making request to Apify API for', maxPosts, 'posts from user:', username);
+    console.log('Making request to Apify API for user:', username);
 
     try {
       const response = await fetch('https://api.apify.com/v2/acts/apify~instagram-reel-scraper/run-sync-get-dataset-items', {
