@@ -21,7 +21,7 @@ serve(async (req) => {
       throw new Error('Username is required');
     }
 
-    console.log('Fetching reels for:', username, 'userId:', userId);
+    console.log('Starting fetch for:', { username, userId });
 
     // Create Supabase client with service role key for database operations
     const supabase = createClient(
@@ -29,31 +29,26 @@ serve(async (req) => {
       SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    // Get the user_id either from the request or find it in profiles
-    let profileId = userId;
-    if (!profileId) {
-      console.log('No userId provided, looking up profile by Instagram account');
-      const { data: profile, error: profileError } = await supabase
-        .from('profiles')
-        .select('id')
-        .eq('instagram_account', username)
-        .single();
+    // First, verify the profile exists and get its ID
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id, instagram_account')
+      .eq('id', userId)
+      .single();
 
-      if (profileError) {
-        console.error('Error fetching profile:', profileError);
-        throw new Error('Failed to find profile');
-      }
-      
-      if (!profile) {
-        console.error('Profile not found for Instagram account:', username);
-        throw new Error('Profile not found');
-      }
-
-      profileId = profile.id;
+    if (profileError) {
+      console.error('Error fetching profile:', profileError);
+      throw new Error('Failed to fetch profile');
     }
 
-    console.log('Using profile ID:', profileId);
+    if (!profile) {
+      console.error('No profile found for user ID:', userId);
+      throw new Error('Profile not found');
+    }
 
+    console.log('Found profile:', profile);
+
+    // Fetch Instagram data from Apify
     const response = await fetch('https://api.apify.com/v2/acts/apify~instagram-reel-scraper/run-sync-get-dataset-items', {
       method: 'POST',
       headers: {
@@ -69,7 +64,7 @@ serve(async (req) => {
     if (!response.ok) {
       const errorText = await response.text();
       console.error('Apify API error:', errorText);
-      throw new Error(`Apify API returned status ${response.status}: ${errorText}`);
+      throw new Error(`Apify API returned status ${response.status}`);
     }
 
     const rawData = await response.json();
@@ -78,12 +73,12 @@ serve(async (req) => {
     // Transform and save each reel
     const transformedData = await Promise.all(rawData.map(async (reel: any) => {
       // Create a unique composite ID using user ID and reel ID
-      const uniqueReelId = `${profileId}_${reel.id}`;
+      const uniqueReelId = `${profile.id}_${reel.id}`;
       
       const reelData = {
-        user_id: profileId,
+        user_id: profile.id,
         instagram_account: username,
-        reel_id: uniqueReelId, // Use the composite ID
+        reel_id: uniqueReelId,
         caption: reel.caption || '',
         url: reel.url,
         thumbnail_url: reel.previewImageUrl || reel.displayUrl,
@@ -99,8 +94,8 @@ serve(async (req) => {
       const { error: upsertError } = await supabase
         .from('instagram_reels')
         .upsert(reelData, {
-          onConflict: 'instagram_account,reel_id',
-          ignoreDuplicates: false // This ensures we update existing records
+          onConflict: 'reel_id',
+          ignoreDuplicates: false
         });
 
       if (upsertError) {
