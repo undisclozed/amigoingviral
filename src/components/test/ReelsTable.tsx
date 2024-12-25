@@ -24,21 +24,32 @@ export const ReelsTable = ({ data }: ReelsTableProps) => {
   };
 
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    console.error('Image failed to load:', e.currentTarget.src);
-    // Use one of our reliable placeholder images instead of the default placeholder.svg
-    e.currentTarget.src = 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d';
+    const originalSrc = e.currentTarget.src;
+    console.error('Image failed to load:', originalSrc);
+    e.currentTarget.src = '/placeholder.svg';
   };
 
   const getThumbnailUrl = (reel: any) => {
-    // If we have a thumbnail_url, try to use it
+    // Log all possible URL fields for debugging
+    console.log('Reel data for thumbnails:', {
+      thumbnail_url: reel.thumbnail_url,
+      display_url: reel.display_url,
+      mediaUrl: reel.mediaUrl,
+      url: reel.url
+    });
+
+    // Try different URL fields in order of preference
     if (reel.thumbnail_url) {
       console.log('Using thumbnail_url:', reel.thumbnail_url);
       return reel.thumbnail_url;
     }
-    
-    // If thumbnail fails or isn't available, use a reliable placeholder
-    console.log('Using placeholder image for reel:', reel.reel_id);
-    return 'https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d';
+    if (reel.display_url) {
+      console.log('Using display_url:', reel.display_url);
+      return reel.display_url;
+    }
+
+    console.log('No valid thumbnail URL found for reel:', reel.reel_id);
+    return '/placeholder.svg';
   };
 
   return (
