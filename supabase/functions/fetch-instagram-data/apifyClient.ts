@@ -9,7 +9,7 @@ export class ApifyClient {
     console.log('Making request to Apify API for', maxPosts, 'posts from user:', username);
 
     try {
-      const response = await fetch('https://api.apify.com/v2/acts/apify/instagram-reel-scraper/run-sync-get-dataset-items', {
+      const response = await fetch('https://api.apify.com/v2/acts/clockworks~instagram-reels-scraper/run-sync-get-dataset-items', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
