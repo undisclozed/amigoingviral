@@ -75,10 +75,13 @@ serve(async (req) => {
 
     // Transform and save each reel
     const transformedData = await Promise.all(rawData.map(async (reel: any) => {
+      // Create a unique composite ID using user ID and reel ID
+      const uniqueReelId = `${profileId}_${reel.id}`;
+      
       const reelData = {
         user_id: profileId,
         instagram_account: username,
-        reel_id: reel.id,
+        reel_id: uniqueReelId, // Use the composite ID
         caption: reel.caption || '',
         url: reel.url,
         thumbnail_url: reel.previewImageUrl || reel.displayUrl,
@@ -90,11 +93,12 @@ serve(async (req) => {
         is_sponsored: reel.isSponsored || false
       };
 
-      // Upsert the reel data
+      // Upsert the reel data using the composite ID
       const { error: upsertError } = await supabase
         .from('instagram_reels')
         .upsert(reelData, {
-          onConflict: 'instagram_account,reel_id'
+          onConflict: 'instagram_account,reel_id',
+          ignoreDuplicates: false // This ensures we update existing records
         });
 
       if (upsertError) {
