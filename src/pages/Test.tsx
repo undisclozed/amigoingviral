@@ -127,9 +127,9 @@ export default function Test() {
               {data.map((reel: any) => (
                 <TableRow key={reel.id}>
                   <TableCell>
-                    {reel.thumbnail && (
+                    {reel.previewImage && (
                       <img 
-                        src={reel.thumbnail} 
+                        src={reel.previewImage} 
                         alt="Reel thumbnail" 
                         className="w-24 h-24 object-cover rounded-lg"
                       />
