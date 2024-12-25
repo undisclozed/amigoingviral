@@ -5,8 +5,8 @@ export class ApifyClient {
     this.apiKey = apiKey;
   }
 
-  async fetchReelsData(username: string): Promise<any[]> {
-    console.log('Making request to Apify API...');
+  async fetchReelsData(username: string, maxPosts: number = 10): Promise<any[]> {
+    console.log('Making request to Apify API for', maxPosts, 'posts...');
 
     const response = await fetch('https://api.apify.com/v2/acts/apify~instagram-reel-scraper/run-sync-get-dataset-items', {
       method: 'POST',
@@ -16,7 +16,7 @@ export class ApifyClient {
       },
       body: JSON.stringify({
         "username": [username],
-        "resultsLimit": 10,
+        "resultsLimit": maxPosts,
       }),
     });
 

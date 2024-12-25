@@ -14,7 +14,7 @@ serve(async (req) => {
   }
 
   try {
-    const { username, userId } = await req.json();
+    const { username, userId, maxPosts = 10 } = await req.json();
     const APIFY_API_KEY = Deno.env.get('APIFY_API_KEY');
     const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
     const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
@@ -27,7 +27,7 @@ serve(async (req) => {
       throw new Error('APIFY_API_KEY is not configured');
     }
 
-    console.log('Starting fetch for:', { username, userId });
+    console.log('Starting fetch for:', { username, userId, maxPosts });
 
     // Initialize our service classes
     const profileManager = new ProfileManager(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
@@ -41,8 +41,8 @@ serve(async (req) => {
       throw new Error('Profile not found and could not be created');
     }
 
-    // Fetch reels data from Apify
-    const rawData = await apifyClient.fetchReelsData(username);
+    // Fetch reels data from Apify with the specified limit
+    const rawData = await apifyClient.fetchReelsData(username, parseInt(maxPosts));
 
     // Transform and save the data
     const transformedData = await dataTransformer.transformAndSaveReels(rawData, profile, username);
