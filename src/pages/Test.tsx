@@ -52,7 +52,12 @@ export default function Test() {
         throw new Error('No data returned from API');
       }
 
-      setData(response.data);
+      // Sort the data by timestamp in descending order (newest first)
+      const sortedData = response.data.sort((a: any, b: any) => {
+        return new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime();
+      });
+
+      setData(sortedData);
       setRawResponse(JSON.stringify(response, null, 2));
       toast.success('Instagram reels fetched and saved successfully');
     } catch (error) {
