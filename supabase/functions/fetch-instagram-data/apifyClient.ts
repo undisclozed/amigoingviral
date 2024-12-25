@@ -21,19 +21,18 @@ export class ApifyClient {
           try {
             // Get additional metrics from different possible locations in the response
             const mediaData = item.media || {};
-            const edgeData = mediaData.edge_media_to_parent_comment || {};
-            const previewComments = mediaData.edge_media_preview_comment || {};
-            const likeData = mediaData.edge_media_preview_like || {};
-            const videoData = mediaData.video_duration || {};
             
-            // Try multiple possible paths for metrics
-            data.duration = mediaData.video_duration;
+            // Log the raw item data for debugging
+            console.log('Raw item data:', JSON.stringify(item, null, 2));
+            
+            // Capture video duration and play count from the root item
+            data.videoDuration = item.videoDuration;
+            data.videoPlayCount = item.videoPlayCount;
+            
+            // Try multiple possible paths for other metrics
             data.shares_count = mediaData.share_count || mediaData.reshares_count || 0;
             data.saves_count = mediaData.bookmark_count || mediaData.saved_count || 
                              (mediaData.edge_saved_media && mediaData.edge_saved_media.count) || 0;
-            
-            // Log the raw data for debugging
-            console.log('Raw media data structure:', JSON.stringify(mediaData, null, 2));
             
             return data;
           } catch (error) {
@@ -77,20 +76,12 @@ export class ApifyClient {
 
       // Transform the data to ensure we have all required fields
       const transformedData = rawData.map(item => {
-        // Try to get metrics from multiple possible locations
-        const mediaData = item.media || {};
-        const engagement = mediaData.engagement || {};
-        
         return {
           ...item,
-          video_duration: item.duration || item.video_duration || mediaData.video_duration || null,
-          shares_count: item.shares_count || item.share_count || engagement.shares || 
-                       mediaData.share_count || mediaData.reshares_count || 0,
-          saves_count: item.saves_count || item.bookmark_count || engagement.saves || 
-                      mediaData.bookmark_count || mediaData.saved_count || 
-                      (mediaData.edge_saved_media && mediaData.edge_saved_media.count) || 0,
-          views_count: item.videoViewCount || item.viewsCount || mediaData.video_view_count || 
-                      mediaData.view_count || 0
+          video_duration: item.videoDuration || null,
+          shares_count: item.shares_count || 0,
+          saves_count: item.saves_count || 0,
+          views_count: item.videoPlayCount || item.viewsCount || 0
         };
       });
 
