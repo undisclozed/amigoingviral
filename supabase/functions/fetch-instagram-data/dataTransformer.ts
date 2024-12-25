@@ -11,6 +11,9 @@ export class DataTransformer {
     return await Promise.all(rawData.map(async (reel: any) => {
       const uniqueReelId = `${profile.id}_${reel.id}`;
       
+      // Ensure we have a valid timestamp, fallback to current time if not provided
+      const timestamp = reel.timestamp ? new Date(reel.timestamp) : new Date();
+      
       // Transform the reel data with additional fields
       const reelData = {
         user_id: profile.id,
@@ -19,7 +22,7 @@ export class DataTransformer {
         caption: reel.caption || '',
         url: reel.url,
         thumbnail_url: reel.previewImageUrl || reel.displayUrl,
-        timestamp: reel.timestamp,
+        timestamp: timestamp.toISOString(), // Ensure we're storing as ISO string
         video_duration: reel.videoDuration,
         comments_count: reel.commentsCount || 0,
         likes_count: reel.likesCount || 0,
@@ -56,7 +59,8 @@ export class DataTransformer {
         likes_count: reelData.likes_count,
         comments_count: reelData.comments_count,
         shares_count: reelData.shares_count,
-        saves_count: reelData.saves_count
+        saves_count: reelData.saves_count,
+        timestamp: timestamp.toISOString() // Use the same timestamp for consistency
       };
 
       console.log('Inserting historical metrics:', historicalMetrics);
