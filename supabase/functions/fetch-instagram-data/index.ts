@@ -27,7 +27,7 @@ serve(async (req) => {
       throw new Error('APIFY_API_KEY is not configured');
     }
 
-    console.log('Starting fetch for:', { username, userId, maxPosts });
+    console.log('Starting Instagram reels fetch for:', { username, userId, maxPosts });
 
     // Initialize our service classes
     const profileManager = new ProfileManager(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
@@ -42,7 +42,7 @@ serve(async (req) => {
     }
 
     // Fetch reels data from Apify with the specified limit
-    const rawData = await apifyClient.fetchReelsData(username, parseInt(maxPosts));
+    const rawData = await apifyClient.fetchReelsData(username, parseInt(maxPosts.toString()));
 
     // Transform and save the data
     const transformedData = await dataTransformer.transformAndSaveReels(rawData, profile, username);
