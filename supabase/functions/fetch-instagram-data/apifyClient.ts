@@ -8,7 +8,7 @@ export class ApifyClient {
   async fetchReelsData(username: string, maxPosts: number = 10): Promise<any[]> {
     console.log('Making request to Apify API for', maxPosts, 'posts...');
 
-    const response = await fetch('https://api.apify.com/v2/acts/clockworks~instagram-reels-scraper/run-sync-get-dataset-items', {
+    const response = await fetch('https://api.apify.com/v2/acts/apify/instagram-reel-scraper/run-sync-get-dataset-items', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -17,12 +17,9 @@ export class ApifyClient {
       body: JSON.stringify({
         "username": username,
         "maxPosts": maxPosts,
-        "scrapePostsCount": true,
-        "scrapeFollowers": true,
-        "scrapeComments": true,
-        "scrapeShares": true,
-        "scrapeSaves": true,
-        "scrapeVideoViews": true,
+        "resultsLimit": maxPosts,
+        "shouldDownloadVideos": false,
+        "shouldDownloadCovers": false,
         "proxy": {
           "useApifyProxy": true,
           "apifyProxyGroups": ["RESIDENTIAL"]
