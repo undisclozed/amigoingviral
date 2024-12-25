@@ -21,6 +21,10 @@ serve(async (req) => {
       throw new Error('Username is required');
     }
 
+    if (!APIFY_API_KEY) {
+      throw new Error('APIFY_API_KEY is not configured');
+    }
+
     console.log('Starting fetch for:', { username, userId });
 
     const supabase = createClient(
@@ -29,7 +33,7 @@ serve(async (req) => {
     );
 
     // First try to find an existing profile by instagram account
-    let profile;
+    console.log('Checking for existing profile with instagram account:', username);
     const { data: existingProfile, error: existingProfileError } = await supabase
       .from('profiles')
       .select('id, instagram_account')
@@ -41,11 +45,12 @@ serve(async (req) => {
       throw new Error('Failed to check existing profile');
     }
 
+    let profile;
     if (existingProfile) {
       console.log('Found existing profile:', existingProfile);
       profile = existingProfile;
     } else if (userId) {
-      // If we have a userId but no existing profile, update the user's profile
+      console.log('Updating profile for userId:', userId);
       const { data: updatedProfile, error: updateError } = await supabase
         .from('profiles')
         .update({ instagram_account: username })
@@ -61,7 +66,7 @@ serve(async (req) => {
       console.log('Updated profile:', updatedProfile);
       profile = updatedProfile;
     } else {
-      // If no existing profile and no userId, create a new profile
+      console.log('Creating new profile for instagram account:', username);
       const { data: newProfile, error: createError } = await supabase
         .from('profiles')
         .insert([{ instagram_account: username }])
@@ -83,6 +88,7 @@ serve(async (req) => {
     }
 
     console.log('Using profile:', profile);
+    console.log('Making request to Apify API...');
 
     const response = await fetch('https://api.apify.com/v2/acts/apify~instagram-reel-scraper/run-sync-get-dataset-items', {
       method: 'POST',
@@ -105,6 +111,11 @@ serve(async (req) => {
     const rawData = await response.json();
     console.log('Raw response from Apify:', JSON.stringify(rawData).substring(0, 500) + '...');
 
+    if (!Array.isArray(rawData)) {
+      console.error('Unexpected response format from Apify:', rawData);
+      throw new Error('Invalid response format from Apify');
+    }
+
     const transformedData = await Promise.all(rawData.map(async (reel: any) => {
       const uniqueReelId = `${profile.id}_${reel.id}`;
       
@@ -122,6 +133,8 @@ serve(async (req) => {
         views_count: reel.playsCount || reel.videoPlayCount || 0,
         is_sponsored: reel.isSponsored || false
       };
+
+      console.log('Inserting reel data:', reelData);
 
       // Upsert the reel data
       const { error: upsertError } = await supabase
@@ -144,6 +157,8 @@ serve(async (req) => {
         likes_count: reel.likesCount || 0,
         comments_count: reel.commentsCount || 0,
       };
+
+      console.log('Inserting historical metrics:', historicalMetrics);
 
       const { error: historyError } = await supabase
         .from('reel_metrics_history')
