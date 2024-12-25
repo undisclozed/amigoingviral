@@ -14,13 +14,6 @@ export class ApifyClient {
         "resultsLimit": maxPosts,
         "shouldDownloadVideos": false,
         "shouldDownloadCovers": false,
-        "extendOutputFunction": `async ({ data, item, page, request, customData }) => {
-          const $ = cheerio.load(item.html);
-          item.sharesCount = parseInt($('[data-shares-count]').attr('data-shares-count')) || 0;
-          item.savesCount = parseInt($('[data-saves-count]').attr('data-saves-count')) || 0;
-          item.videoViewCount = parseInt($('[data-video-view-count]').attr('data-video-view-count')) || 0;
-          return item;
-        }`,
         "proxy": {
           "useApifyProxy": true,
           "apifyProxyGroups": ["RESIDENTIAL"]
