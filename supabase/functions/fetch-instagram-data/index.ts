@@ -58,7 +58,7 @@ serve(async (req) => {
               .update({ instagram_account: username })
               .eq('id', userId)
               .select()
-              .single();
+              .maybeSingle();
 
             if (updateError) {
               console.error('Error updating user profile:', updateError);
@@ -74,27 +74,26 @@ serve(async (req) => {
       // If we haven't found a profile yet, check for existing profile by instagram account
       if (!profile) {
         console.log('Checking for existing profile with instagram account:', username);
-        const { data: existingProfile, error: profileError } = await supabase
+        const { data: existingProfiles, error: profileError } = await supabase
           .from('profiles')
           .select('id, instagram_account')
-          .eq('instagram_account', username)
-          .maybeSingle();
+          .eq('instagram_account', username);
 
         if (profileError) {
           console.error('Error checking existing profile:', profileError);
           throw profileError;
         }
 
-        if (existingProfile) {
-          console.log('Found existing profile:', existingProfile);
-          profile = existingProfile;
+        if (existingProfiles && existingProfiles.length > 0) {
+          console.log('Found existing profile:', existingProfiles[0]);
+          profile = existingProfiles[0];
         } else {
           console.log('Creating new profile for instagram account:', username);
           const { data: newProfile, error: createError } = await supabase
             .from('profiles')
             .insert([{ instagram_account: username }])
             .select()
-            .single();
+            .maybeSingle();
 
           if (createError) {
             console.error('Error creating profile:', createError);
