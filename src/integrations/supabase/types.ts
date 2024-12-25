@@ -65,17 +65,31 @@ export type Database = {
       }
       instagram_reels: {
         Row: {
+          average_watch_time: number | null
           caption: string | null
           comments_count: number | null
           created_at: string
+          display_url: string | null
+          engagement_rate: number | null
+          follows_from_post: number | null
           hashtags: string[] | null
           id: string
+          impressions_count: number | null
           instagram_account: string
+          is_business_account: boolean | null
+          is_private: boolean | null
           is_sponsored: boolean | null
+          is_verified: boolean | null
           likes_count: number | null
           location_info: Json | null
+          media_type: string | null
           mentions: string[] | null
           music_info: Json | null
+          owner_full_name: string | null
+          owner_id: string | null
+          owner_profile_pic_url: string | null
+          owner_username: string | null
+          reach_count: number | null
           reel_id: string
           saves_count: number | null
           shares_count: number | null
@@ -88,17 +102,31 @@ export type Database = {
           views_count: number | null
         }
         Insert: {
+          average_watch_time?: number | null
           caption?: string | null
           comments_count?: number | null
           created_at?: string
+          display_url?: string | null
+          engagement_rate?: number | null
+          follows_from_post?: number | null
           hashtags?: string[] | null
           id?: string
+          impressions_count?: number | null
           instagram_account: string
+          is_business_account?: boolean | null
+          is_private?: boolean | null
           is_sponsored?: boolean | null
+          is_verified?: boolean | null
           likes_count?: number | null
           location_info?: Json | null
+          media_type?: string | null
           mentions?: string[] | null
           music_info?: Json | null
+          owner_full_name?: string | null
+          owner_id?: string | null
+          owner_profile_pic_url?: string | null
+          owner_username?: string | null
+          reach_count?: number | null
           reel_id: string
           saves_count?: number | null
           shares_count?: number | null
@@ -111,17 +139,31 @@ export type Database = {
           views_count?: number | null
         }
         Update: {
+          average_watch_time?: number | null
           caption?: string | null
           comments_count?: number | null
           created_at?: string
+          display_url?: string | null
+          engagement_rate?: number | null
+          follows_from_post?: number | null
           hashtags?: string[] | null
           id?: string
+          impressions_count?: number | null
           instagram_account?: string
+          is_business_account?: boolean | null
+          is_private?: boolean | null
           is_sponsored?: boolean | null
+          is_verified?: boolean | null
           likes_count?: number | null
           location_info?: Json | null
+          media_type?: string | null
           mentions?: string[] | null
           music_info?: Json | null
+          owner_full_name?: string | null
+          owner_id?: string | null
+          owner_profile_pic_url?: string | null
+          owner_username?: string | null
+          reach_count?: number | null
           reel_id?: string
           saves_count?: number | null
           shares_count?: number | null
