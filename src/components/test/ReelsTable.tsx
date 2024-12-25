@@ -23,6 +23,11 @@ export const ReelsTable = ({ data }: ReelsTableProps) => {
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
+  const getProxiedImageUrl = (originalUrl: string) => {
+    // Use imgproxy.net as a CORS proxy (free tier)
+    return `https://proxy.cors.sh/${originalUrl}`;
+  };
+
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
     console.error('Image failed to load:', e.currentTarget.src);
     e.currentTarget.src = '/placeholder.svg';
@@ -51,17 +56,30 @@ export const ReelsTable = ({ data }: ReelsTableProps) => {
       </TableHeader>
       <TableBody>
         {data.map((reel: any) => {
-          console.log('Rendering thumbnail for reel:', reel.reel_id, 'URL:', reel.thumbnail_url);
+          console.log('Processing reel thumbnail:', {
+            reelId: reel.reel_id,
+            originalUrl: reel.thumbnail_url,
+            proxiedUrl: reel.thumbnail_url ? getProxiedImageUrl(reel.thumbnail_url) : null
+          });
+          
           return (
             <TableRow key={reel.reel_id}>
               <TableCell>
-                <img 
-                  src={reel.thumbnail_url || '/placeholder.svg'}
-                  alt={reel.thumbnail_url ? "Reel thumbnail" : "Placeholder thumbnail"}
-                  className="w-24 h-24 object-cover rounded-lg"
-                  onError={handleImageError}
-                  crossOrigin="anonymous"
-                />
+                {reel.thumbnail_url ? (
+                  <img 
+                    src={getProxiedImageUrl(reel.thumbnail_url)}
+                    alt="Reel thumbnail"
+                    className="w-24 h-24 object-cover rounded-lg"
+                    onError={handleImageError}
+                    referrerPolicy="no-referrer"
+                  />
+                ) : (
+                  <img 
+                    src="/placeholder.svg"
+                    alt="Placeholder thumbnail"
+                    className="w-24 h-24 object-cover rounded-lg"
+                  />
+                )}
               </TableCell>
               <TableCell className="max-w-md">
                 <p className="line-clamp-2">{reel.caption}</p>
