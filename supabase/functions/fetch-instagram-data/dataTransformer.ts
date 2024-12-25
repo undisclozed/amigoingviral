@@ -11,6 +11,7 @@ export class DataTransformer {
     return await Promise.all(rawData.map(async (reel: any) => {
       const uniqueReelId = `${profile.id}_${reel.id}`;
       
+      // Transform the reel data with additional fields
       const reelData = {
         user_id: profile.id,
         instagram_account: username,
@@ -23,11 +24,18 @@ export class DataTransformer {
         comments_count: reel.commentsCount || 0,
         likes_count: reel.likesCount || 0,
         views_count: reel.playsCount || reel.videoPlayCount || 0,
-        is_sponsored: reel.isSponsored || false
+        is_sponsored: reel.isSponsored || false,
+        shares_count: reel.sharesCount || 0,
+        saves_count: reel.savesCount || 0,
+        hashtags: reel.hashtags || [],
+        mentions: reel.mentions || [],
+        music_info: reel.musicInfo || null,
+        location_info: reel.locationInfo || null
       };
 
       console.log('Inserting reel data:', reelData);
 
+      // First, update the instagram_reels table
       const { error: upsertError } = await this.supabase
         .from('instagram_reels')
         .upsert(reelData, {
@@ -40,12 +48,15 @@ export class DataTransformer {
         throw upsertError;
       }
 
+      // Then, save the metrics history
       const historicalMetrics = {
         reel_id: uniqueReelId,
         user_id: profile.id,
-        views_count: reel.playsCount || reel.videoPlayCount || 0,
-        likes_count: reel.likesCount || 0,
-        comments_count: reel.commentsCount || 0,
+        views_count: reelData.views_count,
+        likes_count: reelData.likes_count,
+        comments_count: reelData.comments_count,
+        shares_count: reelData.shares_count,
+        saves_count: reelData.saves_count
       };
 
       console.log('Inserting historical metrics:', historicalMetrics);
