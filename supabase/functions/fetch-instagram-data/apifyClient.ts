@@ -32,19 +32,24 @@ export class ApifyClient {
             data.timestamp = item.timestamp;
             
             // Video Duration - check multiple possible locations
-            data.videoDuration = item.videoDuration || 
-                                item.video_duration || 
-                                (item.videoInfo && item.videoInfo.duration) ||
-                                (item.video_versions && item.video_versions[0] && item.video_versions[0].duration) ||
-                                (item.video_duration_in_ms ? item.video_duration_in_ms / 1000 : null);
-
-            console.log('Video duration sources:', {
-              directDuration: item.videoDuration,
-              videoDuration: item.video_duration,
-              videoInfoDuration: item.videoInfo?.duration,
-              videoVersionsDuration: item.video_versions?.[0]?.duration,
-              durationInMs: item.video_duration_in_ms
+            console.log('Checking video duration sources:', {
+              videoDuration: item.videoDuration,
+              videoInfo: item.videoInfo,
+              videoVersions: item.video_versions,
+              videoMetadata: item.video_metadata,
+              videoData: item.videoData,
+              mediaInfo: item.mediaInfo
             });
+
+            // Try to get duration from all possible sources
+            data.videoDuration = 
+              item.videoDuration || 
+              (item.videoInfo && item.videoInfo.duration) ||
+              (item.video_versions && item.video_versions[0] && item.video_versions[0].duration) ||
+              (item.video_metadata && item.video_metadata.duration_in_seconds) ||
+              (item.videoData && item.videoData.duration) ||
+              (item.mediaInfo && item.mediaInfo.video_duration) ||
+              (item.video_duration_in_ms ? item.video_duration_in_ms / 1000 : null);
 
             // 2. Engagement Metrics
             data.videoViewCount = item.videoViewCount || 
@@ -117,6 +122,10 @@ export class ApifyClient {
         "proxy": {
           "useApifyProxy": true,
           "apifyProxyGroups": ["RESIDENTIAL"]
+        },
+        "additionalRequests": {
+          "videoMetadata": true,
+          "expandVideos": true
         }
       };
 
@@ -155,6 +164,9 @@ export class ApifyClient {
                        item.video_duration || 
                        (item.videoInfo && item.videoInfo.duration) ||
                        (item.video_versions && item.video_versions[0] && item.video_versions[0].duration) ||
+                       (item.video_metadata && item.video_metadata.duration_in_seconds) ||
+                       (item.videoData && item.videoData.duration) ||
+                       (item.mediaInfo && item.mediaInfo.video_duration) ||
                        (item.video_duration_in_ms ? item.video_duration_in_ms / 1000 : null),
         shares_count: item.sharesCount || item.shares_count || 0,
         saves_count: item.savesCount || item.saves_count || 0,
