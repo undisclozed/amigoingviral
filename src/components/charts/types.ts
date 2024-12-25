@@ -17,6 +17,7 @@ export interface LineChartProps {
   showComparison?: boolean;
   currentCreator?: string;
   comparisonCreator?: string;
+  reelId?: string;
 }
 
 export const metricLabels: Record<MetricType, string> = {

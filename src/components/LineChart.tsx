@@ -5,13 +5,16 @@ import { MetricSelector } from './charts/MetricSelector';
 import { generateTimeData } from './charts/generateTimeData';
 import { LineChartProps, Interval, MetricType, metricLabels } from './charts/types';
 import { ChartControls } from './charts/ChartControls';
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/lib/auth/AuthContext";
 
 export const LineChart = ({ 
   metric = 'views',
   interval = 'daily',
   showComparison = false,
   currentCreator,
-  comparisonCreator
+  comparisonCreator,
+  reelId
 }: LineChartProps) => {
   const [currentInterval, setCurrentInterval] = useState<Interval>(interval);
   const [currentMetric, setCurrentMetric] = useState<MetricType>(metric);
@@ -21,38 +24,57 @@ export const LineChart = ({
   );
   const [averagePeriod, setAveragePeriod] = useState<'10' | '25' | '50'>('25');
   const [averageData, setAverageData] = useState<any[]>([]);
+  const { user } = useAuth();
 
   useEffect(() => {
-    // Generate current period data
-    const currentData = generateTimeData(currentInterval, currentMetric);
-    setData(currentData);
+    const fetchHistoricalData = async () => {
+      if (!user?.id || !reelId) {
+        // If no reelId is provided, use mock data
+        const currentData = generateTimeData(currentInterval, currentMetric);
+        setData(currentData);
+        
+        if (showComparison) {
+          setComparisonData(generateTimeData(currentInterval, currentMetric, true));
+        }
+        return;
+      }
 
-    if (showComparison) {
-      setComparisonData(generateTimeData(currentInterval, currentMetric, true));
-    }
-    
-    // Generate historical datasets based on averagePeriod
-    const numDatasets = parseInt(averagePeriod);
-    const historicalDatasets = Array.from({ length: numDatasets }, (_, i) => 
-      generateTimeData(currentInterval, currentMetric, false, i + 1)
-    );
+      try {
+        const { data: historicalData, error } = await supabase
+          .from('reel_metrics_history')
+          .select('*')
+          .eq('reel_id', reelId)
+          .order('timestamp', { ascending: true });
 
-    // Calculate average value for each time point
-    const averagePoints = currentData.map((item, index) => {
-      const valuesAtTimePoint = historicalDatasets.map(dataset => 
-        dataset[index]?.value || 0
-      );
-      const avgValue = valuesAtTimePoint.reduce((sum, val) => sum + val, 0) / valuesAtTimePoint.length;
-      
-      return {
-        date: item.date,
-        value: avgValue,
-        timestamp: item.timestamp
-      };
-    });
+        if (error) throw error;
 
-    setAverageData(averagePoints);
-  }, [currentInterval, currentMetric, showComparison, averagePeriod]);
+        const formattedData = historicalData.map(record => ({
+          date: new Date(record.timestamp).toLocaleDateString(),
+          value: record[`${currentMetric}_count`] || 0,
+          timestamp: new Date(record.timestamp).getTime()
+        }));
+
+        setData(formattedData);
+
+        // Calculate average from historical data
+        const numDatasets = parseInt(averagePeriod);
+        const totalValues = formattedData.reduce((sum, item) => sum + item.value, 0);
+        const avgValue = totalValues / formattedData.length;
+
+        const averagePoints = formattedData.map(item => ({
+          date: item.date,
+          value: avgValue,
+          timestamp: item.timestamp
+        }));
+
+        setAverageData(averagePoints);
+      } catch (error) {
+        console.error('Error fetching historical data:', error);
+      }
+    };
+
+    fetchHistoricalData();
+  }, [currentInterval, currentMetric, showComparison, averagePeriod, user?.id, reelId]);
 
   const formatYAxisTick = (value: number) => {
     if (currentMetric === 'engagement') {

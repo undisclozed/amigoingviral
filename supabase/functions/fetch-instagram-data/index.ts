@@ -23,13 +23,11 @@ serve(async (req) => {
 
     console.log('Starting fetch for:', { username, userId });
 
-    // Create Supabase client with service role key for database operations
     const supabase = createClient(
       SUPABASE_URL!,
       SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    // First, verify the profile exists and get its ID
     const { data: profile, error: profileError } = await supabase
       .from('profiles')
       .select('id, instagram_account')
@@ -48,7 +46,6 @@ serve(async (req) => {
 
     console.log('Found profile:', profile);
 
-    // Fetch Instagram data from Apify
     const response = await fetch('https://api.apify.com/v2/acts/apify~instagram-reel-scraper/run-sync-get-dataset-items', {
       method: 'POST',
       headers: {
@@ -70,9 +67,7 @@ serve(async (req) => {
     const rawData = await response.json();
     console.log('Raw response from Apify:', JSON.stringify(rawData).substring(0, 500) + '...');
 
-    // Transform and save each reel
     const transformedData = await Promise.all(rawData.map(async (reel: any) => {
-      // Create a unique composite ID using user ID and reel ID
       const uniqueReelId = `${profile.id}_${reel.id}`;
       
       const reelData = {
@@ -90,7 +85,7 @@ serve(async (req) => {
         is_sponsored: reel.isSponsored || false
       };
 
-      // Upsert the reel data using the composite ID
+      // Upsert the reel data
       const { error: upsertError } = await supabase
         .from('instagram_reels')
         .upsert(reelData, {
@@ -101,6 +96,24 @@ serve(async (req) => {
       if (upsertError) {
         console.error('Error upserting reel:', upsertError);
         throw upsertError;
+      }
+
+      // Insert historical metrics
+      const historicalMetrics = {
+        reel_id: uniqueReelId,
+        user_id: profile.id,
+        views_count: reel.playsCount || reel.videoPlayCount || 0,
+        likes_count: reel.likesCount || 0,
+        comments_count: reel.commentsCount || 0,
+      };
+
+      const { error: historyError } = await supabase
+        .from('reel_metrics_history')
+        .insert(historicalMetrics);
+
+      if (historyError) {
+        console.error('Error inserting historical metrics:', historyError);
+        throw historyError;
       }
 
       return reelData;

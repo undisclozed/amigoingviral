@@ -224,6 +224,54 @@ export type Database = {
         }
         Relationships: []
       }
+      reel_metrics_history: {
+        Row: {
+          comments_count: number | null
+          created_at: string | null
+          id: string
+          likes_count: number | null
+          reel_id: string
+          timestamp: string | null
+          user_id: string
+          views_count: number | null
+        }
+        Insert: {
+          comments_count?: number | null
+          created_at?: string | null
+          id?: string
+          likes_count?: number | null
+          reel_id: string
+          timestamp?: string | null
+          user_id: string
+          views_count?: number | null
+        }
+        Update: {
+          comments_count?: number | null
+          created_at?: string | null
+          id?: string
+          likes_count?: number | null
+          reel_id?: string
+          timestamp?: string | null
+          user_id?: string
+          views_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reel_metrics_history_reel_id_fkey"
+            columns: ["reel_id"]
+            isOneToOne: false
+            referencedRelation: "instagram_reels"
+            referencedColumns: ["reel_id"]
+          },
+          {
+            foreignKeyName: "reel_metrics_history_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
