@@ -34,6 +34,17 @@ export const ReelsTable = ({ data }: ReelsTableProps) => {
     img.src = '/placeholder.svg';
   };
 
+  const getThumbnailUrl = (reel: any) => {
+    // Try different URL patterns
+    const url = reel.thumbnail_url || 
+                reel.display_url || 
+                (reel.url ? `${reel.url}media/?size=t` : null) ||
+                '/placeholder.svg';
+    
+    console.log('Using thumbnail URL:', url, 'for reel:', reel.reel_id);
+    return url;
+  };
+
   return (
     <Table>
       <TableHeader>
@@ -60,13 +71,16 @@ export const ReelsTable = ({ data }: ReelsTableProps) => {
           <TableRow key={reel.reel_id}>
             <TableCell>
               <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-gray-100">
-                <img 
-                  src={reel.thumbnail_url || '/placeholder.svg'}
-                  alt="Reel thumbnail"
-                  className="absolute inset-0 w-full h-full object-cover"
-                  onError={handleImageError}
-                  loading="lazy"
-                />
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <img 
+                    src={getThumbnailUrl(reel)}
+                    alt="Reel thumbnail"
+                    className="w-full h-full object-cover"
+                    onError={handleImageError}
+                    loading="lazy"
+                    referrerPolicy="no-referrer"
+                  />
+                </div>
               </div>
             </TableCell>
             <TableCell className="max-w-md">
