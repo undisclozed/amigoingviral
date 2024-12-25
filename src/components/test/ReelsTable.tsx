@@ -24,8 +24,8 @@ export const ReelsTable = ({ data }: ReelsTableProps) => {
   };
 
   const getProxiedImageUrl = (originalUrl: string) => {
-    // Use imgproxy.net as a CORS proxy (free tier)
-    return `https://proxy.cors.sh/${originalUrl}`;
+    // Use a more reliable proxy service
+    return `https://corsproxy.io/?${encodeURIComponent(originalUrl)}`;
   };
 
   const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
@@ -72,6 +72,7 @@ export const ReelsTable = ({ data }: ReelsTableProps) => {
                     className="w-24 h-24 object-cover rounded-lg"
                     onError={handleImageError}
                     referrerPolicy="no-referrer"
+                    loading="lazy"
                   />
                 ) : (
                   <img 
