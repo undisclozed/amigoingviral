@@ -17,6 +17,32 @@ export class DataTransformer {
       
       // Ensure we have a valid timestamp, fallback to current time if not provided
       const timestamp = reel.timestamp ? new Date(reel.timestamp) : new Date();
+
+      // Map duration with the same logic as ApifyClient
+      const videoDuration = 
+        reel.videoDuration || 
+        (reel.videoInfo && reel.videoInfo.duration) ||
+        reel.video_duration ||
+        (reel.video_versions && reel.video_versions[0] && reel.video_versions[0].duration) ||
+        (reel.video_metadata && reel.video_metadata.duration_in_seconds) ||
+        (reel.videoData && reel.videoData.duration) ||
+        (reel.mediaInfo && reel.mediaInfo.video_duration) ||
+        (reel.video_duration_in_ms ? reel.video_duration_in_ms / 1000 : null);
+
+      // Map shares and saves with the same logic as ApifyClient
+      const sharesCount = 
+        reel.sharesCount || 
+        reel.shares_count || 
+        reel.shareCount || 
+        reel.share_count || 
+        0;
+
+      const savesCount = 
+        reel.savesCount || 
+        reel.saves_count || 
+        reel.saveCount || 
+        reel.save_count || 
+        0;
       
       // Transform the reel data with additional fields
       const reelData = {
@@ -27,13 +53,13 @@ export class DataTransformer {
         url: reel.url || '',
         thumbnail_url: reel.thumbnailUrl || reel.displayUrl || '',
         timestamp: timestamp.toISOString(),
-        video_duration: reel.duration || null,
+        video_duration: videoDuration,
         comments_count: reel.commentsCount || 0,
         likes_count: reel.likesCount || 0,
-        views_count: reel.videoViewCount || reel.viewsCount || 0,
+        views_count: reel.videoViewCount || reel.videoPlayCount || reel.viewsCount || 0,
         is_sponsored: reel.isSponsored || false,
-        shares_count: reel.sharesCount || 0,
-        saves_count: reel.savesCount || 0,
+        shares_count: sharesCount,
+        saves_count: savesCount,
         hashtags: reel.hashtags || [],
         mentions: reel.mentions || [],
         music_info: reel.musicInfo || null,
