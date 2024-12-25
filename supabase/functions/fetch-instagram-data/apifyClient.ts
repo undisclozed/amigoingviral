@@ -14,9 +14,19 @@ export class ApifyClient {
         "resultsLimit": maxPosts,
         "shouldDownloadVideos": false,
         "shouldDownloadCovers": false,
-        "scrapePostsUntilDate": "2020-01-01",  // Ensure we get enough historical data
-        "scrapePostsFromDate": "2023-01-01",   // Recent posts only
+        "scrapePostsUntilDate": "2020-01-01",
+        "scrapePostsFromDate": "2023-01-01",
         "maxRequestRetries": 5,
+        "extendOutputFunction": `async ({ data, item, page, request, customData }) => {
+          // Get additional metrics that might not be in the default response
+          const mediaData = item.media;
+          if (mediaData) {
+            data.duration = mediaData.video_duration;
+            data.shares_count = mediaData.share_count || 0;
+            data.saves_count = mediaData.bookmark_count || 0;
+          }
+          return data;
+        }`,
         "proxy": {
           "useApifyProxy": true,
           "apifyProxyGroups": ["RESIDENTIAL"]
@@ -54,9 +64,10 @@ export class ApifyClient {
       // Transform the data to ensure we have all required fields
       const transformedData = rawData.map(item => ({
         ...item,
-        sharesCount: item.sharesCount || 0,
-        savesCount: item.savesCount || 0,
-        videoViewCount: item.videoViewCount || item.viewsCount || 0
+        video_duration: item.duration || item.video_duration || null,
+        shares_count: item.shares_count || item.share_count || 0,
+        saves_count: item.saves_count || item.bookmark_count || 0,
+        views_count: item.videoViewCount || item.viewsCount || 0
       }));
 
       console.log('Transformed data (first item):', 
