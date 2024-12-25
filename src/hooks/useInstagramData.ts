@@ -1,5 +1,4 @@
 import { useQuery } from '@tanstack/react-query';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 
 export const useInstagramData = (username: string | undefined) => {
@@ -10,23 +9,28 @@ export const useInstagramData = (username: string | undefined) => {
         throw new Error('No username provided');
       }
       
-      console.log('Fetching Instagram data for:', username);
-      const { data, error } = await supabase.functions.invoke('fetch-instagram-data', {
-        body: { username }
-      });
-
-      if (error) {
-        console.error('Error fetching Instagram data:', error);
-        throw error;
-      }
-
-      if (!data?.data || !Array.isArray(data.data)) {
-        console.error('Invalid data format received:', data);
-        throw new Error('Invalid data format received from server');
-      }
-
-      console.log('Instagram data fetched:', data);
-      return data;
+      console.log('Mocking Instagram data for:', username);
+      
+      // Return mock data
+      return {
+        data: Array(10).fill(null).map((_, index) => ({
+          id: `mock-${index}`,
+          username: username,
+          thumbnail: 'https://picsum.photos/400/400',
+          caption: `Mock post ${index + 1}`,
+          timestamp: new Date(Date.now() - index * 24 * 60 * 60 * 1000).toISOString(),
+          metrics: {
+            views: Math.floor(Math.random() * 10000),
+            likes: Math.floor(Math.random() * 1000),
+            comments: Math.floor(Math.random() * 100),
+            shares: Math.floor(Math.random() * 50),
+            saves: Math.floor(Math.random() * 200),
+            engagement: Math.random() * 0.1,
+            followsFromPost: Math.floor(Math.random() * 20),
+            averageWatchPercentage: Math.random() * 100,
+          }
+        }))
+      };
     },
     enabled: !!username,
     staleTime: 1000 * 60 * 5, // Consider data fresh for 5 minutes
