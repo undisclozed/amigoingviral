@@ -18,62 +18,37 @@ serve(async (req) => {
       throw new Error('Username is required');
     }
 
-    console.log('Fetching Instagram Reels for:', username);
-    
-    // Get Apify API Key from environment
     const apiKey = Deno.env.get('APIFY_API_KEY');
     if (!apiKey) {
       throw new Error('APIFY_API_KEY is not set');
     }
 
-    // Instagram Reel Scraper actor ID
-    const actorId = 'apify/instagram-reel-scraper';
-    const apifyUrl = `https://api.apify.com/v2/acts/${actorId}/runs?token=${apiKey}`;
+    console.log('Making request to Apify API for:', username);
+    
+    const apifyUrl = `https://api.apify.com/v2/acts/apify~instagram-reel-scraper/run-sync?token=${apiKey}`;
 
-    const input = {
-      directUrls: [`https://www.instagram.com/${username}/reels/`],
-      resultsLimit: 20,
-      proxy: { useApifyProxy: true }
-    };
-
-    // Call the Apify Instagram Reel Scraper API
     const response = await fetch(apifyUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ input })
+      headers: { 
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        username: username,
+        resultsLimit: 1
+      })
     });
 
-    const runResult = await response.json();
-
-    if (!runResult.defaultDatasetId) {
-      throw new Error('Actor run completed, but no dataset was created.');
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Apify API error:', errorText);
+      throw new Error(`Apify API returned status ${response.status}: ${errorText}`);
     }
 
-    // Fetch dataset results from Apify
-    const datasetResponse = await fetch(
-      `https://api.apify.com/v2/datasets/${runResult.defaultDatasetId}/items?token=${apiKey}`
-    );
-
-    const dataset = await datasetResponse.json();
-
-    // Transform data into the format you need
-    const transformedData = dataset.map((reel: any) => ({
-      id: reel.id || `temp-${Date.now()}`,
-      username: reel.ownerUsername || username,
-      thumbnail: reel.thumbnailUrl || '',
-      caption: reel.caption || '',
-      timestamp: reel.timestamp || new Date().toISOString(),
-      metrics: {
-        views: reel.videoViewCount || 0,
-        likes: reel.likesCount || 0,
-        comments: reel.commentsCount || 0,
-        saves: reel.savesCount || 0,
-        shares: reel.sharesCount || 0,
-      }
-    }));
+    const data = await response.json();
+    console.log('Data received from Apify');
 
     return new Response(
-      JSON.stringify({ data: transformedData }),
+      JSON.stringify({ data }),
       {
         headers: {
           ...corsHeaders,
