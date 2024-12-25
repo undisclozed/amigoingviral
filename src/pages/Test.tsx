@@ -63,6 +63,16 @@ export default function Test() {
     }
   };
 
+  const formatDate = (timestamp: string) => {
+    return new Date(timestamp).toLocaleString();
+  };
+
+  const formatDuration = (duration: number) => {
+    const minutes = Math.floor(duration / 60);
+    const seconds = duration % 60;
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
+  };
+
   return (
     <div className="container mx-auto p-4 max-w-6xl">
       <h1 className="text-2xl font-bold mb-6">Instagram Reels Scraper Test</h1>
@@ -118,18 +128,21 @@ export default function Test() {
                 <TableHead>Thumbnail</TableHead>
                 <TableHead>Caption</TableHead>
                 <TableHead>Link</TableHead>
+                <TableHead>Posted</TableHead>
+                <TableHead className="text-right">Duration</TableHead>
                 <TableHead className="text-right">Comments</TableHead>
                 <TableHead className="text-right">Likes</TableHead>
                 <TableHead className="text-right">Views</TableHead>
+                <TableHead>Sponsored</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {data.map((reel: any) => (
                 <TableRow key={reel.id}>
                   <TableCell>
-                    {reel.previewImage && (
+                    {reel.thumbnailUrl && (
                       <img 
-                        src={reel.previewImage} 
+                        src={reel.thumbnailUrl} 
                         alt="Reel thumbnail" 
                         className="w-24 h-24 object-cover rounded-lg"
                       />
@@ -148,9 +161,14 @@ export default function Test() {
                       View Post
                     </a>
                   </TableCell>
+                  <TableCell>{formatDate(reel.timestamp)}</TableCell>
+                  <TableCell className="text-right">
+                    {reel.videoDuration ? formatDuration(reel.videoDuration) : 'N/A'}
+                  </TableCell>
                   <TableCell className="text-right">{reel.commentsCount?.toLocaleString()}</TableCell>
                   <TableCell className="text-right">{reel.likesCount?.toLocaleString()}</TableCell>
                   <TableCell className="text-right">{reel.viewsCount?.toLocaleString()}</TableCell>
+                  <TableCell>{reel.isSponsored ? 'Yes' : 'No'}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
