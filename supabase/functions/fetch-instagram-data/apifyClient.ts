@@ -9,15 +9,14 @@ export class ApifyClient {
     console.log('Making request to Apify API for', maxPosts, 'posts from user:', username);
 
     try {
-      const response = await fetch('https://api.apify.com/v2/acts/clockworks~instagram-reels-scraper/runs', {
+      const response = await fetch('https://api.apify.com/v2/acts/apify~instagram-reel-scraper/run-sync-get-dataset-items', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${this.apiKey}`,
         },
         body: JSON.stringify({
-          "username": username,
-          "maxPosts": maxPosts,
+          "username": [username],
           "resultsLimit": maxPosts,
           "shouldDownloadVideos": false,
           "shouldDownloadCovers": false,
@@ -43,41 +42,15 @@ export class ApifyClient {
         throw new Error(`Apify API returned status ${response.status}`);
       }
 
-      const runData = await response.json();
-      console.log('Run started with ID:', runData.id);
+      const rawData = await response.json();
+      console.log('Raw response from Apify:', JSON.stringify(rawData).substring(0, 500) + '...');
 
-      // Wait for the run to finish and get results
-      const datasetUrl = `https://api.apify.com/v2/actor-runs/${runData.id}/dataset/items?token=${this.apiKey}`;
-      const maxAttempts = 30;
-      let attempt = 0;
-
-      while (attempt < maxAttempts) {
-        const statusResponse = await fetch(`https://api.apify.com/v2/actor-runs/${runData.id}?token=${this.apiKey}`);
-        const statusData = await statusResponse.json();
-
-        if (statusData.status === 'SUCCEEDED') {
-          const dataResponse = await fetch(datasetUrl);
-          const rawData = await dataResponse.json();
-          console.log('Raw response from Apify:', JSON.stringify(rawData).substring(0, 500) + '...');
-
-          if (!Array.isArray(rawData)) {
-            console.error('Unexpected response format from Apify:', rawData);
-            throw new Error('Invalid response format from Apify');
-          }
-
-          return rawData;
-        }
-
-        if (statusData.status === 'FAILED' || statusData.status === 'ABORTED') {
-          throw new Error(`Run failed with status: ${statusData.status}`);
-        }
-
-        // Wait 5 seconds before checking again
-        await new Promise(resolve => setTimeout(resolve, 5000));
-        attempt++;
+      if (!Array.isArray(rawData)) {
+        console.error('Unexpected response format from Apify:', rawData);
+        throw new Error('Invalid response format from Apify');
       }
 
-      throw new Error('Timeout waiting for Apify run to complete');
+      return rawData;
     } catch (error) {
       console.error('Error in fetchReelsData:', error);
       throw error;
