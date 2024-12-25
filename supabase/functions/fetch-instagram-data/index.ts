@@ -38,10 +38,26 @@ serve(async (req) => {
       throw new Error(`Apify API returned status ${response.status}: ${errorText}`);
     }
 
-    const data = await response.json();
-    console.log('Successfully fetched reels data');
+    const rawData = await response.json();
+    console.log('Raw response from Apify:', JSON.stringify(rawData).substring(0, 500) + '...');
 
-    return new Response(JSON.stringify({ data }), {
+    // Transform the data to ensure we have all required fields
+    const transformedData = rawData.map((reel: any) => ({
+      id: reel.id,
+      caption: reel.caption || '',
+      url: reel.url,
+      timestamp: reel.timestamp,
+      thumbnailUrl: reel.previewImageUrl || reel.displayUrl, // Try both possible image URLs
+      videoDuration: reel.videoDuration,
+      commentsCount: reel.commentsCount || 0,
+      likesCount: reel.likesCount || 0,
+      viewsCount: reel.playsCount || reel.videoPlayCount || 0, // Try both possible view count fields
+      isSponsored: reel.isSponsored || false
+    }));
+
+    console.log('Transformed first item:', JSON.stringify(transformedData[0], null, 2));
+
+    return new Response(JSON.stringify({ data: transformedData }), {
       headers: {
         ...corsHeaders,
         'Content-Type': 'application/json',
