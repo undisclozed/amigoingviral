@@ -8,10 +8,10 @@ export class DataTransformer {
   }
 
   async transformAndSaveReels(rawData: any[], profile: any, username: string): Promise<any[]> {
-    console.log('Raw data received:', rawData);
+    console.log('Raw data received:', JSON.stringify(rawData[0], null, 2));
     
     return await Promise.all(rawData.map(async (reel: any) => {
-      console.log('Processing reel:', reel);
+      console.log('Processing reel:', JSON.stringify(reel, null, 2));
       
       const uniqueReelId = `${profile.id}_${reel.id}`;
       
