@@ -28,40 +28,61 @@ serve(async (req) => {
       SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    // If userId is not provided, try to find the profile by instagram_account
+    // First try to find an existing profile by instagram account
     let profile;
-    if (userId) {
-      const { data: userProfile, error: profileError } = await supabase
+    const { data: existingProfile, error: existingProfileError } = await supabase
+      .from('profiles')
+      .select('id, instagram_account')
+      .eq('instagram_account', username)
+      .maybeSingle();
+
+    if (existingProfileError) {
+      console.error('Error checking existing profile:', existingProfileError);
+      throw new Error('Failed to check existing profile');
+    }
+
+    if (existingProfile) {
+      console.log('Found existing profile:', existingProfile);
+      profile = existingProfile;
+    } else if (userId) {
+      // If we have a userId but no existing profile, update the user's profile
+      const { data: updatedProfile, error: updateError } = await supabase
         .from('profiles')
-        .select('id, instagram_account')
+        .update({ instagram_account: username })
         .eq('id', userId)
+        .select()
         .single();
 
-      if (profileError) {
-        console.error('Error fetching profile by userId:', profileError);
-        throw new Error('Failed to fetch profile by userId');
+      if (updateError) {
+        console.error('Error updating profile:', updateError);
+        throw new Error('Failed to update profile');
       }
-      profile = userProfile;
+
+      console.log('Updated profile:', updatedProfile);
+      profile = updatedProfile;
     } else {
-      const { data: accountProfile, error: accountProfileError } = await supabase
+      // If no existing profile and no userId, create a new profile
+      const { data: newProfile, error: createError } = await supabase
         .from('profiles')
-        .select('id, instagram_account')
-        .eq('instagram_account', username)
+        .insert([{ instagram_account: username }])
+        .select()
         .single();
 
-      if (accountProfileError) {
-        console.error('Error fetching profile by instagram_account:', accountProfileError);
-        throw new Error('Failed to fetch profile by instagram_account');
+      if (createError) {
+        console.error('Error creating profile:', createError);
+        throw new Error('Failed to create profile');
       }
-      profile = accountProfile;
+
+      console.log('Created new profile:', newProfile);
+      profile = newProfile;
     }
 
     if (!profile) {
-      console.error('No profile found for:', { userId, username });
-      throw new Error('Profile not found');
+      console.error('No profile found or created for:', { userId, username });
+      throw new Error('Profile not found and could not be created');
     }
 
-    console.log('Found profile:', profile);
+    console.log('Using profile:', profile);
 
     const response = await fetch('https://api.apify.com/v2/acts/apify~instagram-reel-scraper/run-sync-get-dataset-items', {
       method: 'POST',
