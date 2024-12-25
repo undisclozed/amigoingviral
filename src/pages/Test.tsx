@@ -1,30 +1,19 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
 import { useAuth } from "@/lib/auth/AuthContext";
+import { TestForm } from "@/components/test/TestForm";
+import { ReelsTable } from "@/components/test/ReelsTable";
 
 export default function Test() {
-  const [username, setUsername] = useState("");
-  const [maxPosts, setMaxPosts] = useState("10");
   const [isLoading, setIsLoading] = useState(false);
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [rawResponse, setRawResponse] = useState<string | null>(null);
   const { user } = useAuth();
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSubmit = async (username: string, maxPosts: string) => {
     setIsLoading(true);
     setData(null);
     setError(null);
@@ -76,54 +65,11 @@ export default function Test() {
     }
   };
 
-  const formatDate = (timestamp: string) => {
-    return new Date(timestamp).toLocaleString();
-  };
-
-  const formatDuration = (duration: number) => {
-    const minutes = Math.floor(duration / 60);
-    const seconds = duration % 60;
-    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
-
   return (
     <div className="container mx-auto p-4 max-w-6xl">
       <h1 className="text-2xl font-bold mb-6">Instagram Reels Scraper Test</h1>
       
-      <Card className="p-6 mb-6">
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <label htmlFor="username" className="block text-sm font-medium mb-2">
-              Instagram Username
-            </label>
-            <Input
-              id="username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              placeholder="Enter Instagram username (without @)"
-              required
-            />
-          </div>
-          <div>
-            <label htmlFor="maxPosts" className="block text-sm font-medium mb-2">
-              Number of Reels
-            </label>
-            <Input
-              id="maxPosts"
-              type="number"
-              min="1"
-              max="100"
-              value={maxPosts}
-              onChange={(e) => setMaxPosts(e.target.value)}
-              placeholder="Enter number of reels to fetch"
-              required
-            />
-          </div>
-          <Button type="submit" disabled={isLoading}>
-            {isLoading ? "Loading..." : "Fetch Reels"}
-          </Button>
-        </form>
-      </Card>
+      <TestForm onSubmit={handleSubmit} isLoading={isLoading} />
 
       {error && (
         <Card className="p-6 mb-6 border-red-200 bg-red-50">
@@ -135,57 +81,7 @@ export default function Test() {
       {data && data.length > 0 && (
         <Card className="p-6 mb-6 overflow-x-auto">
           <h2 className="text-xl font-semibold mb-4">Reels Data (Saved to Database)</h2>
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>Thumbnail</TableHead>
-                <TableHead>Caption</TableHead>
-                <TableHead>Link</TableHead>
-                <TableHead>Posted</TableHead>
-                <TableHead className="text-right">Duration</TableHead>
-                <TableHead className="text-right">Comments</TableHead>
-                <TableHead className="text-right">Likes</TableHead>
-                <TableHead className="text-right">Views</TableHead>
-                <TableHead>Sponsored</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {data.map((reel: any) => (
-                <TableRow key={reel.reel_id}>
-                  <TableCell>
-                    {reel.thumbnail_url && (
-                      <img 
-                        src={reel.thumbnail_url} 
-                        alt="Reel thumbnail" 
-                        className="w-24 h-24 object-cover rounded-lg"
-                      />
-                    )}
-                  </TableCell>
-                  <TableCell className="max-w-md">
-                    <p className="line-clamp-2">{reel.caption}</p>
-                  </TableCell>
-                  <TableCell>
-                    <a 
-                      href={reel.url} 
-                      target="_blank" 
-                      rel="noopener noreferrer"
-                      className="text-blue-600 hover:underline"
-                    >
-                      View Post
-                    </a>
-                  </TableCell>
-                  <TableCell>{formatDate(reel.timestamp)}</TableCell>
-                  <TableCell className="text-right">
-                    {reel.video_duration ? formatDuration(reel.video_duration) : 'N/A'}
-                  </TableCell>
-                  <TableCell className="text-right">{reel.comments_count?.toLocaleString()}</TableCell>
-                  <TableCell className="text-right">{reel.likes_count?.toLocaleString()}</TableCell>
-                  <TableCell className="text-right">{reel.views_count?.toLocaleString()}</TableCell>
-                  <TableCell>{reel.is_sponsored ? 'Yes' : 'No'}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+          <ReelsTable data={data} />
         </Card>
       )}
 
