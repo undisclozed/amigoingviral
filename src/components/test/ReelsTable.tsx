@@ -35,14 +35,12 @@ export const ReelsTable = ({ data }: ReelsTableProps) => {
   };
 
   const getThumbnailUrl = (reel: any) => {
-    // Try different URL patterns
-    const url = reel.thumbnail_url || 
-                reel.display_url || 
-                (reel.url ? `${reel.url}media/?size=t` : null) ||
-                '/placeholder.svg';
+    // Try to use a proxy service to bypass CORS
+    const proxyUrl = 'https://images.weserv.nl/?url=';
+    const originalUrl = encodeURIComponent(reel.thumbnail_url || reel.display_url || '/placeholder.svg');
     
-    console.log('Using thumbnail URL:', url, 'for reel:', reel.reel_id);
-    return url;
+    console.log('Original URL:', originalUrl);
+    return originalUrl.includes('placeholder.svg') ? '/placeholder.svg' : `${proxyUrl}${originalUrl}`;
   };
 
   return (
@@ -78,7 +76,6 @@ export const ReelsTable = ({ data }: ReelsTableProps) => {
                     className="w-full h-full object-cover"
                     onError={handleImageError}
                     loading="lazy"
-                    referrerPolicy="no-referrer"
                   />
                 </div>
               </div>
