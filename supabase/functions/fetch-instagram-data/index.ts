@@ -18,32 +18,24 @@ serve(async (req) => {
       throw new Error('Username is required');
     }
 
-    console.log('Fetching Instagram data for:', username);
-    
     const apiKey = Deno.env.get('APIFY_API_KEY');
     if (!apiKey) {
       throw new Error('APIFY_API_KEY is not set');
     }
 
-    console.log('APIFY_API_KEY length:', apiKey.length);
-
-    // Using the Instagram Reel Scraper actor directly
+    console.log('Making request to Apify API for:', username);
+    
     const apifyUrl = `https://api.apify.com/v2/acts/apify~instagram-reel-scraper/run-sync?token=${apiKey}`;
-
-    const input = {
-      usernames: [username], // Expects an array of usernames
-      maxPosts: 1,
-    };
-
-    console.log('Making request to Apify URL:', apifyUrl);
-    console.log('With input:', JSON.stringify(input));
 
     const response = await fetch(apifyUrl, {
       method: 'POST',
       headers: { 
         'Content-Type': 'application/json',
       },
-      body: JSON.stringify(input)
+      body: JSON.stringify({
+        usernames: [username],
+        maxPosts: 1,
+      })
     });
 
     if (!response.ok) {
@@ -53,7 +45,7 @@ serve(async (req) => {
     }
 
     const data = await response.json();
-    console.log('Raw data received:', JSON.stringify(data, null, 2));
+    console.log('Data received from Apify');
 
     return new Response(
       JSON.stringify({ data }),
