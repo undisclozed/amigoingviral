@@ -33,13 +33,17 @@ export const ReelsTable = ({ data }: ReelsTableProps) => {
     console.log('Thumbnail URL fields:', {
       thumbnail_url: reel.thumbnail_url,
       display_url: reel.display_url,
-      displayUrl: reel.displayUrl
+      displayUrl: reel.displayUrl,
+      thumbnailUrl: reel.thumbnailUrl,
+      mediaUrl: reel.mediaUrl
     });
 
     // Try all possible thumbnail URL fields in order of preference
-    const url = reel.thumbnail_url || 
+    const url = reel.thumbnailUrl || 
+                reel.thumbnail_url || 
                 reel.display_url || 
                 reel.displayUrl || 
+                reel.mediaUrl || 
                 '/placeholder.svg';
     
     console.log('Selected thumbnail URL:', url);
@@ -74,10 +78,11 @@ export const ReelsTable = ({ data }: ReelsTableProps) => {
               <div className="relative w-24 h-24 rounded-lg overflow-hidden">
                 <img 
                   src={getThumbnailUrl(reel)}
-                  alt="Reel thumbnail"
+                  alt={`Thumbnail for ${reel.caption?.substring(0, 30) || 'reel'}`}
                   className="absolute inset-0 w-full h-full object-cover"
                   onError={handleImageError}
                   loading="lazy"
+                  crossOrigin="anonymous"
                 />
               </div>
             </TableCell>
