@@ -26,7 +26,7 @@ export class DataTransformer {
         caption: reel.caption || '',
         url: reel.url || '',
         thumbnail_url: reel.previewImageUrl || reel.displayUrl || '',
-        timestamp: timestamp.toISOString(), // Ensure we're storing as ISO string
+        timestamp: timestamp.toISOString(),
         video_duration: reel.videoDuration || null,
         comments_count: reel.commentsCount || 0,
         likes_count: reel.likesCount || 0,
@@ -64,7 +64,7 @@ export class DataTransformer {
         comments_count: reelData.comments_count,
         shares_count: reelData.shares_count,
         saves_count: reelData.saves_count,
-        timestamp: timestamp.toISOString() // Use the same timestamp for consistency
+        timestamp: timestamp.toISOString()
       };
 
       console.log('Inserting historical metrics:', historicalMetrics);

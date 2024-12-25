@@ -18,26 +18,45 @@ export class ApifyClient {
         "username": [username],
         "resultsLimit": maxPosts,
         "extendOutputFunction": `async ({ data, item, page, customData }) => {
-          // Get additional metrics
-          const videoViewCount = await page.evaluate(() => {
-            const viewElement = document.querySelector('span[class*="video-view-count"]');
+          // Get video view count
+          const viewCount = await page.evaluate(() => {
+            const viewElement = document.querySelector('span._aacl._aacp._aacw._aad0._aad7');
             return viewElement ? parseInt(viewElement.textContent.replace(/[^0-9]/g, '')) : null;
           });
           
-          // Get shares and saves counts
+          // Get engagement metrics
           const metrics = await page.evaluate(() => {
-            const sharesElement = document.querySelector('span[class*="shares-count"]');
-            const savesElement = document.querySelector('span[class*="saves-count"]');
-            return {
-              sharesCount: sharesElement ? parseInt(sharesElement.textContent.replace(/[^0-9]/g, '')) : 0,
-              savesCount: savesElement ? parseInt(savesElement.textContent.replace(/[^0-9]/g, '')) : 0
-            };
+            const elements = document.querySelectorAll('span._aacl._aacp._aacw._aad0._aad7');
+            let shares = 0;
+            let saves = 0;
+            
+            elements.forEach(el => {
+              const text = el.textContent.toLowerCase();
+              if (text.includes('share')) {
+                shares = parseInt(text.replace(/[^0-9]/g, '')) || 0;
+              }
+              if (text.includes('save')) {
+                saves = parseInt(text.replace(/[^0-9]/g, '')) || 0;
+              }
+            });
+            
+            return { shares, saves };
           });
           
-          // Add to the data object
-          data.videoViewCount = videoViewCount;
-          data.sharesCount = metrics.sharesCount;
-          data.savesCount = metrics.savesCount;
+          // Add metrics to the data object
+          data.videoViewCount = viewCount;
+          data.sharesCount = metrics.shares;
+          data.savesCount = metrics.saves;
+          
+          // Log the collected metrics for debugging
+          console.log('Collected metrics:', {
+            videoViewCount: data.videoViewCount,
+            sharesCount: data.sharesCount,
+            savesCount: data.savesCount,
+            likesCount: data.likesCount,
+            commentsCount: data.commentsCount
+          });
+          
           return data;
         }`
       }),
