@@ -8,7 +8,7 @@ export class ApifyClient {
   async fetchReelsData(username: string, maxPosts: number = 10): Promise<any[]> {
     console.log('Making request to Apify API for', maxPosts, 'posts...');
 
-    const response = await fetch('https://api.apify.com/v2/acts/clockworks~instagram-reels-scraper/run-sync-get-dataset-items', {
+    const response = await fetch('https://api.apify.com/v2/acts/apify/instagram-scraper/run-sync-get-dataset-items', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -17,12 +17,25 @@ export class ApifyClient {
       body: JSON.stringify({
         "username": username,
         "maxPosts": maxPosts,
-        "scrapePostsCount": true,
-        "scrapeFollowers": true,
-        "scrapeComments": true,
-        "scrapeShares": true,
-        "scrapeSaves": true,
-        "scrapeVideoViews": true,
+        "resultsType": "reels",
+        "extendOutputFunction": `async ({ page, data }) => {
+          const metrics = await page.evaluate(() => {
+            const shares = document.querySelector('[data-share-count]')?.getAttribute('data-share-count') || '0';
+            const saves = document.querySelector('[data-save-count]')?.getAttribute('data-save-count') || '0';
+            const views = document.querySelector('[data-view-count]')?.getAttribute('data-view-count') || '0';
+            
+            return {
+              sharesCount: parseInt(shares),
+              savesCount: parseInt(saves),
+              viewsCount: parseInt(views)
+            };
+          });
+          
+          return {
+            ...data,
+            ...metrics
+          };
+        }`,
         "proxy": {
           "useApifyProxy": true,
           "apifyProxyGroups": ["RESIDENTIAL"]
