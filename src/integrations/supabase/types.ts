@@ -63,6 +63,68 @@ export type Database = {
         }
         Relationships: []
       }
+      instagram_reels: {
+        Row: {
+          caption: string | null
+          comments_count: number | null
+          created_at: string
+          id: string
+          instagram_account: string
+          is_sponsored: boolean | null
+          likes_count: number | null
+          reel_id: string
+          thumbnail_url: string | null
+          timestamp: string
+          updated_at: string
+          url: string
+          user_id: string
+          video_duration: number | null
+          views_count: number | null
+        }
+        Insert: {
+          caption?: string | null
+          comments_count?: number | null
+          created_at?: string
+          id?: string
+          instagram_account: string
+          is_sponsored?: boolean | null
+          likes_count?: number | null
+          reel_id: string
+          thumbnail_url?: string | null
+          timestamp: string
+          updated_at?: string
+          url: string
+          user_id: string
+          video_duration?: number | null
+          views_count?: number | null
+        }
+        Update: {
+          caption?: string | null
+          comments_count?: number | null
+          created_at?: string
+          id?: string
+          instagram_account?: string
+          is_sponsored?: boolean | null
+          likes_count?: number | null
+          reel_id?: string
+          thumbnail_url?: string | null
+          timestamp?: string
+          updated_at?: string
+          url?: string
+          user_id?: string
+          video_duration?: number | null
+          views_count?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "instagram_reels_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       post_metrics: {
         Row: {
           avg_watch_percentage: number | null

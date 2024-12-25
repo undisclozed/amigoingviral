@@ -1,4 +1,5 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
+import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,12 +14,32 @@ serve(async (req) => {
   try {
     const { username, maxPosts } = await req.json();
     const APIFY_API_KEY = Deno.env.get('APIFY_API_KEY');
+    const SUPABASE_URL = Deno.env.get('SUPABASE_URL');
+    const SUPABASE_SERVICE_ROLE_KEY = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
     if (!username) {
       throw new Error('Username is required');
     }
 
     console.log('Fetching reels for:', username, 'max posts:', maxPosts);
+
+    // Create Supabase client with service role key for database operations
+    const supabase = createClient(
+      SUPABASE_URL!,
+      SUPABASE_SERVICE_ROLE_KEY!
+    );
+
+    // First, get the user_id for this Instagram account
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('id')
+      .eq('instagram_account', username)
+      .single();
+
+    if (profileError || !profile) {
+      console.error('Error fetching profile:', profileError);
+      throw new Error('Profile not found for Instagram account');
+    }
 
     const response = await fetch('https://api.apify.com/v2/acts/apify~instagram-reel-scraper/run-sync-get-dataset-items', {
       method: 'POST',
@@ -41,21 +62,39 @@ serve(async (req) => {
     const rawData = await response.json();
     console.log('Raw response from Apify:', JSON.stringify(rawData).substring(0, 500) + '...');
 
-    // Transform the data to ensure we have all required fields
-    const transformedData = rawData.map((reel: any) => ({
-      id: reel.id,
-      caption: reel.caption || '',
-      url: reel.url,
-      timestamp: reel.timestamp,
-      thumbnailUrl: reel.previewImageUrl || reel.displayUrl, // Try both possible image URLs
-      videoDuration: reel.videoDuration,
-      commentsCount: reel.commentsCount || 0,
-      likesCount: reel.likesCount || 0,
-      viewsCount: reel.playsCount || reel.videoPlayCount || 0, // Try both possible view count fields
-      isSponsored: reel.isSponsored || false
+    // Transform and save each reel
+    const transformedData = await Promise.all(rawData.map(async (reel: any) => {
+      const reelData = {
+        user_id: profile.id,
+        instagram_account: username,
+        reel_id: reel.id,
+        caption: reel.caption || '',
+        url: reel.url,
+        thumbnail_url: reel.previewImageUrl || reel.displayUrl,
+        timestamp: reel.timestamp,
+        video_duration: reel.videoDuration,
+        comments_count: reel.commentsCount || 0,
+        likes_count: reel.likesCount || 0,
+        views_count: reel.playsCount || reel.videoPlayCount || 0,
+        is_sponsored: reel.isSponsored || false
+      };
+
+      // Upsert the reel data
+      const { error: upsertError } = await supabase
+        .from('instagram_reels')
+        .upsert(reelData, {
+          onConflict: 'instagram_account,reel_id'
+        });
+
+      if (upsertError) {
+        console.error('Error upserting reel:', upsertError);
+        throw upsertError;
+      }
+
+      return reelData;
     }));
 
-    console.log('Transformed first item:', JSON.stringify(transformedData[0], null, 2));
+    console.log(`Successfully processed ${transformedData.length} reels`);
 
     return new Response(JSON.stringify({ data: transformedData }), {
       headers: {
@@ -67,7 +106,10 @@ serve(async (req) => {
   } catch (error) {
     console.error('Error:', error);
     return new Response(
-      JSON.stringify({ error: error.message, details: 'Check Supabase logs for more information' }),
+      JSON.stringify({ 
+        error: error.message, 
+        details: 'Check Supabase logs for more information' 
+      }),
       {
         headers: {
           ...corsHeaders,

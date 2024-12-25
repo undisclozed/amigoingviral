@@ -12,6 +12,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { useAuth } from "@/lib/auth/AuthContext";
 
 export default function Test() {
   const [username, setUsername] = useState("");
@@ -20,6 +21,7 @@ export default function Test() {
   const [data, setData] = useState<any>(null);
   const [error, setError] = useState<string | null>(null);
   const [rawResponse, setRawResponse] = useState<string | null>(null);
+  const { user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -31,6 +33,17 @@ export default function Test() {
     try {
       console.log('Starting Instagram reels fetch for:', username, 'max posts:', maxPosts);
       
+      // First update the profile with the Instagram account
+      const { error: profileError } = await supabase
+        .from('profiles')
+        .update({ instagram_account: username.replace('@', '') })
+        .eq('id', user?.id);
+
+      if (profileError) {
+        console.error('Error updating profile:', profileError);
+        throw profileError;
+      }
+
       const { data: response, error } = await supabase.functions.invoke('fetch-instagram-data', {
         body: { 
           username: username.replace('@', ''),
@@ -52,7 +65,7 @@ export default function Test() {
 
       setData(response.data);
       setRawResponse(JSON.stringify(response, null, 2));
-      toast.success('Instagram reels fetched successfully');
+      toast.success('Instagram reels fetched and saved successfully');
     } catch (error) {
       console.error('Error:', error);
       const errorMessage = error instanceof Error ? error.message : 'Failed to fetch Instagram reels';
@@ -121,7 +134,7 @@ export default function Test() {
 
       {data && data.length > 0 && (
         <Card className="p-6 mb-6 overflow-x-auto">
-          <h2 className="text-xl font-semibold mb-4">Reels Data</h2>
+          <h2 className="text-xl font-semibold mb-4">Reels Data (Saved to Database)</h2>
           <Table>
             <TableHeader>
               <TableRow>
@@ -138,11 +151,11 @@ export default function Test() {
             </TableHeader>
             <TableBody>
               {data.map((reel: any) => (
-                <TableRow key={reel.id}>
+                <TableRow key={reel.reel_id}>
                   <TableCell>
-                    {reel.thumbnailUrl && (
+                    {reel.thumbnail_url && (
                       <img 
-                        src={reel.thumbnailUrl} 
+                        src={reel.thumbnail_url} 
                         alt="Reel thumbnail" 
                         className="w-24 h-24 object-cover rounded-lg"
                       />
@@ -163,12 +176,12 @@ export default function Test() {
                   </TableCell>
                   <TableCell>{formatDate(reel.timestamp)}</TableCell>
                   <TableCell className="text-right">
-                    {reel.videoDuration ? formatDuration(reel.videoDuration) : 'N/A'}
+                    {reel.video_duration ? formatDuration(reel.video_duration) : 'N/A'}
                   </TableCell>
-                  <TableCell className="text-right">{reel.commentsCount?.toLocaleString()}</TableCell>
-                  <TableCell className="text-right">{reel.likesCount?.toLocaleString()}</TableCell>
-                  <TableCell className="text-right">{reel.viewsCount?.toLocaleString()}</TableCell>
-                  <TableCell>{reel.isSponsored ? 'Yes' : 'No'}</TableCell>
+                  <TableCell className="text-right">{reel.comments_count?.toLocaleString()}</TableCell>
+                  <TableCell className="text-right">{reel.likes_count?.toLocaleString()}</TableCell>
+                  <TableCell className="text-right">{reel.views_count?.toLocaleString()}</TableCell>
+                  <TableCell>{reel.is_sponsored ? 'Yes' : 'No'}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
