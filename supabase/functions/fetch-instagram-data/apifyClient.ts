@@ -20,7 +20,12 @@ export class ApifyClient {
         "extendOutputFunction": `async ({ data, item, page, request, customData }) => {
           try {
             // Log the complete raw item data for debugging
-            console.log('Complete raw item data:', JSON.stringify(item, null, 2));
+            console.log('Raw item data for duration/shares/saves:', {
+              duration: item.videoDuration,
+              videoInfo: item.videoInfo,
+              shares: item.sharesCount,
+              saves: item.savesCount
+            });
             
             // 1. Basic Reel/Post Information
             data.id = item.id;
@@ -28,30 +33,22 @@ export class ApifyClient {
             data.url = item.url || \`https://www.instagram.com/p/\${item.shortCode}/\`;
             data.caption = item.caption;
             data.thumbnailUrl = item.thumbnailUrl || item.displayUrl;
-            data.videoUrl = item.videoUrl;
             data.timestamp = item.timestamp;
             
-            // Video Duration - check multiple possible locations
-            console.log('Checking video duration sources:', {
-              videoDuration: item.videoDuration,
-              videoInfo: item.videoInfo,
-              videoVersions: item.video_versions,
-              videoMetadata: item.video_metadata,
-              videoData: item.videoData,
-              mediaInfo: item.mediaInfo
-            });
-
-            // Try to get duration from all possible sources
+            // Enhanced Video Duration Mapping
             data.videoDuration = 
               item.videoDuration || 
               (item.videoInfo && item.videoInfo.duration) ||
+              (item.video_duration) ||
               (item.video_versions && item.video_versions[0] && item.video_versions[0].duration) ||
               (item.video_metadata && item.video_metadata.duration_in_seconds) ||
               (item.videoData && item.videoData.duration) ||
               (item.mediaInfo && item.mediaInfo.video_duration) ||
               (item.video_duration_in_ms ? item.video_duration_in_ms / 1000 : null);
 
-            // 2. Engagement Metrics
+            console.log('Mapped video duration:', data.videoDuration);
+
+            // 2. Engagement Metrics with enhanced logging
             data.videoViewCount = item.videoViewCount || 
                                 item.videoPlayCount || 
                                 item.video_play_count || 
@@ -59,11 +56,27 @@ export class ApifyClient {
                                 0;
             data.likesCount = item.likesCount || 0;
             data.commentsCount = item.commentsCount || 0;
-            data.sharesCount = item.sharesCount || 0;
-            data.savesCount = item.savesCount || 0;
+            
+            // Enhanced shares and saves mapping
+            data.sharesCount = item.sharesCount || 
+                              item.shares_count || 
+                              item.shareCount || 
+                              item.share_count || 
+                              0;
+            
+            data.savesCount = item.savesCount || 
+                             item.saves_count || 
+                             item.saveCount || 
+                             item.save_count || 
+                             0;
+
+            console.log('Mapped engagement metrics:', {
+              shares: data.sharesCount,
+              saves: data.savesCount
+            });
             
             // Calculate engagement rate
-            const totalEngagements = data.likesCount + data.commentsCount;
+            const totalEngagements = data.likesCount + data.commentsCount + data.savesCount + data.sharesCount;
             data.engagementRate = data.videoViewCount > 0 
               ? (totalEngagements / data.videoViewCount) * 100 
               : 0;
@@ -116,6 +129,7 @@ export class ApifyClient {
             return data;
           } catch (error) {
             console.error('Error in extendOutputFunction:', error);
+            console.error('Problematic item:', JSON.stringify(item, null, 2));
             return data;
           }
         }`,
@@ -168,8 +182,8 @@ export class ApifyClient {
                        (item.videoData && item.videoData.duration) ||
                        (item.mediaInfo && item.mediaInfo.video_duration) ||
                        (item.video_duration_in_ms ? item.video_duration_in_ms / 1000 : null),
-        shares_count: item.sharesCount || item.shares_count || 0,
-        saves_count: item.savesCount || item.saves_count || 0,
+        shares_count: item.sharesCount || item.shares_count || item.shareCount || item.share_count || 0,
+        saves_count: item.savesCount || item.saves_count || item.saveCount || item.save_count || 0,
         views_count: item.videoViewCount || item.videoPlayCount || item.viewsCount || 0
       }));
 
