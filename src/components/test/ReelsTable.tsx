@@ -6,7 +6,9 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Badge } from "@/components/ui/badge";
+import { ThumbnailCell } from "./table/ThumbnailCell";
+import { MetricsCell } from "./table/MetricsCell";
+import { TagsCell } from "./table/TagsCell";
 
 interface ReelsTableProps {
   data: any[];
@@ -21,26 +23,6 @@ export const ReelsTable = ({ data }: ReelsTableProps) => {
     const minutes = Math.floor(duration / 60);
     const seconds = duration % 60;
     return `${minutes}:${seconds.toString().padStart(2, '0')}`;
-  };
-
-  const handleImageError = (e: React.SyntheticEvent<HTMLImageElement, Event>) => {
-    const img = e.currentTarget;
-    console.error('Image failed to load:', {
-      attemptedSrc: img.src,
-      naturalWidth: img.naturalWidth,
-      naturalHeight: img.naturalHeight,
-      error: e
-    });
-    img.src = '/placeholder.svg';
-  };
-
-  const getThumbnailUrl = (reel: any) => {
-    // Try to use a proxy service to bypass CORS
-    const proxyUrl = 'https://images.weserv.nl/?url=';
-    const originalUrl = encodeURIComponent(reel.thumbnail_url || reel.display_url || '/placeholder.svg');
-    
-    console.log('Original URL:', originalUrl);
-    return originalUrl.includes('placeholder.svg') ? '/placeholder.svg' : `${proxyUrl}${originalUrl}`;
   };
 
   return (
@@ -67,19 +49,7 @@ export const ReelsTable = ({ data }: ReelsTableProps) => {
       <TableBody>
         {data.map((reel: any) => (
           <TableRow key={reel.reel_id}>
-            <TableCell>
-              <div className="relative w-24 h-24 rounded-lg overflow-hidden bg-gray-100">
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <img 
-                    src={getThumbnailUrl(reel)}
-                    alt="Reel thumbnail"
-                    className="w-full h-full object-cover"
-                    onError={handleImageError}
-                    loading="lazy"
-                  />
-                </div>
-              </div>
-            </TableCell>
+            <ThumbnailCell reel={reel} />
             <TableCell className="max-w-md">
               <p className="line-clamp-2">{reel.caption}</p>
             </TableCell>
@@ -97,25 +67,13 @@ export const ReelsTable = ({ data }: ReelsTableProps) => {
             <TableCell className="text-right">
               {reel.video_duration ? formatDuration(reel.video_duration) : 'N/A'}
             </TableCell>
-            <TableCell className="text-right">{reel.comments_count?.toLocaleString()}</TableCell>
-            <TableCell className="text-right">{reel.likes_count?.toLocaleString()}</TableCell>
-            <TableCell className="text-right">{reel.views_count?.toLocaleString()}</TableCell>
-            <TableCell className="text-right">{reel.shares_count?.toLocaleString()}</TableCell>
-            <TableCell className="text-right">{reel.saves_count?.toLocaleString()}</TableCell>
-            <TableCell>
-              <div className="flex flex-wrap gap-1">
-                {reel.hashtags?.map((tag: string, index: number) => (
-                  <Badge key={index} variant="secondary">#{tag}</Badge>
-                ))}
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex flex-wrap gap-1">
-                {reel.mentions?.map((mention: string, index: number) => (
-                  <Badge key={index} variant="outline">@{mention}</Badge>
-                ))}
-              </div>
-            </TableCell>
+            <MetricsCell value={reel.comments_count} />
+            <MetricsCell value={reel.likes_count} />
+            <MetricsCell value={reel.views_count} />
+            <MetricsCell value={reel.shares_count} />
+            <MetricsCell value={reel.saves_count} />
+            <TagsCell tags={reel.hashtags || []} prefix="#" variant="secondary" />
+            <TagsCell tags={reel.mentions || []} prefix="@" variant="outline" />
             <TableCell>{reel.music_info?.title || 'N/A'}</TableCell>
             <TableCell>{reel.location_info?.name || 'N/A'}</TableCell>
             <TableCell>{reel.is_sponsored ? 'Yes' : 'No'}</TableCell>
