@@ -1,5 +1,7 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { createClient } from 'https://esm.sh/@supabase/supabase-js@2';
+import { ProfileManager } from "./profileManager.ts";
+import { ApifyClient } from "./apifyClient.ts";
+import { DataTransformer } from "./dataTransformer.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -27,173 +29,23 @@ serve(async (req) => {
 
     console.log('Starting fetch for:', { username, userId });
 
-    const supabase = createClient(
-      SUPABASE_URL!,
-      SUPABASE_SERVICE_ROLE_KEY!
-    );
+    // Initialize our service classes
+    const profileManager = new ProfileManager(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
+    const apifyClient = new ApifyClient(APIFY_API_KEY);
+    const dataTransformer = new DataTransformer(SUPABASE_URL!, SUPABASE_SERVICE_ROLE_KEY!);
 
-    let profile;
-    
-    try {
-      // First check if this is the user's own profile
-      if (userId) {
-        console.log('Checking user profile first:', userId);
-        const { data: userProfile, error: userProfileError } = await supabase
-          .from('profiles')
-          .select('id, instagram_account')
-          .eq('id', userId)
-          .maybeSingle();
-
-        if (userProfileError) {
-          console.error('Error checking user profile:', userProfileError);
-          throw userProfileError;
-        }
-
-        if (userProfile) {
-          console.log('Found user profile:', userProfile);
-          // If this is the user's profile, update it with the Instagram account if needed
-          if (userProfile.instagram_account !== username) {
-            const { data: updatedProfile, error: updateError } = await supabase
-              .from('profiles')
-              .update({ instagram_account: username })
-              .eq('id', userId)
-              .select()
-              .maybeSingle();
-
-            if (updateError) {
-              console.error('Error updating user profile:', updateError);
-              throw updateError;
-            }
-            profile = updatedProfile;
-          } else {
-            profile = userProfile;
-          }
-        }
-      }
-
-      // If we haven't found a profile yet, check for existing profile by instagram account
-      if (!profile) {
-        console.log('Checking for existing profile with instagram account:', username);
-        const { data: existingProfiles, error: profileError } = await supabase
-          .from('profiles')
-          .select('id, instagram_account')
-          .eq('instagram_account', username);
-
-        if (profileError) {
-          console.error('Error checking existing profile:', profileError);
-          throw profileError;
-        }
-
-        if (existingProfiles && existingProfiles.length > 0) {
-          console.log('Found existing profile:', existingProfiles[0]);
-          profile = existingProfiles[0];
-        } else {
-          console.log('Creating new profile for instagram account:', username);
-          const { data: newProfile, error: createError } = await supabase
-            .from('profiles')
-            .insert([{ instagram_account: username }])
-            .select()
-            .maybeSingle();
-
-          if (createError) {
-            console.error('Error creating profile:', createError);
-            throw createError;
-          }
-
-          console.log('Created new profile:', newProfile);
-          profile = newProfile;
-        }
-      }
-    } catch (error) {
-      console.error('Error in profile management:', error);
-      throw new Error(`Failed to check existing profile: ${error.message}`);
-    }
+    // Find or create the profile
+    const profile = await profileManager.findOrCreateProfile(username, userId);
 
     if (!profile) {
       throw new Error('Profile not found and could not be created');
     }
 
-    console.log('Making request to Apify API...');
+    // Fetch reels data from Apify
+    const rawData = await apifyClient.fetchReelsData(username);
 
-    const response = await fetch('https://api.apify.com/v2/acts/apify~instagram-reel-scraper/run-sync-get-dataset-items', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${APIFY_API_KEY}`,
-      },
-      body: JSON.stringify({
-        "username": [username],
-        "resultsLimit": 10,
-      }),
-    });
-
-    if (!response.ok) {
-      const errorText = await response.text();
-      console.error('Apify API error:', errorText);
-      throw new Error(`Apify API returned status ${response.status}`);
-    }
-
-    const rawData = await response.json();
-    console.log('Raw response from Apify:', JSON.stringify(rawData).substring(0, 500) + '...');
-
-    if (!Array.isArray(rawData)) {
-      console.error('Unexpected response format from Apify:', rawData);
-      throw new Error('Invalid response format from Apify');
-    }
-
-    const transformedData = await Promise.all(rawData.map(async (reel: any) => {
-      const uniqueReelId = `${profile.id}_${reel.id}`;
-      
-      const reelData = {
-        user_id: profile.id,
-        instagram_account: username,
-        reel_id: uniqueReelId,
-        caption: reel.caption || '',
-        url: reel.url,
-        thumbnail_url: reel.previewImageUrl || reel.displayUrl,
-        timestamp: reel.timestamp,
-        video_duration: reel.videoDuration,
-        comments_count: reel.commentsCount || 0,
-        likes_count: reel.likesCount || 0,
-        views_count: reel.playsCount || reel.videoPlayCount || 0,
-        is_sponsored: reel.isSponsored || false
-      };
-
-      console.log('Inserting reel data:', reelData);
-
-      const { error: upsertError } = await supabase
-        .from('instagram_reels')
-        .upsert(reelData, {
-          onConflict: 'reel_id',
-          ignoreDuplicates: false
-        });
-
-      if (upsertError) {
-        console.error('Error upserting reel:', upsertError);
-        throw upsertError;
-      }
-
-      const historicalMetrics = {
-        reel_id: uniqueReelId,
-        user_id: profile.id,
-        views_count: reel.playsCount || reel.videoPlayCount || 0,
-        likes_count: reel.likesCount || 0,
-        comments_count: reel.commentsCount || 0,
-      };
-
-      console.log('Inserting historical metrics:', historicalMetrics);
-
-      const { error: historyError } = await supabase
-        .from('reel_metrics_history')
-        .insert(historicalMetrics);
-
-      if (historyError) {
-        console.error('Error inserting historical metrics:', historyError);
-        throw historyError;
-      }
-
-      return reelData;
-    }));
+    // Transform and save the data
+    const transformedData = await dataTransformer.transformAndSaveReels(rawData, profile, username);
 
     console.log(`Successfully processed ${transformedData.length} reels`);
 
