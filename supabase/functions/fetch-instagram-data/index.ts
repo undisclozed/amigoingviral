@@ -28,19 +28,36 @@ serve(async (req) => {
       SUPABASE_SERVICE_ROLE_KEY!
     );
 
-    const { data: profile, error: profileError } = await supabase
-      .from('profiles')
-      .select('id, instagram_account')
-      .eq('id', userId)
-      .single();
+    // If userId is not provided, try to find the profile by instagram_account
+    let profile;
+    if (userId) {
+      const { data: userProfile, error: profileError } = await supabase
+        .from('profiles')
+        .select('id, instagram_account')
+        .eq('id', userId)
+        .single();
 
-    if (profileError) {
-      console.error('Error fetching profile:', profileError);
-      throw new Error('Failed to fetch profile');
+      if (profileError) {
+        console.error('Error fetching profile by userId:', profileError);
+        throw new Error('Failed to fetch profile by userId');
+      }
+      profile = userProfile;
+    } else {
+      const { data: accountProfile, error: accountProfileError } = await supabase
+        .from('profiles')
+        .select('id, instagram_account')
+        .eq('instagram_account', username)
+        .single();
+
+      if (accountProfileError) {
+        console.error('Error fetching profile by instagram_account:', accountProfileError);
+        throw new Error('Failed to fetch profile by instagram_account');
+      }
+      profile = accountProfile;
     }
 
     if (!profile) {
-      console.error('No profile found for user ID:', userId);
+      console.error('No profile found for:', { userId, username });
       throw new Error('Profile not found');
     }
 
