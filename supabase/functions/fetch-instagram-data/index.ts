@@ -27,98 +27,36 @@ serve(async (req) => {
 
     console.log('APIFY_API_KEY length:', apiKey.length);
 
-    // Using the correct Apify API endpoint for running an actor
-    const apifyUrl = `https://api.apify.com/v2/acts/apify~instagram-profile-scraper/runs?token=${apiKey}`;
+    // Using the Instagram Reel Scraper actor directly
+    const apifyUrl = `https://api.apify.com/v2/acts/apify~instagram-reel-scraper/run-sync?token=${apiKey}`;
 
-    // Simplified input to only fetch profile data
     const input = {
-      usernames: [username],
-      resultsLimit: 1,
-      scrapePosts: false,
-      scrapeStories: false,
-      scrapeHighlights: false,
+      username: username,
+      maxPosts: 1,
     };
 
     console.log('Making request to Apify URL:', apifyUrl);
     console.log('With input:', JSON.stringify(input));
 
-    let runResponse;
-    try {
-      runResponse = await fetch(apifyUrl, {
-        method: 'POST',
-        headers: { 
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(input)
-      });
+    const response = await fetch(apifyUrl, {
+      method: 'POST',
+      headers: { 
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(input)
+    });
 
-      if (!runResponse.ok) {
-        const errorText = await runResponse.text();
-        console.error('Apify API error response:', errorText);
-        throw new Error(`Apify API returned status ${runResponse.status}: ${errorText}`);
-      }
-    } catch (fetchError) {
-      console.error('Fetch error:', fetchError);
-      throw new Error(`Failed to make Apify API request: ${fetchError.message}`);
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Apify API error response:', errorText);
+      throw new Error(`Apify API returned status ${response.status}: ${errorText}`);
     }
 
-    const runResult = await runResponse.json();
-    console.log('Actor run started:', JSON.stringify(runResult, null, 2));
-
-    if (!runResult.id) {
-      console.error('Invalid run result:', runResult);
-      throw new Error('Failed to get valid run ID from Apify');
-    }
-
-    // Poll for run completion
-    const maxAttempts = 30;
-    let attempts = 0;
-    let runStatus;
-
-    while (attempts < maxAttempts) {
-      const statusUrl = `https://api.apify.com/v2/actor-runs/${runResult.id}?token=${apiKey}`;
-      console.log(`Checking run status (attempt ${attempts + 1})...`);
-      
-      const statusResponse = await fetch(statusUrl);
-      if (!statusResponse.ok) {
-        throw new Error(`Failed to check run status: ${statusResponse.status}`);
-      }
-      
-      runStatus = await statusResponse.json();
-      console.log(`Run status:`, runStatus.status);
-
-      if (runStatus.status === 'SUCCEEDED') {
-        break;
-      } else if (runStatus.status === 'FAILED' || runStatus.status === 'ABORTED') {
-        throw new Error(`Actor run ${runStatus.status}: ${runStatus.errorMessage || 'Unknown error'}`);
-      }
-
-      await new Promise(resolve => setTimeout(resolve, 2000)); // Wait 2 seconds between checks
-      attempts++;
-    }
-
-    if (attempts >= maxAttempts) {
-      throw new Error('Actor run timed out');
-    }
-
-    if (!runStatus.defaultDatasetId) {
-      throw new Error('Actor run completed, but no dataset was created');
-    }
-
-    // Fetch dataset
-    const datasetUrl = `https://api.apify.com/v2/datasets/${runStatus.defaultDatasetId}/items?token=${apiKey}`;
-    console.log('Fetching dataset from:', datasetUrl);
-    
-    const datasetResponse = await fetch(datasetUrl);
-    if (!datasetResponse.ok) {
-      throw new Error(`Failed to fetch dataset: ${datasetResponse.status}`);
-    }
-    
-    const dataset = await datasetResponse.json();
-    console.log('Dataset fetched, raw data:', JSON.stringify(dataset, null, 2));
+    const data = await response.json();
+    console.log('Raw data received:', JSON.stringify(data, null, 2));
 
     return new Response(
-      JSON.stringify({ data: dataset }),
+      JSON.stringify({ data }),
       {
         headers: {
           ...corsHeaders,
